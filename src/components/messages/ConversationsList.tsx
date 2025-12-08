@@ -1,3 +1,4 @@
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { useTranslations } from "next-intl";
 import { ConversationItem } from "./ConversationItem";
 import { SearchBar } from "./SearchBar";
@@ -31,9 +32,12 @@ export function ConversationsList({
 
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         {conversationsLoading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-exford-blue"></div>
-          </div>
+          <LoadingScreen
+            message={t("messages.loadingConversations")}
+            size="sm"
+            fullScreen={false}
+            className="h-32"
+          />
         ) : conversationsError ? (
           <div className="flex items-center justify-center h-32">
             <p className="text-red-500">

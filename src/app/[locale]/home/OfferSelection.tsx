@@ -4,13 +4,13 @@ import {
   useGetProAppointments,
 } from "@/api/appointments/useAppointments";
 import { Button } from "@/components/common/Button";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import SessionFeaturesList from "@/components/common/SessionFeaturesList";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAppointmentStore } from "@/store/useAppointmentStore";
 import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
-import { useTranslations } from "next-intl";
+import { Loader2 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -71,6 +71,7 @@ export default function OfferSelection({
   expertData,
 }: OfferSelectionProps) {
   const t = useTranslations();
+  const currentLocale = useLocale();
   const [selectedOption, setSelectedOption] = useState<"session" | string>(
     "session"
   );
@@ -162,13 +163,38 @@ export default function OfferSelection({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
+      {/* Overlay de chargement pendant le paiement */}
+      {isPaymentLoading && (
+        <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-lg">
+          <div className="flex flex-col items-center gap-4 p-8">
+            <Loader2 className="w-12 h-12 text-cobalt-blue animate-spin" />
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold text-gray-900">
+                {currentLocale === "fr"
+                  ? "Préparation de votre réservation..."
+                  : "Preparing your booking..."}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {currentLocale === "fr"
+                  ? "Vous allez être redirigé vers la page de paiement"
+                  : "You will be redirected to the payment page"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sessions uniques */}
       <div className="h-[70px] flex flex-col justify-center border-b border-gray-200">
         <h2 className="text-xl font-bold px-6">{t("offers.chooseOffer")}</h2>
       </div>
 
-      <div className=" p-6 space-y-6">
+      <div
+        className={`p-6 space-y-6 ${
+          isPaymentLoading ? "pointer-events-none opacity-50" : ""
+        }`}
+      >
         <div>
           <h2 className="text-sm font-bold text-gray-900 mb-1.5 font-figtree">
             {t("offers.singleSessions")}
@@ -283,16 +309,7 @@ export default function OfferSelection({
                     </div>
                     {selectedOption === session.id && (
                       <Button
-                        label={
-                          isPaymentLoading ? (
-                            <div className="flex items-center gap-2">
-                              <LoadingSpinner size="sm" />
-                              {t("offers.creatingAppointment")}
-                            </div>
-                          ) : (
-                            t("offers.chooseAndPay")
-                          )
-                        }
+                        label={t("offers.chooseAndPay")}
                         className="w-full h-[56px] rounded-[8px] bg-cobalt-blue hover:bg-cobalt-blue/80 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => handleSubscriptionPayment(session.id)}
                         disabled={isPaymentLoading}

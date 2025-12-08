@@ -1,6 +1,7 @@
 "use client";
 import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { UpcomingVideoCall } from "@/components/common/DarkSessionCard";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { useClientHome } from "@/hooks/useClientHome";
 import { usePatientAppointments } from "@/hooks/usePatientAppointments";
 import { Professional } from "@/types/professional";
@@ -36,19 +37,11 @@ export default function Client() {
   } = useClientHome(proExpert?.id);
 
   // Récupération des appointments du patient avec filtre de date et recherche
-  const { confirmedAppointments: upcomingAppointments } = usePatientAppointments();
+  const { confirmedAppointments: upcomingAppointments } =
+    usePatientAppointments();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-exford-blue"></div>
-          <p className="mt-4 text-lg text-exford-blue">
-            {t("home.loadingExperts")}
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message={t("home.loadingExperts")} size="md" />;
   }
 
   if (error) {

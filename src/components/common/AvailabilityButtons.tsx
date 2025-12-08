@@ -16,7 +16,7 @@ const AvailabilityButton = ({
 }: AvailabilityButtonProps) => (
   <ButtonUI
     onClick={onClick}
-    className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors w-full max-w-[340px] lg:max-w-[360px] xl:max-w-[381px] h-[56px]"
+    className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors w-full h-[56px]"
   >
     <div className="flex items-center gap-3">
       <Image src={icon} width={20} height={20} alt="icon" />
@@ -38,7 +38,7 @@ export const AvailabilityButtons = ({
   const t = useTranslations();
 
   return (
-    <div className="space-y-4 w-full mb-40 md:mb-0">
+    <div className="space-y-4 w-full mb-40 lg:mb-0">
       <AvailabilityButton
         icon="/assets/icons/calendar.svg"
         label={t("availabilityButtons.manageAvailability")}

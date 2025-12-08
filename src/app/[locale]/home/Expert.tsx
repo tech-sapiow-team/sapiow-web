@@ -5,6 +5,7 @@ import {
 } from "@/api/appointments/useAppointments";
 import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { useGetStatistics } from "@/api/statistics/useStatistics";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { SessionCard } from "@/components/common/SessionCard";
 import { StatsCard } from "@/components/common/StatsCard";
 import { useTodayVisios } from "@/hooks/useTodayVisios";
@@ -91,14 +92,7 @@ export default function Expert() {
 
   // Gestion du loading
   if (proExpertLoading || statisticsLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-exford-blue"></div>
-          <p className="mt-4 text-lg text-exford-blue">{t("loading")}</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message={t("loading")} size="md" />;
   }
 
   return (

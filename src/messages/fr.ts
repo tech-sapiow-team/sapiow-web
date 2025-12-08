@@ -141,6 +141,7 @@ export default {
     selectConversation: "Sélectionnez une conversation",
     selectConversationToView:
       "Sélectionnez une conversation pour voir les messages",
+    loadingConversations: "Chargement des conversations...",
     errorLoadingMessages: "Erreur lors du chargement des messages",
     noMessagesInConversation: "Aucun message dans cette conversation",
     today: "Aujourd'hui",
@@ -595,6 +596,7 @@ We encourage you to review it periodically.</p>
     incompleteConfig: "Configuration incomplète",
     bankUpdateError: "Erreur lors de la mise à jour du compte bancaire",
     inProgress: "En cours...",
+    preparingRedirect: "Préparation de la redirection...",
     // Add Bank Account Modal
     addBankAccount: "Ajouter un compte bancaire",
     nameMatchId:
@@ -996,6 +998,7 @@ We encourage you to review it periodically.</p>
   // Payment History Page
   paymentHistory: {
     title: "Historique des paiements",
+    loading: "Chargement de l'historique...",
     searchPlaceholder: "Montant, transaction ...",
     filterBy: "Filtrer par",
     allTransactions: "Toutes les transactions",
@@ -1090,6 +1093,17 @@ We encourage you to review it periodically.</p>
     allowDayCreateError: "Erreur lors de la création de la période",
     allowDayUpdateError: "Erreur lors de la mise à jour de la période",
     allowDayDeleteError: "Erreur lors de la suppression de la période",
+
+    // Session Features (Fonctionnalités de session)
+    sessionFeatureCreated: "Fonctionnalité créée avec succès !",
+    sessionFeatureUpdated: "Fonctionnalité mise à jour avec succès !",
+    sessionFeatureDeleted: "Fonctionnalité supprimée avec succès !",
+    sessionFeatureCreateError:
+      "Erreur lors de la création de la fonctionnalité",
+    sessionFeatureUpdateError:
+      "Erreur lors de la mise à jour de la fonctionnalité",
+    sessionFeatureDeleteError:
+      "Erreur lors de la suppression de la fonctionnalité",
 
     // Video Call
     callConnectionError: "Erreur lors de la connexion à l'appel vidéo",

@@ -1,4 +1,5 @@
 import { useListProPayouts } from "@/api/pro-payouts/useProPayouts";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -37,8 +38,8 @@ export default function PaymentHistory() {
         <h2 className="text-sm font-medium font-figtree text-charcoal-blue">
           {t("account.paymentHistory")}
         </h2>
-        <div className="text-center py-8">
-          <div className="animate-pulse text-slate-gray">{t("loading")}</div>
+        <div className="flex items-center justify-center py-8">
+          <LoadingScreen message={t("loading")} size="sm" fullScreen={false} />
         </div>
       </div>
     );
@@ -114,20 +115,20 @@ export default function PaymentHistory() {
                     </div>
                   </div>
                 </div>
-              <div className="text-right">
-                <div className="text-base font-bold font-figtree text-slate-600">
-                  {formatAmount(payment.amount, payment.currency)}
+                <div className="text-right">
+                  <div className="text-base font-bold font-figtree text-slate-600">
+                    {formatAmount(payment.amount, payment.currency)}
+                  </div>
+                  <div
+                    className={`text-xs bg-snow-blue font-bold rounded-[100px] px-2 py-1 h-[24px] ${
+                      mapStatus(payment.status) === t("revenue.paid")
+                        ? "text-exford-blue"
+                        : "text-[#CC5802]"
+                    }`}
+                  >
+                    {mapStatus(payment.status)}
+                  </div>
                 </div>
-                <div
-                  className={`text-xs bg-snow-blue font-bold rounded-[100px] px-2 py-1 h-[24px] ${
-                    mapStatus(payment.status) === t("revenue.paid")
-                      ? "text-exford-blue"
-                      : "text-[#CC5802]"
-                  }`}
-                >
-                  {mapStatus(payment.status)}
-                </div>
-              </div>
               </div>
             );
           })

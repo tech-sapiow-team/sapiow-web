@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { Switch } from "@/components/ui/switch";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { useTranslations } from "next-intl";
@@ -21,12 +22,12 @@ export default function Notifications() {
   if (isLoading) {
     return (
       <AccountLayout>
-        <div className="container w-full py-0 px-5">
-          <div className="flex justify-center items-center py-8">
-            <div className="text-gray-600">
-              {t("notificationSettings.loadingSettings")}
-            </div>
-          </div>
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <LoadingScreen
+            message={t("notificationSettings.loadingSettings")}
+            size="md"
+            fullScreen={false}
+          />
         </div>
       </AccountLayout>
     );

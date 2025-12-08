@@ -1,6 +1,5 @@
 import { ProExpertSession } from "@/api/proExpert/useProExpert";
 import {
-  SessionFeatures,
   useCreateProSessionFeatures,
   useDeleteProSessionFeatures,
   useGetProSessionFeatures,
@@ -14,6 +13,7 @@ import {
   validateSessionData,
 } from "@/api/sessions/useSessions";
 import { apiClient } from "@/lib/api-client";
+import { showToast } from "@/utils/toast";
 import { useEffect, useState } from "react";
 
 interface UseAddSessionModalProps {
@@ -38,9 +38,13 @@ export const useAddSessionModal = ({
   });
 
   // État pour les features dynamiques (gestion locale)
-  const [localFeatures, setLocalFeatures] = useState<{ id: string; name: string }[]>([]);
+  const [localFeatures, setLocalFeatures] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [newFeatureName, setNewFeatureName] = useState("");
-  const [editingFeatureIndex, setEditingFeatureIndex] = useState<number | null>(null); // Index de la feature en cours d'édition
+  const [editingFeatureIndex, setEditingFeatureIndex] = useState<number | null>(
+    null
+  ); // Index de la feature en cours d'édition
   const [editingFeatureName, setEditingFeatureName] = useState(""); // Nom temporaire pendant l'édition
 
   const [isLoadingSessionData, setIsLoadingSessionData] = useState(false);
@@ -134,12 +138,12 @@ export const useAddSessionModal = ({
 
     // Générer un ID temporaire unique
     const tempId = `temp-${Date.now()}-${Math.random()}`;
-    
+
     setLocalFeatures((prev) => [
       ...prev,
       { id: tempId, name: newFeatureName.trim() },
     ]);
-    
+
     setNewFeatureName("");
     console.log("✅ Feature ajoutée localement:", newFeatureName.trim());
   };
@@ -240,7 +244,7 @@ export const useAddSessionModal = ({
         const localIds = localFeatures
           .filter((f) => typeof f.id === "string" && !f.id.startsWith("temp-"))
           .map((f) => f.id);
-        
+
         for (const existingId of existingIds) {
           if (!localIds.includes(existingId)) {
             await deleteFeatureMutation.mutateAsync(existingId);
@@ -250,7 +254,10 @@ export const useAddSessionModal = ({
 
         // 2. Mettre à jour les features existantes qui ont changé
         for (const feature of localFeatures) {
-          if (typeof feature.id === "string" && !feature.id.startsWith("temp-")) {
+          if (
+            typeof feature.id === "string" &&
+            !feature.id.startsWith("temp-")
+          ) {
             const existingFeature = existingIds.includes(feature.id);
             if (existingFeature) {
               await updateFeatureMutation.mutateAsync({
@@ -264,7 +271,10 @@ export const useAddSessionModal = ({
 
         // 3. Créer les nouvelles features (celles avec ID temporaire)
         for (const feature of localFeatures) {
-          if (typeof feature.id === "string" && feature.id.startsWith("temp-")) {
+          if (
+            typeof feature.id === "string" &&
+            feature.id.startsWith("temp-")
+          ) {
             await createFeatureMutation.mutateAsync({
               id: sessionId,
               data: { name: feature.name },
@@ -275,13 +285,12 @@ export const useAddSessionModal = ({
       } else {
         // Mode création
         const result = await createSessionMutation.mutateAsync(sessionData);
-        
+
         if (!result.data?.id) {
           throw new Error("Erreur: ID de session non retourné");
         }
-        
+
         sessionId = result.data.id;
-        console.log("✅ Session créée avec succès:", sessionId);
 
         // Créer toutes les features locales
         for (const feature of localFeatures) {
@@ -289,15 +298,8 @@ export const useAddSessionModal = ({
             id: sessionId,
             data: { name: feature.name },
           });
-          console.log("✅ Feature créée:", feature.name);
         }
       }
-
-      console.log(
-        isEditMode
-          ? "Session et features modifiées avec succès"
-          : "Session et features créées avec succès"
-      );
 
       if (onSuccess) {
         onSuccess(sessionData);
@@ -305,12 +307,7 @@ export const useAddSessionModal = ({
 
       handleCancel();
     } catch (error: any) {
-      console.error(
-        isEditMode
-          ? "Erreur lors de la modification:"
-          : "Erreur lors de la création:",
-        error
-      );
+      showToast.error(error.message);
       setErrors([
         error.message ||
           (isEditMode
@@ -361,8 +358,6 @@ export const useAddSessionModal = ({
         },
       });
 
-      console.log("Session désactivée avec succès");
-
       if (onSuccess) {
         // Notifier le parent que la session a été "supprimée"
         onSuccess({
@@ -382,7 +377,7 @@ export const useAddSessionModal = ({
 
       handleCancel();
     } catch (error: any) {
-      console.error("Erreur lors de la suppression:", error);
+      showToast.error(error.message);
       setErrors([
         error.message || "Erreur lors de la suppression de la session",
       ]);

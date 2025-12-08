@@ -6,7 +6,7 @@ import {
 import { Button } from "@/components/common/Button";
 import { useAppointmentStore } from "@/store/useAppointmentStore";
 import { usePlaningStore } from "@/store/usePlaning";
-import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -335,6 +335,7 @@ export default function VisioPlanningCalendar({
     availableDurations[0]?.value || 15
   );
   const [selectedTime, setSelectedTime] = useState("");
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Prix de la session sélectionnée
   const selectedSession = availableDurations.find(
@@ -428,6 +429,9 @@ export default function VisioPlanningCalendar({
       return;
     }
 
+    // Activer l'état de redirection pour maintenir le loader visible
+    setIsRedirecting(true);
+
     // Créer la date et heure complète pour l'appointment
     const selectedDateTime = new Date(
       currentDate.getFullYear(),
@@ -455,6 +459,7 @@ export default function VisioPlanningCalendar({
               setAppointmentData(data.appointment, data.payment);
               // Construire l'URL de retour avec l'ID de l'expert
               const returnUrl = `/details?id=${data.appointment.pro_id}`;
+              // La redirection va se faire, garder le loader actif
               router.push(
                 `/payment?returnUrl=${encodeURIComponent(returnUrl)}`
               );
@@ -465,6 +470,8 @@ export default function VisioPlanningCalendar({
               "Erreur lors de la création de l'appointment:",
               error
             );
+            // En cas d'erreur, désactiver le loader
+            setIsRedirecting(false);
           },
         }
       );
@@ -483,6 +490,8 @@ export default function VisioPlanningCalendar({
       setIsPlaning(false);
     } catch (error) {
       console.error("Erreur lors de la création de l'appointment:", error);
+      // En cas d'erreur, désactiver le loader
+      setIsRedirecting(false);
     }
   };
 
@@ -579,7 +588,30 @@ export default function VisioPlanningCalendar({
   };
 
   return (
-    <div className={`bg-white rounded-lg max-w-md mx-auto ${className}`}>
+    <div
+      className={`bg-white rounded-lg max-w-md mx-auto ${className} relative`}
+    >
+      {/* Overlay de chargement pendant la réservation */}
+      {(createAppointmentMutation.isPending || isRedirecting) && (
+        <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-lg">
+          <div className="flex flex-col items-center gap-4 p-8">
+            <Loader2 className="w-12 h-12 text-cobalt-blue animate-spin" />
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold text-gray-900">
+                {currentLocale === "fr"
+                  ? "Préparation de votre réservation..."
+                  : "Preparing your booking..."}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {currentLocale === "fr"
+                  ? "Vous allez être redirigé vers la page de paiement"
+                  : "You will be redirected to the payment page"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header avec retour */}
       <div className="h-[70px] flex items-center border-b border-gray-200">
         <ArrowLeft
@@ -593,7 +625,13 @@ export default function VisioPlanningCalendar({
         </h2>
       </div>
 
-      <div className="p-6">
+      <div
+        className={`p-6 ${
+          createAppointmentMutation.isPending || isRedirecting
+            ? "pointer-events-none opacity-50"
+            : ""
+        }`}
+      >
         {/* Sélection de durée */}
         <div className="mb-6">
           <h3 className="text-sm font-bold text-[#1F2937] mb-3">
@@ -606,12 +644,18 @@ export default function VisioPlanningCalendar({
               <button
                 key={duration.value}
                 onClick={() => setSelectedDuration(duration.value)}
+                disabled={createAppointmentMutation.isPending || isRedirecting}
                 className={`
                 rounded-lg text-base font-bold transition-colors w-[80px] h-[40px] cursor-pointer
                 ${
                   selectedDuration === duration.value
                     ? "bg-cobalt-blue text-white"
                     : "bg-[#F0F6FF] text-[#003B87] hover:bg-[#F0F6FF]"
+                }
+                ${
+                  createAppointmentMutation.isPending || isRedirecting
+                    ? "cursor-not-allowed"
+                    : ""
                 }
               `}
               >
@@ -745,26 +789,35 @@ export default function VisioPlanningCalendar({
 
           <Button
             label={
-              createAppointmentMutation.isPending
-                ? currentLocale === "fr"
-                  ? "Réservation..."
-                  : "Booking..."
-                : currentLocale === "fr"
-                ? "Réserver"
-                : "Book"
+              createAppointmentMutation.isPending || isRedirecting ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>
+                    {currentLocale === "fr"
+                      ? "Réservation en cours..."
+                      : "Booking in progress..."}
+                  </span>
+                </div>
+              ) : currentLocale === "fr" ? (
+                "Réserver"
+              ) : (
+                "Book"
+              )
             }
             onClick={handleReserve}
             disabled={
               timeSlots.length === 0 ||
               !selectedTime ||
               !selectedSession?.sessionId ||
-              createAppointmentMutation.isPending
+              createAppointmentMutation.isPending ||
+              isRedirecting
             }
-            className={`w-full h-12 font-medium rounded-lg ${
+            className={`w-full h-12 font-medium rounded-lg transition-all ${
               timeSlots.length === 0 ||
               !selectedTime ||
               !selectedSession?.sessionId ||
-              createAppointmentMutation.isPending
+              createAppointmentMutation.isPending ||
+              isRedirecting
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-cobalt-blue hover:bg-cobalt-blue/90 text-white"
             }`}

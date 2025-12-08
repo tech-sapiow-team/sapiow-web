@@ -43,7 +43,7 @@ const mapExpertToProfessional = (expert: Expert): Professional => {
     verified: true,
     category: categoryMap[expert.domains.name] || "business",
     domain: expert.domains.name,
-    topExpertise: false,
+    topExpertise: expert.badge === "gold",
     description:
       expert.description ||
       `${expert.job || "Expert"} spécialisé en ${expert.domains.name}`,

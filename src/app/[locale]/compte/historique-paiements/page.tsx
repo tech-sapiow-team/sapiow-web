@@ -1,6 +1,7 @@
 "use client";
 import { usePatientPaymentHistoryDisplay } from "@/api/patientPayment/usePatientPayment";
 import { FormField } from "@/components/common/FormField";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import TransactionDetails from "@/components/common/TransactionDetails";
 import { useProtectedPage } from "@/hooks/useProtectedPage";
 import { ChevronRightIcon, Search } from "lucide-react";
@@ -77,11 +78,11 @@ export default function HistoriquePaiements() {
   if (isLoading) {
     return (
       <AccountLayout className="h-screen overflow-hidden">
-        <div className="container h-screen overflow-hidden lg:px-5 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-gray-500">{t("loading")}</p>
-          </div>
-        </div>
+        <LoadingScreen
+          message={t("paymentHistory.loading")}
+          size="lg"
+          fullScreen={true}
+        />
       </AccountLayout>
     );
   }

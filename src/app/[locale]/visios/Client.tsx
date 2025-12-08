@@ -2,6 +2,7 @@
 import { useGetPatientAppointments } from "@/api/appointments/useAppointments";
 import { useGetCustomer } from "@/api/customer/useCustomer";
 import { UpcomingVideoCall } from "@/components/common/DarkSessionCard";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { HeaderClient } from "@/components/layout/header/HeaderClient";
 import { SessionDetailSheet } from "@/components/visios/SessionDetailSheet";
 import { useCallStore } from "@/store/useCall";
@@ -17,7 +18,8 @@ import VideoConsultation from "../VideoCall/video-consultation";
 
 export default function Client() {
   const t = useTranslations();
-  const { setAppointmentId, callCreatorName, setCallCreatorName } = useCallStore();
+  const { setAppointmentId, callCreatorName, setCallCreatorName } =
+    useCallStore();
   const [selectedSession, setSelectedSession] = useState<SessionData | null>(
     null
   );
@@ -84,7 +86,12 @@ export default function Client() {
 
   // Transformation et filtrage des données avec filtre de fin de session
   const { nextAppointment, upcomingConfirmed, otherUpcoming } = useMemo(() => {
-    if (!appointments) return { nextAppointment: null, upcomingConfirmed: [], otherUpcoming: [] };
+    if (!appointments)
+      return {
+        nextAppointment: null,
+        upcomingConfirmed: [],
+        otherUpcoming: [],
+      };
 
     // Filtrer les rendez-vous dont l'heure de fin n'est pas encore passée
     const filteredAppointments = (appointments as ApiAppointment[]).filter(
@@ -112,11 +119,12 @@ export default function Client() {
       }
     );
 
-    const { upcomingConfirmed: allConfirmed, otherUpcoming: pending } = filterAndSortAppointments(filteredAppointments);
-    
+    const { upcomingConfirmed: allConfirmed, otherUpcoming: pending } =
+      filterAndSortAppointments(filteredAppointments);
+
     // Extraire le rendez-vous le plus imminent (le premier de la liste triée)
     const nextAppointment = allConfirmed.length > 0 ? allConfirmed[0] : null;
-    
+
     // Les autres rendez-vous confirmés (tous sauf le premier)
     const remainingConfirmed = allConfirmed.slice(1);
 
@@ -127,16 +135,17 @@ export default function Client() {
     };
   }, [appointments]);
 
-
   if (isLoadingAppointments) {
     return (
       <div>
         <HeaderClient text={t("visios.myVideoConferences")} />
         <div className="w-full my-4 px-5 pb-10">
-          <div className="flex items-center justify-center h-40">
-            <p className="text-gray-500">
-              {t("visios.loadingVideoConferences")}
-            </p>
+          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+            <LoadingScreen
+              message={t("visios.loadingVideoConferences")}
+              size="lg"
+              fullScreen={false}
+            />
           </div>
         </div>
       </div>
@@ -147,8 +156,12 @@ export default function Client() {
     <div>
       {/* Header */}
       {isVideoCallOpen ? (
-        <HeaderClient 
-          text={callCreatorName ? `Session avec ${callCreatorName}` : t("visios.sessionInProgress")} 
+        <HeaderClient
+          text={
+            callCreatorName
+              ? `Session avec ${callCreatorName}`
+              : t("visios.sessionInProgress")
+          }
         />
       ) : (
         <HeaderClient text={t("visios.myVideoConferences")} />
@@ -170,7 +183,8 @@ export default function Client() {
               </h2>
               <div className="flex gap-4">
                 {(() => {
-                  const sessionData = transformAppointmentToSessionData(nextAppointment);
+                  const sessionData =
+                    transformAppointmentToSessionData(nextAppointment);
                   return (
                     <UpcomingVideoCall
                       key={nextAppointment.id}
@@ -194,7 +208,8 @@ export default function Client() {
           {upcomingConfirmed.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
               {upcomingConfirmed.map((appointment: ApiAppointment) => {
-                const sessionData = transformAppointmentToSessionData(appointment);
+                const sessionData =
+                  transformAppointmentToSessionData(appointment);
                 return (
                   <UpcomingVideoCall
                     key={appointment.id}
@@ -226,7 +241,8 @@ export default function Client() {
               <h2 className="mb-3 mt-6">{t("visios.pending")}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
                 {otherUpcoming.map((appointment: ApiAppointment) => {
-                  const sessionData = transformAppointmentToSessionData(appointment);
+                  const sessionData =
+                    transformAppointmentToSessionData(appointment);
                   return (
                     <UpcomingVideoCall
                       key={appointment.id}

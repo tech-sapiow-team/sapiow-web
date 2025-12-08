@@ -5,6 +5,7 @@ import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { Button } from "@/components/common/Button";
 import { DeleteAccountModal } from "@/components/common/DeleteAccountModal";
 import { FormField } from "@/components/common/FormField";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { ProfilePhotoUpload } from "@/components/onboarding/ProfilePhotoUpload";
 import { DomainDropdown } from "@/components/profile/DomainDropdown";
 import { ExpertiseSelector } from "@/components/profile/ExpertiseSelector";
@@ -53,8 +54,12 @@ export default function ExpertProfile() {
   if (isLoading) {
     return (
       <div className="w-full max-w-[702px] mx-auto mt-10 px-5">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-slate-gray">{t("profile.loadingProfile")}</div>
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <LoadingScreen
+            message={t("profile.loadingProfile")}
+            size="md"
+            fullScreen={false}
+          />
         </div>
       </div>
     );

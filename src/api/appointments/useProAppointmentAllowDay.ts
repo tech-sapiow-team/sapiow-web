@@ -33,8 +33,16 @@ export const useGetProAppointmentAllowDays = () => {
 };
 
 // POST - Créer une nouvelle période de disponibilité
-export const useCreateProAppointmentAllowDay = () => {
+interface CreateAllowDayOptions {
+  showSuccessToast?: boolean;
+  skipInvalidate?: boolean;
+}
+
+export const useCreateProAppointmentAllowDay = (
+  options?: CreateAllowDayOptions
+) => {
   const queryClient = useQueryClient();
+  const { showSuccessToast = true, skipInvalidate = false } = options || {};
 
   return useMutation<ProAppointmentAllowDay[], Error, CreateAllowDayData>({
     mutationFn: async (data: CreateAllowDayData) => {
@@ -42,10 +50,14 @@ export const useCreateProAppointmentAllowDay = () => {
     },
     onSuccess: () => {
       // Invalider le cache pour recharger les données
-      queryClient.invalidateQueries({
-        queryKey: ["pro-appointment-allow-days"],
-      });
-      showToast.success("allowDayCreated");
+      if (!skipInvalidate) {
+        queryClient.invalidateQueries({
+          queryKey: ["pro-appointment-allow-days"],
+        });
+      }
+      if (showSuccessToast) {
+        showToast.success("allowDayCreated");
+      }
     },
     onError: (error: any) => {
       console.error("Failed to create allow day:", error);

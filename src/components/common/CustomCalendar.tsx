@@ -11,6 +11,8 @@ interface CustomCalendarProps {
   confirmedAppointments?: any[];
   schedules?: any[];
   blockedDates?: any[]; // Dates bloquées par l'expert
+  availabilityStartDate?: string | null; // Date de début de disponibilité (YYYY-MM-DD)
+  availabilityEndDate?: string | null; // Date de fin de disponibilité (YYYY-MM-DD)
 }
 
 export default function CustomCalendar({
@@ -18,6 +20,8 @@ export default function CustomCalendar({
   confirmedAppointments = [],
   schedules = [],
   blockedDates = [],
+  availabilityStartDate,
+  availabilityEndDate,
 }: CustomCalendarProps) {
   const t = useTranslations();
 
@@ -58,7 +62,7 @@ export default function CustomCalendar({
     const mergedEvents: any = {};
 
     // Extraire les jours de la semaine disponibles depuis schedules
-    const availableDaysOfWeek = schedules.map((schedule: any) => 
+    const availableDaysOfWeek = schedules.map((schedule: any) =>
       schedule.day_of_week.toLowerCase()
     );
 
@@ -179,15 +183,36 @@ export default function CustomCalendar({
   const isPastDate = (day: number) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Reset time to start of day
-    
+
     const checkDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       day
     );
     checkDate.setHours(0, 0, 0, 0);
-    
+
     return checkDate < today;
+  };
+
+  const isOutsideAvailabilityRange = (day: number) => {
+    if (!availabilityStartDate || !availabilityEndDate) {
+      return false; // Si pas d'intervalle défini, toutes les dates sont disponibles
+    }
+
+    const checkDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
+    checkDate.setHours(0, 0, 0, 0);
+
+    const startDate = new Date(availabilityStartDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(availabilityEndDate);
+    endDate.setHours(23, 59, 59, 999); // Inclure toute la journée de fin
+
+    return checkDate < startDate || checkDate > endDate;
   };
 
   const handleDateClick = (day: number) => {
@@ -216,6 +241,28 @@ export default function CustomCalendar({
     if (isPastDate(day)) {
       return false;
     }
+
+    // Vérifier si la date est dans l'intervalle de disponibilité
+    if (availabilityStartDate && availabilityEndDate) {
+      const checkDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        day
+      );
+      checkDate.setHours(0, 0, 0, 0);
+
+      const startDate = new Date(availabilityStartDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(availabilityEndDate);
+      endDate.setHours(23, 59, 59, 999); // Inclure toute la journée de fin
+
+      // Si la date est en dehors de l'intervalle, elle n'est pas cliquable
+      if (checkDate < startDate || checkDate > endDate) {
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -264,6 +311,7 @@ export default function CustomCalendar({
       const event = allEvents[day as keyof typeof allEvents];
       const todayIndicator = isToday(day);
       const isPast = isPastDate(day);
+      const isOutsideRange = isOutsideAvailabilityRange(day);
       const clickedDate = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth(),
@@ -290,7 +338,12 @@ export default function CustomCalendar({
             ${event?.type === "complete" ? " text-gray-700" : ""}
             ${event?.type === "unavailable" ? "bg-white" : ""}
             ${isPast && !event ? "opacity-40" : ""}
-            ${!event && !todayIndicator && !isPast ? "text-gray-900" : ""}
+            ${isOutsideRange && !event ? "opacity-40" : ""}
+            ${
+              !event && !todayIndicator && !isPast && !isOutsideRange
+                ? "text-gray-900"
+                : ""
+            }
             ${isSelected ? "ring-2 ring-blue-500 ring-offset-2" : ""}
             ${clickable ? "hover:bg-opacity-80" : ""}
           `}
@@ -302,10 +355,16 @@ export default function CustomCalendar({
                 borderRadius: "2px",
                 position: "relative",
               }),
-              ...(isPast && !event && {
-                backgroundColor: "#F8FAFC",
-                opacity: 0.5,
-              }),
+              ...(isPast &&
+                !event && {
+                  backgroundColor: "#F8FAFC",
+                  opacity: 0.5,
+                }),
+              ...(isOutsideRange &&
+                !event && {
+                  backgroundColor: "#F8FAFC",
+                  opacity: 0.5,
+                }),
               ...(isSelected && {
                 boxShadow: "0 0 0 2px #3B82F6",
               }),
@@ -321,7 +380,7 @@ export default function CustomCalendar({
                 color:
                   todayIndicator || event?.type === "active"
                     ? "white"
-                    : event?.type === "unavailable" || isPast
+                    : event?.type === "unavailable" || isPast || isOutsideRange
                     ? "#CBD5E1"
                     : "#020617",
                 fontFamily: "Figtree",

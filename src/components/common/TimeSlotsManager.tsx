@@ -67,7 +67,7 @@ export default function TimeSlotsManager({
                     handleUpdateTimeSlot(slot.id, "startTime", value)
                   }
                 >
-                  <SelectTrigger className="w-32 sm:w-32 bg-white border-gray-300 rounded-xl">
+                  <SelectTrigger className="flex-1 min-w-0 bg-white border-gray-300 rounded-xl">
                     <SelectValue
                       placeholder={t("timeSlotsManager.selectStartTime")}
                     />
@@ -92,7 +92,7 @@ export default function TimeSlotsManager({
                     })}
                   </SelectContent>
                 </Select>
-                <span className="text-gray-500 text-sm whitespace-nowrap">
+                <span className="text-gray-500 text-sm whitespace-nowrap flex-shrink-0">
                   {t("timeSlotsManager.to")}
                 </span>
                 <Select
@@ -101,7 +101,7 @@ export default function TimeSlotsManager({
                     handleUpdateTimeSlot(slot.id, "endTime", value)
                   }
                 >
-                  <SelectTrigger className="w-32 sm:w-32 bg-white border-gray-300 rounded-xl">
+                  <SelectTrigger className="flex-1 min-w-0 bg-white border-gray-300 rounded-xl">
                     <SelectValue
                       placeholder={t("timeSlotsManager.selectEndTime")}
                     />
@@ -127,7 +127,7 @@ export default function TimeSlotsManager({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { authUtils } from "@/utils/auth";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -14,13 +14,17 @@ interface AuthGuardProps {
  * Composant de protection des routes - redirige vers login si non authentifié
  * À utiliser pour protéger toutes les pages sauf la page de login
  */
-export const AuthGuard: React.FC<AuthGuardProps> = ({ 
-  children, 
-  fallback = null
+export const AuthGuard: React.FC<AuthGuardProps> = ({
+  children,
+  fallback = null,
 }) => {
   const t = useTranslations();
-  const defaultFallback = <div className="flex items-center justify-center min-h-screen">{t("loading")}...</div>;
-  const actualFallback = fallback || defaultFallback;
+  const defaultFallback = (
+    <div className="flex items-center justify-center min-h-screen">
+      {t("loading")}...
+    </div>
+  );
+  const actualFallback = fallback;
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
@@ -30,14 +34,17 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
       try {
         const authenticated = authUtils.isAuthenticated();
         setIsAuthenticated(authenticated);
-        
+
         if (!authenticated) {
           // Rediriger vers la page de login si non authentifié
           router.push("/login");
           return;
         }
       } catch (error) {
-        console.error("Erreur lors de la vérification d'authentification:", error);
+        console.error(
+          "Erreur lors de la vérification d'authentification:",
+          error
+        );
         // En cas d'erreur, rediriger aussi vers login
         router.push("/login");
       } finally {

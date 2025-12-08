@@ -105,7 +105,13 @@ export const useCreateProSessionFeatures = () => {
     SessionFeaturesCreateError,
     { id: string; data: SessionFeaturesCreate }
   >({
-    mutationFn: async ({ id, data }: { id: string; data: SessionFeaturesCreate }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: SessionFeaturesCreate;
+    }) => {
       try {
         // Validation du nom
         if (!data.name || data.name.trim().length === 0) {
@@ -164,7 +170,13 @@ export const useUpdateProSessionFeatures = () => {
     SessionFeaturesUpdateError,
     { id: string; data: SessionFeaturesUpdate }
   >({
-    mutationFn: async ({ id, data }: { id: string; data: SessionFeaturesUpdate }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: SessionFeaturesUpdate;
+    }) => {
       try {
         // Appel API via apiClient
         const response = await apiClient.put<any>(
@@ -259,7 +271,9 @@ export const useDeleteProSessionFeatures = () => {
 /**
  * Fonction utilitaire pour valider les données de création de fonctionnalités
  */
-export const validateSessionFeaturesData = (data: SessionFeaturesCreate): string[] => {
+export const validateSessionFeaturesData = (
+  data: SessionFeaturesCreate
+): string[] => {
   const errors: string[] = [];
 
   if (!data.name || data.name.trim().length === 0) {
@@ -267,7 +281,9 @@ export const validateSessionFeaturesData = (data: SessionFeaturesCreate): string
   }
 
   if (data.name && data.name.length > 255) {
-    errors.push("Le nom de la fonctionnalité ne peut pas dépasser 255 caractères");
+    errors.push(
+      "Le nom de la fonctionnalité ne peut pas dépasser 255 caractères"
+    );
   }
 
   return errors;

@@ -138,6 +138,7 @@ export default {
   messages: {
     selectConversation: "Select a conversation",
     selectConversationToView: "Select a conversation to view messages",
+    loadingConversations: "Loading conversations...",
     errorLoadingMessages: "Error loading messages",
     noMessagesInConversation: "No messages in this conversation",
     today: "Today",
@@ -590,6 +591,7 @@ We encourage you to review it periodically.</p>
     incompleteConfig: "Incomplete configuration",
     bankUpdateError: "Error updating bank account",
     inProgress: "In progress...",
+    preparingRedirect: "Preparing redirect...",
     // Add Bank Account Modal
     addBankAccount: "Add a bank account",
     nameMatchId:
@@ -986,6 +988,7 @@ We encourage you to review it periodically.</p>
   // Payment History Page
   paymentHistory: {
     title: "Payment History",
+    loading: "Loading history...",
     searchPlaceholder: "Amount, transaction ...",
     filterBy: "Filter by",
     allTransactions: "All transactions",
@@ -1080,6 +1083,14 @@ We encourage you to review it periodically.</p>
     allowDayCreateError: "Error creating availability period",
     allowDayUpdateError: "Error updating availability period",
     allowDayDeleteError: "Error deleting availability period",
+
+    // Session Features
+    sessionFeatureCreated: "Feature created successfully!",
+    sessionFeatureUpdated: "Feature updated successfully!",
+    sessionFeatureDeleted: "Feature deleted successfully!",
+    sessionFeatureCreateError: "Error creating feature",
+    sessionFeatureUpdateError: "Error updating feature",
+    sessionFeatureDeleteError: "Error deleting feature",
 
     // Video Call
     callConnectionError: "Error connecting to video call",

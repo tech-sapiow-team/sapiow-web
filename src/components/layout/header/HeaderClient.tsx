@@ -207,7 +207,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
               <Button
                 label={t("headerClient.becomeExpert")}
                 onClick={handleExpertModeSwitch}
-                className="text-base text-exford-blue font-bold bg-white max-w-[163px] h-[48px] border border-light-blue-gray rounded-[8px] font-figtree hidden lg:flex"
+                className="text-base text-exford-blue font-bold bg-white max-w-[163px] h-[48px] border border-light-blue-gray hover:text-white rounded-[8px] font-figtree hidden lg:flex"
               />
             )}
             <div className="flex items-center gap-2">

@@ -3,6 +3,7 @@ import Accordion from "@/components/common/Accordion";
 import BookedSessionCard from "@/components/common/BookedSessionCard";
 import { Button } from "@/components/common/Button";
 import HowItWorksCard from "@/components/common/HowItWorksCard";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import VisioPlanningCalendar from "@/components/common/VisioPlanningCalendar";
 import { withAuth } from "@/components/common/withAuth";
 import { HeaderClient } from "@/components/layout/header/HeaderClient";
@@ -197,7 +198,7 @@ function ProfessionalDetailContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-exford-blue"></div>
+        <LoadingScreen message={t("loading")} size="xl" />
       </div>
     );
   }
@@ -430,6 +431,7 @@ function ProfessionalDetailContent() {
                           ...professional,
                           description:
                             professional.job || professional.description,
+                          topExpertise: professional.badge === "gold",
                         }}
                         isLiked={isLiked(String(professional.id))}
                         onToggleLike={() => toggleLike(String(professional.id))}
@@ -483,7 +485,7 @@ function ProfessionalDetailContent() {
                   alt={t("sessionDetail.congratulationAlt")}
                   width={421}
                   height={381}
-                  className="-mt-29"
+                  className="-mt-29 animate-celebrate"
                 />
                 <div className="flex flex-col items-center justify-center gap-4 mt-7">
                   <h2 className="text-[28px] font-bold text-charcoal-blue">
@@ -569,7 +571,7 @@ function ProfessionalDetailContent() {
                 alt={t("sessionDetail.congratulationAlt")}
                 width={300}
                 height={250}
-                className="mb-8"
+                className="mb-8 animate-celebrate"
               />
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-charcoal-blue mb-4">
@@ -668,7 +670,7 @@ function ProfessionalDetail() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center min-h-screen">
-          {t("loading")}...
+          <LoadingScreen message={t("loading")} size="xl" />
         </div>
       }
     >

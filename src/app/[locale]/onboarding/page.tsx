@@ -1,4 +1,5 @@
 "use client";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { withAuth } from "@/components/common/withAuth";
 import { OnboardingExpertSteps } from "@/components/onboarding/OnboardingExpertSteps";
 import { OnboardingSeekerSteps } from "@/components/onboarding/OnboardingSeekerSteps";
@@ -22,12 +23,7 @@ function Onboarding() {
   // Afficher le loading pendant la vérification
   if (isCheckingProfiles) {
     return (
-      <div className="container min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t("onboarding.checkingProfile")}</p>
-        </div>
-      </div>
+      <LoadingScreen message={t("onboarding.checkingProfile")} size="lg" />
     );
   }
 

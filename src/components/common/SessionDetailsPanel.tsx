@@ -191,7 +191,7 @@ export const SessionDetailsPanel = ({
   return (
     <div className="w-full">
       {selectedDate ? (
-        <div className="space-y-4">
+        <div className="space-y-4 px-4 sm:px-0">
           <div className="w-full flex items-center justify-center gap-2 mb-6">
             <h3 className="text-lg text-center font-semibold text-gray-900">
               {selectedDate.toLocaleDateString(
@@ -263,7 +263,7 @@ export const SessionDetailsPanel = ({
           />
         </div>
       ) : (
-        <div className="w-full flex flex-col items-center justify-center h-[100vh]">
+        <div className="w-full flex flex-col items-center justify-center h-[100vh] px-4 sm:px-0">
           <p className="text-slate-200 text-center text-base font-medium">
             {t("sessionDetailsPanel.selectDateToView")
               .split(" ")

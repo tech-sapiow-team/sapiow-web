@@ -3,6 +3,7 @@ import {
   useGetFavorites,
   useRemoveFavorite,
 } from "@/api/favorites/useFavorites";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { withAuth } from "@/components/common/withAuth";
 import { AppSidebar } from "@/components/layout/Sidebare";
 import { HeaderClient } from "@/components/layout/header/HeaderClient";
@@ -58,7 +59,7 @@ const mapFavoriteToProfessional = (favorite: any, t: any): Professional => {
     verified: true,
     category: categoryMap[pro.domains?.name] || "business",
     domain: pro.domains?.name,
-    topExpertise: false,
+    topExpertise: pro.badge === "gold",
     description:
       pro.description ||
       `${pro.job || t("expertDetails.expert")} ${t(
@@ -113,9 +114,12 @@ function Favori() {
             classNameIsBack="py-1"
           />
           <div className="container">
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-exford-blue mx-auto"></div>
-              <p className="mt-4 text-gray-500">{t("favorites.loading")}</p>
+            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+              <LoadingScreen
+                message={t("favorites.loading")}
+                size="lg"
+                fullScreen={false}
+              />
             </div>
           </div>
         </div>

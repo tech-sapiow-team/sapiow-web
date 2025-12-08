@@ -20,6 +20,7 @@ export interface Expert {
   language: string;
   linkedin?: string | null;
   website?: string | null;
+  badge?: string | null; // Badge de l'expert (ex: "gold")
   appointment_notification_email: boolean;
   appointment_notification_sms: boolean;
   message_notification_email: boolean;

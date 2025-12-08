@@ -7,6 +7,7 @@ import {
 import { useUpdateProExpert } from "@/api/proExpert/useProExpert";
 import { useProExpertStore } from "@/store/useProExpert";
 import { useTimeSlotsStore } from "@/store/useTimeSlotsStore";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 interface TimeSlot {
@@ -28,7 +29,12 @@ export const useDateTimeSlotsManager = ({
 
   // Hooks API pour créneaux spécifiques
   const { data: allowDays, isLoading } = useGetProAppointmentAllowDays();
+  const queryClient = useQueryClient();
   const createMutation = useCreateProAppointmentAllowDay();
+  const createSilentMutation = useCreateProAppointmentAllowDay({
+    showSuccessToast: false,
+    skipInvalidate: true,
+  });
   const updateMutation = useUpdateProAppointmentAllowDay();
   const deleteMutation = useDeleteProAppointmentAllowDay();
 
@@ -187,9 +193,51 @@ export const useDateTimeSlotsManager = ({
     };
   };
 
+  // Sauvegarder tous les créneaux affichés pour la date sélectionnée
+  const persistCurrentDaySlots = async () => {
+    if (!selectedDate) return;
+
+    const slotsToPersist = timeSlots.filter((slot) => slot.isRecurring);
+    if (slotsToPersist.length === 0) return;
+
+    const dateStr = formatDateToISO(selectedDate);
+
+    for (const slot of slotsToPersist) {
+      const startDateTime = `${dateStr}T${formatTimeToAPI(slot.startTime)}`;
+      const endDateTime = `${dateStr}T${formatTimeToAPI(slot.endTime)}`;
+
+      await createSilentMutation.mutateAsync({
+        start_date: startDateTime,
+        end_date: endDateTime,
+      });
+    }
+
+    // Marquer localement les slots comme spécifiques pour éviter les doublons
+    setTimeSlots((prev) =>
+      prev.map((slot) =>
+        slot.isRecurring ? { ...slot, isRecurring: false, isNew: false } : slot
+      )
+    );
+
+    await queryClient.invalidateQueries({
+      queryKey: ["pro-appointment-allow-days"],
+    });
+  };
+
   // Ajouter un nouveau créneau avec heures par défaut et sauvegarde automatique
   const handleAddTimeSlot = async () => {
     if (!selectedDate) return;
+
+    try {
+      // S'assurer que tous les créneaux du jour sont déjà enregistrés
+      await persistCurrentDaySlots();
+    } catch (error) {
+      console.error(
+        "❌ Impossible de sauvegarder les créneaux existants avant l'ajout:",
+        error
+      );
+      return;
+    }
 
     // Trouver le prochain créneau disponible
     const { startTime, endTime } = findNextAvailableSlot();
@@ -421,11 +469,13 @@ export const useDateTimeSlotsManager = ({
   const isLoadingAny =
     isLoading ||
     createMutation.isPending ||
+    createSilentMutation.isPending ||
     updateMutation.isPending ||
     deleteMutation.isPending;
 
   const error =
     createMutation.error?.message ||
+    createSilentMutation.error?.message ||
     updateMutation.error?.message ||
     deleteMutation.error?.message;
 

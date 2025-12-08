@@ -11,7 +11,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useAddSessionModal } from "@/hooks/useAddSessionModal";
-import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { FormField } from "./FormField";
@@ -268,9 +268,14 @@ export default function AddAccompanimentModal({
                     : t("bankAccount.add")
                 }
                 onClick={handleSubmit}
-                disabled={!isFormValid}
+                disabled={!isFormValid || isPending}
+                icon={
+                  isPending ? (
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  ) : undefined
+                }
                 className={`flex-1 py-3 text-base font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed h-[56px] border-none shadow-none ${
-                  isPending ? "cursor-not-allowed" : ""
+                  isPending ? "cursor-not-allowed opacity-75" : ""
                 }`}
               />
             </div>

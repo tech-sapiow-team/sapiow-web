@@ -8,6 +8,7 @@ import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { AvailabilityButtons } from "@/components/common/AvailabilityButtons";
 import AvailabilitySheet from "@/components/common/AvailabilitySheet";
 import CustomCalendar from "@/components/common/CustomCalendar";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { PeriodType } from "@/components/common/PeriodToggle";
 import { SessionDetailsPanel } from "@/components/common/SessionDetailsPanel";
 import SyncedCalendarsSheet from "@/components/common/SyncedCalendarsSheet";
@@ -17,11 +18,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useVisiosAppointments } from "@/hooks/useVisiosAppointments";
+import { useIsMobileOrTablet } from "@/hooks/use-mobile-tablet";
 import { useProtectedPage } from "@/hooks/useProtectedPage";
+import { useVisiosAppointments } from "@/hooks/useVisiosAppointments";
 import { useCalendarStore } from "@/store/useCalendar";
 import { useProExpertStore } from "@/store/useProExpert";
-import { Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import AccountLayout from "../AccountLayout";
@@ -31,6 +32,10 @@ export default function Disponibilites() {
   useProtectedPage({ allowedUserTypes: ["expert"] });
   const t = useTranslations();
   const currentLocale = useLocale();
+
+  // Hook de détection mobile/tablette (< 1024px)
+  const isMobileOrTablet = useIsMobileOrTablet();
+
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>("semaine");
   const { selectedDate } = useCalendarStore();
   // Supprimé car maintenant calculé dynamiquement avec isDateBlocked
@@ -88,26 +93,19 @@ export default function Disponibilites() {
     setShowSyncedCalendarsSheet(true);
   };
 
-  // Ouvrir automatiquement le sheet sur mobile seulement quand une date est sélectionnée
+  // Ouvrir automatiquement le sheet sur mobile/tablette (< 1024px) quand une date est sélectionnée
   useEffect(() => {
-    if (
-      selectedDate &&
-      typeof window !== "undefined" &&
-      window.innerWidth < 768
-    ) {
+    if (selectedDate && isMobileOrTablet) {
       setShowSessionDetailsSheet(true);
     }
-  }, [selectedDate]);
+  }, [selectedDate, isMobileOrTablet]);
 
   // Afficher un loader si les données essentielles se chargent
   if (isLoadingApi || isGoogleStatusLoading) {
     return (
       <AccountLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="flex flex-col items-center gap-4">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <p className="text-sm text-gray-600">{t("loading")}</p>
-          </div>
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <LoadingScreen message={t("loading")} size="md" fullScreen={false} />
         </div>
       </AccountLayout>
     );
@@ -127,7 +125,8 @@ export default function Disponibilites() {
         isConnected={isGoogleConnected}
       />
 
-      {/* Sheet pour mobile/tablette */}
+      {/* Sheet pour MOBILE et TABLETTE (< 1024px) - Sur desktop, le panneau est fixe à droite */}
+      {isMobileOrTablet && (
       <Sheet
         open={showSessionDetailsSheet}
         onOpenChange={setShowSessionDetailsSheet}
@@ -156,10 +155,11 @@ export default function Disponibilites() {
           </div>
         </SheetContent>
       </Sheet>
+      )}
 
-      <div className="space-y-0 w-full container px-6">
-        <div className="w-full grid grid-cols-1 md:grid-cols-[1fr_1px_1fr] lg:grid-cols-[1fr_2px_1fr] gap-x-4 md:gap-x-6 lg:gap-x-0 gap-y-8 md:gap-y-0">
-          <div className="w-full space-y-0 max-w-[414px] relative">
+      <div className="space-y-0 w-full container pr-6">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_2px_1fr] gap-x-4 lg:gap-x-0 gap-y-8 lg:gap-y-0">
+          <div className="w-full space-y-0 relative">
             <div className="w-full flex items-center justify-center">
               {/* <PeriodToggle
                 value={selectedPeriod}
@@ -172,10 +172,16 @@ export default function Disponibilites() {
                 confirmedAppointments={confirmedAppointments}
                 schedules={proExpertData?.schedules || []}
                 blockedDates={Array.isArray(blockedDates) ? blockedDates : []}
+                availabilityStartDate={
+                  proExpertData?.availability_start_date || null
+                }
+                availabilityEndDate={
+                  proExpertData?.availability_end_date || null
+                }
               />
             </div>
             {/* Section Gestion des disponibilités */}
-            <div className="space-y-4 w-full lg:-ml-2 xl:ml-4 pb-6">
+            <div className="space-y-4 w-[90%] mx-auto pb-6">
               <AvailabilityButtons
                 onManageAvailability={handleManageAvailability}
                 onSyncCalendars={handleSyncCalendars}
@@ -223,11 +229,11 @@ export default function Disponibilites() {
             </div>
           </div>
 
-          {/* Divider vertical - visible sur tablettes et plus */}
-          <div className="hidden md:block bg-soft-ice-gray w-[1px] min-h-screen lg:mr-2"></div>
+          {/* Divider vertical - visible sur desktop uniquement (≥ 1024px) */}
+          <div className="hidden lg:block bg-soft-ice-gray w-[2px] min-h-screen"></div>
 
-          {/* Panneau de détails des sessions - visible sur tablettes et plus */}
-          <div className="hidden md:flex flex-col justify-between items-end mt-7 w-full max-w-[414px] ml-auto">
+          {/* Panneau de détails des sessions - visible sur desktop uniquement (≥ 1024px) */}
+          <div className="hidden lg:flex flex-col justify-between items-end mt-7 w-full ml-auto pl-6">
             {renderSessionDetailsPanel(false)}
           </div>
         </div>

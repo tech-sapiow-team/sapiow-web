@@ -7,6 +7,7 @@ import {
 import { SessionCreate, useUpdateProSession } from "@/api/sessions/useSessions";
 import AddAccompanimentModal from "@/components/common/AddAccompanimentModal";
 import { Button } from "@/components/common/Button";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import SessionFeaturesList from "@/components/common/SessionFeaturesList";
 import VisioSessionsConfig from "@/components/common/VisioSessionsConfig";
 import { useProtectedPage } from "@/hooks/useProtectedPage";
@@ -180,11 +181,6 @@ export default function OffresPage() {
     sessionId: string,
     sessionData: SessionData
   ) => {
-    console.log(
-      "🎉 Session créée, passage en mode édition pour ajouter des features:",
-      sessionId
-    );
-
     // Invalider le cache pour récupérer la session créée
     await queryClient.invalidateQueries({ queryKey: ["proExpert"] });
 
@@ -211,8 +207,12 @@ export default function OffresPage() {
         </h1>
 
         {isLoading && (
-          <div className="flex items-center justify-center h-32">
-            <p className="text-slate-gray">{t("loading")}</p>
+          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+            <LoadingScreen
+              message={t("loading")}
+              size="md"
+              fullScreen={false}
+            />
           </div>
         )}
 
@@ -326,7 +326,7 @@ export default function OffresPage() {
                                       handleDeleteOffer(session.id)
                                     }
                                     disabled={updateSessionMutation.isPending}
-                                    className={`flex-1 bg-white text-base text-charcoal-blue font-bold hover:bg-gray-50 h-[40px] border-none shadow-none ${
+                                    className={`flex-1 bg-white text-base text-charcoal-blue font-bold h-[40px] border-none shadow-none ${
                                       updateSessionMutation.isPending
                                         ? "opacity-50 cursor-not-allowed"
                                         : ""
@@ -357,7 +357,7 @@ export default function OffresPage() {
                               <Button
                                 label={t("offers.createAccompaniment")}
                                 onClick={handleAddOffer}
-                                className="w-full bg-exford-blue text-white font-bold h-[44px] mt-6"
+                                className="w-full text-white font-bold h-[44px] mt-6"
                               />
                             </div>
                           </div>
@@ -365,7 +365,7 @@ export default function OffresPage() {
 
                         {/* Bouton Ajouter une offre (visible uniquement si au moins 1 offre existe) */}
                         {subscriptionSessions.length >= 1 && (
-                          <div className="flex justify-center border border-light-blue-gray rounded-[8px]">
+                          <div className="flex justify-center border border-light-blue-gray rounded-[8px] cursor-pointer">
                             <button
                               onClick={handleAddOffer}
                               className="flex items-center justify-center h-[56px] gap-2 text-base text-exford-blue font-bold font-figtree cursor-pointer"
@@ -476,7 +476,7 @@ export default function OffresPage() {
                                       handleDeleteOffer(session.id)
                                     }
                                     disabled={updateSessionMutation.isPending}
-                                    className={`flex-1 bg-white text-base text-charcoal-blue font-bold hover:bg-gray-50 h-[40px] border-none shadow-none ${
+                                    className={`flex-1 bg-white text-base text-charcoal-blue font-bold h-[40px] border-none shadow-none ${
                                       updateSessionMutation.isPending
                                         ? "opacity-50 cursor-not-allowed"
                                         : ""
@@ -507,7 +507,7 @@ export default function OffresPage() {
                               <Button
                                 label={t("offers.createAccompaniment")}
                                 onClick={handleAddOffer}
-                                className="w-full bg-exford-blue text-white font-bold h-[44px] mt-6"
+                                className="w-full text-white font-bold h-[44px] mt-6"
                               />
                             </div>
                           </div>
@@ -515,15 +515,15 @@ export default function OffresPage() {
 
                         {/* Bouton Ajouter une offre (visible uniquement si au moins 1 offre existe) */}
                         {subscriptionSessions.length >= 1 && (
-                          <div className="flex justify-center border border-light-blue-gray rounded-[8px]">
-                            <button
-                              onClick={handleAddOffer}
-                              className="flex items-center justify-center h-[56px] gap-2 text-base text-exford-blue font-bold font-figtree cursor-pointer"
-                            >
-                              <Plus className="w-4 h-4" />
-                              {t("offers.addOffer")}
-                            </button>
-                          </div>
+                          // <div className="flex justify-center border border-light-blue-gray rounded-[8px] cursor-pointer">
+                          <button
+                            onClick={handleAddOffer}
+                            className="w-full flex items-center border border-light-blue-gray rounded-[8px] justify-center h-[56px] gap-2 text-base text-exford-blue font-bold font-figtree cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4" />
+                            {t("offers.addOffer")}
+                          </button>
+                          // </div>
                         )}
                       </div>
                     )}

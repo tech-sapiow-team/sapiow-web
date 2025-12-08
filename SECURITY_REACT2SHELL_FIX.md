@@ -3,6 +3,7 @@
 ## ✅ Mesures de sécurité mises en place
 
 ### 1. Sanitization HTML avec DOMPurify
+
 - ✅ Installation de `dompurify` et `@types/dompurify`
 - ✅ Création d'une fonction utilitaire `sanitizeHtml()` dans `src/utils/sanitizeHtml.ts`
 - ✅ Mise à jour des pages utilisant `dangerouslySetInnerHTML` :
@@ -10,6 +11,7 @@
   - `src/app/[locale]/compte/mentions-legales/page.tsx`
 
 ### 2. Headers de sécurité
+
 - ✅ Configuration de headers de sécurité dans `vercel.json` :
   - `X-Content-Type-Options: nosniff`
   - `X-Frame-Options: DENY`
@@ -23,6 +25,7 @@
 **Version actuelle :** React 19.2.1 (CORRIGÉE) ✅
 
 **Mise à jour effectuée :**
+
 ```bash
 npm install react@^19.1.2 react-dom@^19.1.2
 ```
@@ -34,10 +37,12 @@ La version installée est 19.2.1, qui inclut tous les correctifs de sécurité p
 Les déploiements de prévisualisation doivent être protégés dans le dashboard Vercel :
 
 1. **Accéder au dashboard Vercel :**
+
    - Aller sur https://vercel.com
    - Sélectionner le projet `sapiow-web`
 
 2. **Configurer la protection des preview deployments :**
+
    - Aller dans **Settings** → **Deployments**
    - Activer **"Protect Preview Deployments"**
    - Choisir une des options :
@@ -54,11 +59,13 @@ Les déploiements de prévisualisation doivent être protégés dans le dashboar
 Pour vérifier que les correctifs sont appliqués :
 
 1. **Vérifier la version de React :**
+
    ```bash
    npm list react react-dom
    ```
 
 2. **Vérifier que DOMPurify est utilisé :**
+
    ```bash
    grep -r "sanitizeHtml" src/
    ```
@@ -83,8 +90,8 @@ Pour vérifier que les correctifs sont appliqués :
 ## ✅ Résumé des corrections
 
 Toutes les mesures de protection contre React2Shell ont été mises en place :
+
 - ✅ HTML sanitization avec DOMPurify
 - ✅ Headers de sécurité HTTP
 - ✅ React mis à jour vers une version corrigée (19.2.1)
 - ⚠️ Protection des preview deployments (à configurer manuellement dans Vercel)
-

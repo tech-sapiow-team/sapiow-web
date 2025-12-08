@@ -32,7 +32,21 @@ npm install react@^19.1.2 react-dom@^19.1.2
 
 La version installée est 19.2.1, qui inclut tous les correctifs de sécurité pour React2Shell.
 
-### 4. ⚠️ Action requise : Protection des Preview Deployments
+### 4. ✅ Mise à jour de Next.js
+
+**Version précédente :** Next.js 15.3.4 (VULNÉRABLE - CVE-2025-66478)
+
+**Version actuelle :** Next.js 15.3.6 (CORRIGÉE) ✅
+
+**Mise à jour effectuée :**
+
+```bash
+pnpm add next@15.3.6 eslint-config-next@15.3.6
+```
+
+La version 15.3.6 inclut le correctif pour CVE-2025-66478, qui est lié à React2Shell.
+
+### 5. ⚠️ Action requise : Protection des Preview Deployments
 
 Les déploiements de prévisualisation doivent être protégés dans le dashboard Vercel :
 
@@ -64,19 +78,26 @@ Pour vérifier que les correctifs sont appliqués :
    npm list react react-dom
    ```
 
-2. **Vérifier que DOMPurify est utilisé :**
+2. **Vérifier la version de Next.js :**
+
+   ```bash
+   npm list next
+   ```
+
+3. **Vérifier que DOMPurify est utilisé :**
 
    ```bash
    grep -r "sanitizeHtml" src/
    ```
 
-3. **Tester la sanitization :**
+4. **Tester la sanitization :**
    - Les scripts malveillants dans le HTML doivent être supprimés
    - Seuls les tags HTML autorisés doivent être conservés
 
 ## 📚 Ressources
 
 - [CVE-2025-55182 - React2Shell](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-55182)
+- [CVE-2025-66478 - Next.js RCE](https://nextjs.org/blog/CVE-2025-66478)
 - [DOMPurify Documentation](https://github.com/cure53/DOMPurify)
 - [Vercel Preview Deployment Protection](https://vercel.com/docs/deployments/preview-deployments#password-protection)
 
@@ -85,7 +106,8 @@ Pour vérifier que les correctifs sont appliqués :
 1. ✅ Sanitization HTML mise en place
 2. ✅ Headers de sécurité configurés
 3. ✅ **React mis à jour vers 19.2.1 (version corrigée)**
-4. ⚠️ **Configurer la protection des preview deployments dans Vercel** (action manuelle requise dans le dashboard)
+4. ✅ **Next.js mis à jour vers 15.3.6 (version corrigée - CVE-2025-66478)**
+5. ⚠️ **Configurer la protection des preview deployments dans Vercel** (action manuelle requise dans le dashboard)
 
 ## ✅ Résumé des corrections
 
@@ -94,4 +116,5 @@ Toutes les mesures de protection contre React2Shell ont été mises en place :
 - ✅ HTML sanitization avec DOMPurify
 - ✅ Headers de sécurité HTTP
 - ✅ React mis à jour vers une version corrigée (19.2.1)
+- ✅ Next.js mis à jour vers une version corrigée (15.3.6) - CVE-2025-66478
 - ⚠️ Protection des preview deployments (à configurer manuellement dans Vercel)

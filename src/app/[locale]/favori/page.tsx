@@ -59,7 +59,7 @@ const mapFavoriteToProfessional = (favorite: any, t: any): Professional => {
     verified: true,
     category: categoryMap[pro.domains?.name] || "business",
     domain: pro.domains?.name,
-    topExpertise: false,
+    topExpertise: pro.badge === "gold",
     description:
       pro.description ||
       `${pro.job || t("expertDetails.expert")} ${t(

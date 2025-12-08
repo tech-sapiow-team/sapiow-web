@@ -431,6 +431,7 @@ function ProfessionalDetailContent() {
                           ...professional,
                           description:
                             professional.job || professional.description,
+                          topExpertise: professional.badge === "gold",
                         }}
                         isLiked={isLiked(String(professional.id))}
                         onToggleLike={() => toggleLike(String(professional.id))}

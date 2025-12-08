@@ -114,7 +114,7 @@ export default function ProfessionalCard({
                 alt="Verified"
                 width={iconSize}
                 height={iconSize}
-                className="transition-all duration-200"
+                className="transition-all duration-200 ml-1"
               />
             ) : (
               <Image

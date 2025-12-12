@@ -40,14 +40,14 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
   return (
     <div className="w-full grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-4 mt-3 px-4 pb-20">
       <Tabs defaultValue="a-venir" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-transparent border-b-2 border-light-blue-gray h-auto p-0 rounded-none relative border-t-0 border-l-0 border-r-0">
+        <TabsList className="grid w-full grid-cols-2 bg-transparent border-b-2 border-light-blue-gray h-auto p-0 rounded-none relative border-t-0 border-l-0 border-r-0">
           <TabsTrigger
             value="a-venir"
             className="relative px-4 py-4 text-lg font-bold text-slate-400 bg-transparent border-0 outline-none ring-0 data-[state=active]:bg-transparent data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=active]:rounded-none data-[state=active]:border-0 data-[state=active]:outline-none hover:text-slate-900 hover:border-0 focus:border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 transition-colors data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:bottom-[-3px] data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-slate-900 cursor-pointer font-figtree"
           >
             {t("visios.upcoming")}
           </TabsTrigger>
-          <TabsTrigger
+          {/* <TabsTrigger
             value="en-attente"
             className="relative px-4 py-4 text-lg font-bold text-slate-400 bg-transparent border-0 outline-none ring-0 data-[state=active]:bg-transparent data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=active]:rounded-none data-[state=active]:border-0 data-[state=active]:outline-none hover:text-slate-900 hover:border-0 focus:border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 transition-colors data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:bottom-[-3px] data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-slate-900 cursor-pointer font-figtree"
           >
@@ -55,7 +55,7 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
             {pendingAppointments.length > 0 && (
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-0"></span>
             )}
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger
             value="historique"
             className="relative px-4 py-4 text-lg font-bold text-slate-400 bg-transparent border-0 outline-none ring-0 data-[state=active]:bg-transparent data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=active]:rounded-none data-[state=active]:border-0 data-[state=active]:outline-none hover:text-slate-900 hover:border-0 focus:border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 transition-colors data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:bottom-[-3px] data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-slate-900 cursor-pointer font-figtree"
@@ -127,7 +127,7 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
           </div>
         </TabsContent>
 
-        <TabsContent value="en-attente" className="mt-6">
+        {/* <TabsContent value="en-attente" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 gap-4 items-start">
             {pendingAppointments.length > 0 ? (
               pendingAppointments.map((appointment: any) => {
@@ -179,7 +179,7 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
               </div>
             )}
           </div>
-        </TabsContent>
+        </TabsContent> */}
 
         <TabsContent value="historique" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 gap-4 items-start">

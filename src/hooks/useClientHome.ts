@@ -128,18 +128,21 @@ export const useClientHome = (currentUserExpertId?: string) => {
    * Grouper les professionnels par catégorie pour l'affichage "Top"
    * Chaque catégorie devient une section horizontale
    * Note: allProfessionals est déjà filtré pour exclure l'utilisateur connecté
+   * Seuls les professionnels avec badge "gold" (topExpertise === true) sont inclus
    */
-  const groupedProfessionals = allProfessionals.reduce(
-    (acc: Record<string, Professional[]>, prof: Professional) => {
-      const category = prof.category || "business";
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(prof);
-      return acc;
-    },
-    {} as Record<string, Professional[]>
-  );
+  const groupedProfessionals = allProfessionals
+    .filter((prof: Professional) => prof.topExpertise === true)
+    .reduce(
+      (acc: Record<string, Professional[]>, prof: Professional) => {
+        const category = prof.category || "business";
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(prof);
+        return acc;
+      },
+      {} as Record<string, Professional[]>
+    );
 
   /**
    * Filtrer les professionnels selon la catégorie et sous-catégorie sélectionnées

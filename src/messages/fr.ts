@@ -947,6 +947,7 @@ We encourage you to review it periodically.</p>
     unknownError: "Erreur inconnue",
     yourNextVisio: "Votre prochaine visio",
     accelerateProject: "Accélérez votre projet, Réservez une Visio.",
+    noTopExperts: "Aucun top expert disponible pour le moment.",
   },
 
   // Share Link Button

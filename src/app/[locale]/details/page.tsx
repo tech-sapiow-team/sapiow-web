@@ -1,4 +1,5 @@
 "use client";
+import confettiAnimation from "@/assets/confetti.json";
 import Accordion from "@/components/common/Accordion";
 import BookedSessionCard from "@/components/common/BookedSessionCard";
 import { Button } from "@/components/common/Button";
@@ -14,8 +15,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
+import Lottie from "lottie-react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import OfferSelection from "../home/OfferSelection";
@@ -480,13 +481,14 @@ function ProfessionalDetailContent() {
           <div className="hidden xl:block xl:border-l xl:border-gray-200">
             {isPaid ? (
               <aside className="w-full">
-                <Image
-                  src="/assets/icons/congruation.svg"
-                  alt={t("sessionDetail.congratulationAlt")}
-                  width={421}
-                  height={381}
-                  className="-mt-29 animate-celebrate"
-                />
+                <div className="-mt-29 flex items-center justify-center">
+                  <Lottie
+                    animationData={confettiAnimation}
+                    loop={true}
+                    autoplay={true}
+                    style={{ width: 421, height: 381 }}
+                  />
+                </div>
                 <div className="flex flex-col items-center justify-center gap-4 mt-7">
                   <h2 className="text-[28px] font-bold text-charcoal-blue">
                     {t("expertDetails.congratulations")}
@@ -566,13 +568,14 @@ function ProfessionalDetailContent() {
           <HeaderClient isBack />
           <div className="flex-1 overflow-y-auto">
             <div className="min-h-full flex flex-col items-center justify-center px-6 py-8">
-              <Image
-                src="/assets/icons/congruation.svg"
-                alt={t("sessionDetail.congratulationAlt")}
-                width={300}
-                height={250}
-                className="mb-8 animate-celebrate"
-              />
+              <div className="mb-8 flex items-center justify-center">
+                <Lottie
+                  animationData={confettiAnimation}
+                  loop={true}
+                  autoplay={true}
+                  style={{ width: 300, height: 250 }}
+                />
+              </div>
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-charcoal-blue mb-4">
                   {t("expertDetails.congratulations")}

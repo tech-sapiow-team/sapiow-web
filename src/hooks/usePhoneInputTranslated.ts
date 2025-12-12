@@ -25,6 +25,27 @@ export const usePhoneInputTranslated = ({
   onChange,
   getCountryName,
 }: UsePhoneInputTranslatedProps) => {
+  // Vérifier si le pays nécessite le 0 initial (France ou Émirats arabes unis)
+  const needsLeadingZero = (countryCode: string) => {
+    return countryCode === "FR" || countryCode === "AE";
+  };
+
+  // Retirer le 0 initial pour l'envoi au backend (FR/AE uniquement)
+  const removeLeadingZeroForBackend = (value: string, countryCode: string) => {
+    if (needsLeadingZero(countryCode) && value.startsWith("0")) {
+      return value.substring(1);
+    }
+    return value;
+  };
+
+  // Ajouter le 0 initial pour l'affichage (FR/AE uniquement)
+  const addLeadingZeroForDisplay = (value: string, countryCode: string) => {
+    if (needsLeadingZero(countryCode) && value && !value.startsWith("0")) {
+      return "0" + value;
+    }
+    return value;
+  };
+
   // État pour le pays sélectionné avec détection automatique
   const [selectedCountry, setSelectedCountry] = useState<Country>(() => {
     if (initialValue || initialCountryCode) {
@@ -34,8 +55,16 @@ export const usePhoneInputTranslated = ({
   });
 
   // État pour la valeur du champ téléphone (sans indicatif)
+  // Pour FR/AE, on stocke avec le 0 pour faciliter l'affichage
   const [phoneValue, setPhoneValue] = useState(() => {
-    return initialValue || "";
+    if (initialValue) {
+      const country =
+        (initialCountryCode && findCountryByCode(initialCountryCode)) ||
+        detectCountryFromPhone(initialValue, initialCountryCode);
+      // S'assurer que la valeur stockée a le 0 pour FR/AE
+      return addLeadingZeroForDisplay(initialValue, country.code);
+    }
+    return "";
   });
 
   // État pour la valeur formatée du numéro
@@ -45,8 +74,13 @@ export const usePhoneInputTranslated = ({
         findCountryByCode(initialCountryCode) ||
         detectCountryFromPhone(initialValue, initialCountryCode);
       if (initialValue) {
+        // Pour le formatage initial, ajouter le 0 si nécessaire
+        const valueForFormatting = addLeadingZeroForDisplay(
+          initialValue,
+          country.code
+        );
         const formatter = new AsYouType(country.code as CountryCode);
-        return formatter.input(initialValue);
+        return formatter.input(valueForFormatting);
       }
     }
     return "";
@@ -90,11 +124,16 @@ export const usePhoneInputTranslated = ({
       const country = findCountryByCode(initialCountryCode);
       if (country) {
         setSelectedCountry(country);
-        setPhoneValue(initialValue);
+        // S'assurer que la valeur stockée a le 0 pour FR/AE
+        const valueWithZero = addLeadingZeroForDisplay(
+          initialValue,
+          country.code
+        );
+        setPhoneValue(valueWithZero);
 
-        if (initialValue) {
+        if (valueWithZero) {
           const formatter = new AsYouType(country.code as CountryCode);
-          const formatted = formatter.input(initialValue);
+          const formatted = formatter.input(valueWithZero);
           setFormattedValue(formatted);
         } else {
           setFormattedValue("");
@@ -104,17 +143,31 @@ export const usePhoneInputTranslated = ({
   }, [initialValue, initialCountryCode]);
 
   // Filtrer les pays selon la recherche avec traduction
-  const filteredCountries = searchCountriesTranslated(searchTerm, getCountryName);
+  const filteredCountries = searchCountriesTranslated(
+    searchTerm,
+    getCountryName
+  );
 
   const handleCountrySelect = (country: Country) => {
     setSelectedCountry(country);
     closeDropdown();
 
     if (phoneValue) {
+      // Pour le formatage, utiliser la valeur avec le 0 initial si nécessaire
+      const valueForFormatting = addLeadingZeroForDisplay(
+        phoneValue,
+        country.code
+      );
       const formatter = new AsYouType(country.code as CountryCode);
-      const newFormattedValue = formatter.input(phoneValue);
+      const newFormattedValue = formatter.input(valueForFormatting);
       setFormattedValue(newFormattedValue);
-      onChange?.(phoneValue, country, newFormattedValue);
+
+      // Envoyer la valeur sans le 0 initial au backend
+      const valueForBackend = removeLeadingZeroForBackend(
+        phoneValue,
+        country.code
+      );
+      onChange?.(valueForBackend, country, newFormattedValue);
     } else {
       onChange?.(phoneValue, country, "");
     }
@@ -122,13 +175,27 @@ export const usePhoneInputTranslated = ({
 
   const handlePhoneChange = (value: string) => {
     const cleanValue = value.replace(/\D/g, "");
+    // Stocker la valeur avec le 0 si elle est présente (pour l'affichage)
     setPhoneValue(cleanValue);
 
+    // Pour le formatage, utiliser la valeur avec le 0 initial si nécessaire
+    const valueForFormatting = addLeadingZeroForDisplay(
+      cleanValue,
+      selectedCountry.code
+    );
+
     const formatter = new AsYouType(selectedCountry.code as CountryCode);
-    const formatted = cleanValue ? formatter.input(cleanValue) : "";
+    const formatted = valueForFormatting
+      ? formatter.input(valueForFormatting)
+      : "";
     setFormattedValue(formatted);
 
-    onChange?.(cleanValue, selectedCountry, formatted);
+    // Envoyer la valeur sans le 0 initial au backend
+    const valueForBackend = removeLeadingZeroForBackend(
+      cleanValue,
+      selectedCountry.code
+    );
+    onChange?.(valueForBackend, selectedCountry, formatted);
   };
 
   const handleInputFocus = () => {
@@ -160,10 +227,21 @@ export const usePhoneInputTranslated = ({
     if (country) {
       setSelectedCountry(country);
       if (phoneValue) {
+        // Pour le formatage, utiliser la valeur avec le 0 initial si nécessaire
+        const valueForFormatting = addLeadingZeroForDisplay(
+          phoneValue,
+          country.code
+        );
         const formatter = new AsYouType(country.code as CountryCode);
-        const newFormattedValue = formatter.input(phoneValue);
+        const newFormattedValue = formatter.input(valueForFormatting);
         setFormattedValue(newFormattedValue);
-        onChange?.(phoneValue, country, newFormattedValue);
+
+        // Envoyer la valeur sans le 0 initial au backend
+        const valueForBackend = removeLeadingZeroForBackend(
+          phoneValue,
+          country.code
+        );
+        onChange?.(valueForBackend, country, newFormattedValue);
       } else {
         onChange?.(phoneValue, country, "");
       }
@@ -174,11 +252,23 @@ export const usePhoneInputTranslated = ({
     const cleanValue = value.replace(/\D/g, "");
     setPhoneValue(cleanValue);
 
+    // Pour le formatage, utiliser la valeur avec le 0 initial si nécessaire
+    const valueForFormatting = addLeadingZeroForDisplay(
+      cleanValue,
+      selectedCountry.code
+    );
     const formatter = new AsYouType(selectedCountry.code as CountryCode);
-    const formatted = cleanValue ? formatter.input(cleanValue) : "";
+    const formatted = valueForFormatting
+      ? formatter.input(valueForFormatting)
+      : "";
     setFormattedValue(formatted);
 
-    onChange?.(cleanValue, selectedCountry, formatted);
+    // Envoyer la valeur sans le 0 initial au backend
+    const valueForBackend = removeLeadingZeroForBackend(
+      cleanValue,
+      selectedCountry.code
+    );
+    onChange?.(valueForBackend, selectedCountry, formatted);
   };
 
   const reset = () => {
@@ -194,7 +284,12 @@ export const usePhoneInputTranslated = ({
     }
 
     try {
-      const fullNumber = `${selectedCountry.dialCode}${phoneValue}`;
+      // Pour la validation, utiliser la valeur sans le 0 initial (comme pour le backend)
+      const valueForValidation = removeLeadingZeroForBackend(
+        phoneValue,
+        selectedCountry.code
+      );
+      const fullNumber = `${selectedCountry.dialCode}${valueForValidation}`;
       return isValidPhoneNumber(
         fullNumber,
         selectedCountry.code as CountryCode
@@ -232,7 +327,13 @@ export const usePhoneInputTranslated = ({
     // Utilitaires
     getFlagUrl: (country: Country) =>
       `https://flagcdn.com/w20/${country.flag}.png`,
-    getFullPhoneNumber: () => `${selectedCountry.dialCode}${phoneValue}`,
+    getFullPhoneNumber: () => {
+      const valueForBackend = removeLeadingZeroForBackend(
+        phoneValue,
+        selectedCountry.code
+      );
+      return `${selectedCountry.dialCode}${valueForBackend}`;
+    },
     getFormattedFullNumber: () =>
       formattedValue
         ? `${selectedCountry.dialCode} ${formattedValue}`

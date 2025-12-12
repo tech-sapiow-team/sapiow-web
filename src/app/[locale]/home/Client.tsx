@@ -111,22 +111,32 @@ export default function Client() {
         {selectedCategory === "top" ? (
           // Affichage par sections pour "Top"
           <div className="py-6 ">
-            {Object.entries(groupedProfessionals).map(
-              ([category, categoryProfessionals]) => (
-                <CategorySection
-                  key={category}
-                  category={category}
-                  professionals={categoryProfessionals as Professional[]}
-                  likedProfs={likedProfs}
-                  onToggleLike={handleToggleLike}
-                  onProfessionalClick={handleProfessionalClick}
-                />
+            {Object.keys(groupedProfessionals).length === 0 ? (
+              <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                  <p className="text-gray-500 text-lg">
+                    {t("home.noTopExperts")}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              Object.entries(groupedProfessionals).map(
+                ([category, categoryProfessionals]) => (
+                  <CategorySection
+                    key={category}
+                    category={category}
+                    professionals={categoryProfessionals as Professional[]}
+                    likedProfs={likedProfs}
+                    onToggleLike={handleToggleLike}
+                    onProfessionalClick={handleProfessionalClick}
+                  />
+                )
               )
             )}
           </div>
         ) : (
           // Affichage normal pour les autres catégories
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4 min-h-[400px]">
             {filteredProfessionals.map((professional: Professional) => (
               <ProfessionalCard
                 key={professional.id}

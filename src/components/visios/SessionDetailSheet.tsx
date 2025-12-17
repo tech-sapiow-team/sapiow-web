@@ -19,7 +19,7 @@ import {
 import { useAddToCalendar } from "@/hooks/useAddToCalendar";
 import { useCallStore } from "@/store/useCall";
 import { useConversationStore } from "@/store/useConversationStore";
-import { Check, ChevronRight, Pencil, Send, Trash2, X } from "lucide-react";
+import { Check, ChevronRight, Pencil, Send, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -402,7 +402,7 @@ export function SessionDetailSheet({
                                   >
                                     <Pencil className="h-4 w-4" />
                                   </button>
-                                  <button
+                                  {/* <button
                                     onClick={() =>
                                       handleDeleteQuestion(question.id)
                                     }
@@ -411,7 +411,7 @@ export function SessionDetailSheet({
                                     title={t("sessionDetail.delete")}
                                   >
                                     <Trash2 className="h-4 w-4" />
-                                  </button>
+                                  </button> */}
                                 </div>
                               </div>
                             )}
@@ -452,54 +452,54 @@ export function SessionDetailSheet({
                 )}
 
                 {/* Cancel appointment button - only for pending appointments */}
-                {session?.status === "pending" && (
-                  <>
-                    {cancelAppointmentMutation.isPending ? (
-                      <div className="w-full flex items-center justify-center p-3 bg-gray-50 rounded-[8px] mb-2">
-                        <svg
-                          className="animate-spin mr-3 h-5 w-5 text-cobalt-blue-500"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        <span className="font-medium text-cobalt-blue-500">
-                          ...
-                        </span>
-                      </div>
-                    ) : (
-                      <div
-                        className="w-full flex items-center justify-between bg-white border border-[#E2E8F0] rounded-[8px] mb-2"
-                        onClick={() => setShowCancelModal(true)}
+                {/* {session?.status === "pending" && ( */}
+                <>
+                  {cancelAppointmentMutation.isPending ? (
+                    <div className="w-full flex items-center justify-center p-3 bg-gray-50 rounded-[8px] mb-2">
+                      <svg
+                        className="animate-spin mr-3 h-5 w-5 text-cobalt-blue-500"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
                       >
-                        <Button
-                          label={t("sessionDetail.cancelAppointment")}
-                          icon="/assets/icons/forbiddenCircle.svg"
-                          iconSize={20}
-                          className="flex-1 bg-white text-exford-blue font-bold hover:bg-gray-50"
-                        >
-                          <span>{t("sessionDetail.cancelAppointment")}</span>
-                        </Button>
-                        <span className="mr-4">
-                          <ChevronRight className="h-4 w-4" />
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span className="font-medium text-cobalt-blue-500">
+                        ...
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      className="w-full flex items-center justify-between bg-white border border-[#E2E8F0] rounded-[8px] mb-2"
+                      onClick={() => setShowCancelModal(true)}
+                    >
+                      <Button
+                        label={t("sessionDetail.cancelAppointment")}
+                        icon="/assets/icons/forbiddenCircle.svg"
+                        iconSize={20}
+                        className="flex-1 bg-white text-exford-blue font-bold hover:bg-gray-50"
+                      >
+                        <span>{t("sessionDetail.cancelAppointment")}</span>
+                      </Button>
+                      <span className="mr-4">
+                        <ChevronRight className="h-4 w-4" />
+                      </span>
+                    </div>
+                  )}
+                </>
+                {/* )} */}
                 <div className="w-full mx-auto flex items-center justify-end">
                   {/* <ButtonUI
                     variant="outline"

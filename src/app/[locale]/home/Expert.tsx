@@ -10,10 +10,7 @@ import { SessionCard } from "@/components/common/SessionCard";
 import { StatsCard } from "@/components/common/StatsCard";
 import { useTodayVisios } from "@/hooks/useTodayVisios";
 import { useCallStore } from "@/store/useCall";
-import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import VideoConsultation from "../VideoCall/video-consultation";
@@ -131,7 +128,7 @@ export default function Expert() {
               className="w-full"
             />
           </div>
-          <div className="lg:hidden w-[90%] mx-auto mt-5 bg-white rounded-[20px] border border-soft-ice-gray px-6">
+          {/* <div className="lg:hidden w-[90%] mx-auto mt-5 bg-white rounded-[20px] border border-soft-ice-gray px-6">
             <div className="px-6 py-4 flex justify-center items-center gap-x-2">
               <button
                 className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -159,8 +156,8 @@ export default function Expert() {
                 </Link>
               )}
             </div>
-          </div>
-          <div className="hidden lg:flex w-full justify-between gap-2 mb-[10px] mt-[24px]">
+          </div> */}
+          {/* <div className="hidden lg:flex w-full justify-between gap-2 mb-[10px] mt-[24px]">
             <h1 className="text-lg font-bold font-figtree text-cobalt-blue-500">
               {t("home.pendingRequests")}
             </h1>
@@ -172,7 +169,7 @@ export default function Expert() {
                 {t("home.seeAll")} <ArrowRight className="w-4 h-4" />
               </Link>
             )}
-          </div>
+          </div> */}
           <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-5">
             {Array.isArray(appointments) && appointments.length > 0 ? (
               appointments

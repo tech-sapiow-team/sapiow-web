@@ -22,7 +22,7 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
     handleCancelAppointment,
     handleStartVideoCall,
   } = useVisiosAppointments();
-
+  console.log({ confirmedAppointments });
   const handleStartVideoCallCombined = (
     appointmentId: string,
     patientName?: string
@@ -87,6 +87,8 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
                   `${appointment.patient?.first_name || ""} ${
                     appointment.patient?.last_name || ""
                   }`.trim() || t("patient");
+                const sessionDuration =
+                  appointment.session?.session_type || "30mn";
 
                 return (
                   <SessionCard
@@ -105,7 +107,7 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
                     }
                     onViewRequest={() => {}}
                     isComming={true}
-                    duration={t("visios.duration")}
+                    duration={sessionDuration}
                     classFooter="!flex-col"
                     textButton={t("visios.startVideo")}
                     icon="/assets/icons/videocamera.svg"

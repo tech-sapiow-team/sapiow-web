@@ -216,8 +216,8 @@ export default function Expert() {
                   );
                 })
             ) : (
-              <div className="col-span-full text-center py-8 text-gray-500">
-                {t("home.noPendingRequests")}
+              <div className="col-span-full text-center py-0 text-gray-500">
+                {/* {t("home.noPendingRequests")} */}
               </div>
             )}
           </div>

@@ -30,6 +30,7 @@ export interface ProExpert {
   availability_end_date?: string;
   pro_expertises?: any[]; // JSON parsed
   schedules?: any[]; // JSON parsed
+  extra_data?: string | null; // JSON string au format {"questions":[],"expectations":[]}
   status: ProExpertStatus;
   created_at: string;
   updated_at: string;
@@ -91,6 +92,7 @@ export interface UpdateProExpertData {
   availability_end_date?: string; // Format date YYYY-MM-DD
   expertises?: any[]; // Sera converti en JSON string
   schedules?: any[]; // Sera converti en JSON string
+  extra_data?: string; // JSON string au format {"questions":[],"expectations":[]}
 }
 
 // Interface pour les données de mise à jour (FormData pour API)
@@ -194,6 +196,9 @@ export const transformUpdateDataToFormData = (
   }
   if (data.schedules && data.schedules.length > 0) {
     formData.append("schedules", JSON.stringify(data.schedules));
+  }
+  if (data.extra_data !== undefined) {
+    formData.append("extra_data", data.extra_data);
   }
 
   return formData;

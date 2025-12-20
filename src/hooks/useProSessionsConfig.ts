@@ -225,5 +225,6 @@ export const useProSessionsConfig = () => {
     handleToggle,
     handlePriceBlur,
     handleToggleUpdate,
+    sessionData, // Exposer sessionData pour accéder à extra_data
   };
 };

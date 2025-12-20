@@ -183,6 +183,30 @@ function ProfessionalDetailContent() {
     toggleDescriptionExpanded,
   } = useDetailsLogic(expertData);
 
+  // Parser extra_data pour obtenir les questions et expectations personnalisées
+  const customQuestions: string[] = [];
+  const customExpectations: string[] = [];
+
+  if (expertData?.extra_data) {
+    try {
+      const parsed = JSON.parse(expertData.extra_data);
+      if (parsed.questions && Array.isArray(parsed.questions)) {
+        customQuestions.push(...parsed.questions);
+      }
+      if (parsed.expectations && Array.isArray(parsed.expectations)) {
+        customExpectations.push(...parsed.expectations);
+      }
+    } catch (e) {
+      console.error("Erreur lors du parsing de extra_data:", e);
+    }
+  }
+
+  // Utiliser uniquement les questions personnalisées (pas de valeurs par défaut)
+  const questionsToDisplay = customQuestions;
+
+  // Utiliser uniquement les expectations personnalisées (pas de valeurs par défaut)
+  const expectationsToDisplay = customExpectations;
+
   useEffect(() => {
     if (!expertId) {
       router.push("/");
@@ -326,55 +350,68 @@ function ProfessionalDetailContent() {
                 <h2 className="text-base font-bold mb-4 px-4 pt-3 font-figtree">
                   {t("expertDetails.questionsToAsk")}
                 </h2>
-                <ul className="space-y-3 text-gray-700 pl-6 pb-4 text-base font-figtree pr-1">
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-700 mt-1">•</span>
-                    <span>{t("expertDetails.question1")}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-700 mt-1">•</span>
-                    <span>{t("expertDetails.question2")}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-700 mt-1">•</span>
-                    <span>{t("expertDetails.question3")}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-700 mt-1">•</span>
-                    <span>{t("expertDetails.question4")}</span>
-                  </li>
-                </ul>
+                {questionsToDisplay.length > 0 ? (
+                  <ul className="space-y-3 text-gray-700 pl-6 pb-4 text-base font-figtree pr-4">
+                    {questionsToDisplay.map((question, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-gray-700 mt-1 flex-shrink-0">
+                          •
+                        </span>
+                        <span
+                          className="break-words"
+                          style={{
+                            overflowWrap: "anywhere",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {question}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="pl-6 pb-4 pr-1">
+                    <p className="text-gray-500 text-sm font-figtree italic">
+                      {t("expertDetails.noQuestionsAvailable")}
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="bg-soft-ice-gray px-1 py-0.5 rounded-[8px] border border-soft-ice-gray">
                 <h2 className="text-base font-bold mb-4 pl-6 pt-3">
                   {t("expertDetails.expectations")}
                 </h2>
-                <div className="space-y-4 text-base">
-                  <div className="pl-6 pr-1">
-                    <h3 className="text-base font-normal">
-                      {t("expertDetails.visio15min")}
-                    </h3>
-                    <ul className="mt-2 space-y-2 text-gray-700 pl-2 font-figtree">
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-700 mt-1">•</span>
-                        <span>{t("expertDetails.expectation1")}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-700 mt-1">•</span>
-                        <span>{t("expertDetails.expectation2")}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-700 mt-1">•</span>
-                        <span>{t("expertDetails.expectation3")}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-700 mt-1">•</span>
-                        <span>{t("expertDetails.expectation4")}</span>
-                      </li>
-                    </ul>
+                {expectationsToDisplay.length > 0 ? (
+                  <div className="space-y-4 text-base">
+                    <div className="pl-6 pr-4">
+                      <ul className="mt-2 space-y-2 text-gray-700 pl-2 font-figtree">
+                        {expectationsToDisplay.map((expectation, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-gray-700 mt-1 flex-shrink-0">
+                              •
+                            </span>
+                            <span
+                              className="break-words"
+                              style={{
+                                overflowWrap: "anywhere",
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {expectation}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="pl-6 pb-4 pr-1">
+                    <p className="text-gray-500 text-sm font-figtree italic">
+                      {t("expertDetails.noExpectationsAvailable")}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
             {/* How it works */}

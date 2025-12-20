@@ -269,6 +269,7 @@ export default {
   visioSessionsConfig: {
     loadingSessions: "Loading sessions...",
     loadingError: "Error loading sessions",
+    saving: "Saving...",
     price: "Price",
     expectations: "Expectations",
     questionExamples: "Question examples",
@@ -282,6 +283,14 @@ export default {
       "I'm thinking about starting a business. What are the next things I should focus on?",
     question2: "How do I know if my business idea will work?",
     question3: "How should I approach growing my startup?",
+    // Editing actions
+    add: "Add",
+    edit: "Edit",
+    finishEditing: "Finish editing",
+    // Empty states
+    noQuestionsAvailable: "No questions available. Click 'Add' to create one.",
+    noExpectationsAvailable:
+      "No expectations available. Click 'Add' to create one.",
   },
 
   // Payment Page
@@ -617,6 +626,7 @@ We encourage you to review it periodically.</p>
     // Payment Status
     paid: "Paid",
     pending: "Pending",
+    refunded: "Refunded",
     // Calendar
     calendarAlt: "Calendar",
     // Payment History
@@ -722,6 +732,9 @@ We encourage you to review it periodically.</p>
     expectation2: "Tips for starting a successful business",
     expectation3: "Tips for getting your first 10,000 customers",
     expectation4: "Growth tips and growth kickstart",
+    // Empty States
+    noQuestionsAvailable: "No questions available at the moment",
+    noExpectationsAvailable: "No expectations available at the moment",
     // How it works
     howItWorks: "How it works?",
     findExpert: "Find an expert",

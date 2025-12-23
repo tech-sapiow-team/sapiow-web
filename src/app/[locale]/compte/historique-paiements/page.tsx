@@ -223,6 +223,10 @@ export default function HistoriquePaiements() {
                     history.find((t) => t.id === selectedTransaction)
                       ?.transactionId || ""
                   }
+                  appointmentStatus={
+                    history.find((t) => t.id === selectedTransaction)
+                      ?.appointmentStatus
+                  }
                   isMobile={false}
                 />
               ) : (
@@ -345,6 +349,10 @@ export default function HistoriquePaiements() {
                         history.find((t) => t.id === selectedTransaction)
                           ?.transactionId || ""
                       }
+                      appointmentStatus={
+                        history.find((t) => t.id === selectedTransaction)
+                          ?.appointmentStatus
+                      }
                       isMobile={false}
                     />
                   )}
@@ -375,6 +383,10 @@ export default function HistoriquePaiements() {
             id={
               history.find((t) => t.id === selectedTransaction)
                 ?.transactionId || ""
+            }
+            appointmentStatus={
+              history.find((t) => t.id === selectedTransaction)
+                ?.appointmentStatus
             }
             isMobile={true}
             onBack={handleBackToList}

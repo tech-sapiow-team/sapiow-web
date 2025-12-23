@@ -98,7 +98,7 @@ export default function ProfessionalCard({
         </Button>
       </div>
       <CardContent className="flex items-center justify-between p-0 m-0">
-        <div>
+        <div className="min-w-0 flex-1 overflow-hidden pr-2">
           <div className="flex items-center mb-1">
             <h3 className={`font-bold text-black ${nameSize} truncate`}>
               {professional.name ||
@@ -114,7 +114,7 @@ export default function ProfessionalCard({
                 alt="Verified"
                 width={iconSize}
                 height={iconSize}
-                className="transition-all duration-200 ml-1"
+                className="transition-all duration-200 ml-1 flex-shrink-0"
               />
             ) : (
               <Image
@@ -122,11 +122,11 @@ export default function ProfessionalCard({
                 alt="Verified"
                 width={iconSize}
                 height={iconSize}
-                className="transition-all duration-200"
+                className="transition-all duration-200 flex-shrink-0"
               />
             )}
           </div>
-          <p className="text-xs text-black mb-1">
+          <p className="text-xs text-black mb-1 truncate">
             {professional.price ? (
               <>
                 <span className="font-bold font-figtree">
@@ -139,7 +139,7 @@ export default function ProfessionalCard({
             )}
           </p>
           <p
-            className={`text-xs text-gray-500 leading-relaxed font-figtree font-medium line-clamp-3 overflow-hidden`}
+            className={`text-xs text-gray-500 leading-relaxed font-figtree font-medium line-clamp-3`}
           >
             {professional.description
               ? professional.description

@@ -268,9 +268,9 @@ function ProfessionalDetailContent() {
         <HeaderClient isBack classNameIsBack="py-1" />
         {/* <Expert /> */}
         <div className="w-full grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[1fr_386px] gap-6 pl-5 container pb-20 lg:pb-0 pr-5 md:pr-0">
-          <div className="w-full max-w-[753px]">
+          <div className="w-full max-w-[753px] min-w-0 overflow-hidden">
             <div className="flex justify-center flex-col md:flex-row gap-6 mt-3">
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <ProfessionalCard
                   professional={{
                     ...professional,
@@ -288,13 +288,13 @@ function ProfessionalDetailContent() {
                 />
               </div>
 
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 space-y-4 min-w-0 overflow-hidden">
                 <div>
                   <h2 className="xl:text-base text-sm font-bold mb-1 font-figtree mt-3">
                     {t("expertDetails.about")}
                   </h2>
                   <p
-                    className={`text-gray-700 leading-relaxed font-figtree xl:text-base text-sm ${
+                    className={`text-gray-700 leading-relaxed font-figtree xl:text-base text-sm overflow-hidden break-words ${
                       isDescriptionExpanded ? "" : "line-clamp-[7]"
                     }`}
                   >
@@ -312,16 +312,16 @@ function ProfessionalDetailContent() {
                   </ButtonUI>
                 </div>
 
-                <div>
+                <div className="min-w-0 overflow-hidden">
                   <h3 className="text-sm text-[#374151] font-semibold mb-3">
                     {t("expertDetails.expertiseDomains")}
                   </h3>
-                  <div className="max-w-[400px] flex gap-2 flex-wrap">
+                  <div className="w-full flex gap-2 flex-wrap">
                     {expertiseNames?.map(
                       (expertiseName: string, index: number) => (
                         <Badge
                           key={index}
-                          className="p-2 text-xs lg:text-[10px] xl:text-xs text-[#1F2937] font-medium bg-[#F3F4F6] hover:bg-[#F3F4F6] max-w-fit mb-2"
+                          className="p-2 text-xs lg:text-[10px] xl:text-xs text-[#1F2937] font-medium bg-[#F3F4F6] hover:bg-[#F3F4F6] max-w-full mb-2 break-words"
                           variant="secondary"
                         >
                           {expertiseName}
@@ -331,9 +331,9 @@ function ProfessionalDetailContent() {
                   </div>
                 </div>
 
-                <Card className="bg-ice-blue border-ice-blue shadow-none h-[72px] p-0">
-                  <CardContent className="p-4 text-center">
-                    <p className="text-[13px] lg:text-[11px] xl:text-base text-gray-700 font-figtree font-normal lg:font-medium xl:font-normal">
+                <Card className="bg-ice-blue border-ice-blue shadow-none h-[72px] p-0 min-w-0 overflow-hidden">
+                  <CardContent className="p-4 text-center min-w-0 overflow-hidden">
+                    <p className="text-[13px] lg:text-[11px] xl:text-base text-gray-700 font-figtree font-normal lg:font-medium xl:font-normal break-words overflow-hidden">
                       {t("expertDetails.revenueDestination")} <br />
                       <span className="text-[13px] lg:text-[11px] xl:text-base font-bold font-figtree">
                         {t("expertDetails.foundations")}
@@ -345,20 +345,23 @@ function ProfessionalDetailContent() {
             </div>
 
             {/* Questions and Expectations */}
-            <div className="grid md:grid-cols-2 gap-8 mt-7.5 mb-15">
-              <div className="bg-soft-ice-gray px-1 py-0.5 rounded-[8px] border border-soft-ice-gray">
+            <div className="grid md:grid-cols-2 gap-8 mt-7.5 mb-15 min-w-0">
+              <div className="bg-soft-ice-gray px-1 py-0.5 rounded-[8px] border border-soft-ice-gray min-w-0 overflow-hidden">
                 <h2 className="text-base font-bold mb-4 px-4 pt-3 font-figtree">
                   {t("expertDetails.questionsToAsk")}
                 </h2>
                 {questionsToDisplay.length > 0 ? (
-                  <ul className="space-y-3 text-gray-700 pl-6 pb-4 text-base font-figtree pr-4">
+                  <ul className="space-y-3 text-gray-700 pl-6 pb-4 text-base font-figtree pr-4 min-w-0 overflow-hidden">
                     {questionsToDisplay.map((question, index) => (
-                      <li key={index} className="flex items-start gap-2">
+                      <li
+                        key={index}
+                        className="flex items-start gap-2 min-w-0"
+                      >
                         <span className="text-gray-700 mt-1 flex-shrink-0">
                           •
                         </span>
                         <span
-                          className="break-words"
+                          className="break-words min-w-0 flex-1"
                           style={{
                             overflowWrap: "anywhere",
                             wordBreak: "break-word",
@@ -378,21 +381,24 @@ function ProfessionalDetailContent() {
                 )}
               </div>
 
-              <div className="bg-soft-ice-gray px-1 py-0.5 rounded-[8px] border border-soft-ice-gray">
+              <div className="bg-soft-ice-gray px-1 py-0.5 rounded-[8px] border border-soft-ice-gray min-w-0 overflow-hidden">
                 <h2 className="text-base font-bold mb-4 pl-6 pt-3">
                   {t("expertDetails.expectations")}
                 </h2>
                 {expectationsToDisplay.length > 0 ? (
-                  <div className="space-y-4 text-base">
-                    <div className="pl-6 pr-4">
-                      <ul className="mt-2 space-y-2 text-gray-700 pl-2 font-figtree">
+                  <div className="space-y-4 text-base min-w-0 overflow-hidden">
+                    <div className="pl-6 pr-4 min-w-0 overflow-hidden">
+                      <ul className="mt-2 space-y-2 text-gray-700 pl-2 font-figtree min-w-0 overflow-hidden">
                         {expectationsToDisplay.map((expectation, index) => (
-                          <li key={index} className="flex items-start gap-2">
+                          <li
+                            key={index}
+                            className="flex items-start gap-2 min-w-0"
+                          >
                             <span className="text-gray-700 mt-1 flex-shrink-0">
                               •
                             </span>
                             <span
-                              className="break-words"
+                              className="break-words min-w-0 flex-1"
                               style={{
                                 overflowWrap: "anywhere",
                                 wordBreak: "break-word",
@@ -444,22 +450,22 @@ function ProfessionalDetailContent() {
             </div>
 
             {/* Similar Experts */}
-            <div className="mb-15">
-              <div>
-                <div className="flex items-center justify-between mb-6 mt-3">
-                  <h2 className="text-xl font-bold">
+            <div className="mb-15 min-w-0 overflow-hidden">
+              <div className="min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between mb-6 mt-3 min-w-0">
+                  <h2 className="text-xl font-bold min-w-0 truncate">
                     {t("expertDetails.similarExperts")}
                   </h2>
                   <ButtonUI
                     onClick={() => router.push("/")}
                     variant="link"
-                    className="text-cobalt-blue font-figtree cursor-pointer"
+                    className="text-cobalt-blue font-figtree cursor-pointer flex-shrink-0"
                   >
                     {t("expertDetails.seeAll")}{" "}
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </ButtonUI>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 min-w-0 overflow-hidden">
                   {expertsimilar
                     ?.filter((expert: Expert) => expert.id !== expertId)
                     ?.map((professional: Expert) => (

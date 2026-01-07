@@ -84,7 +84,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
   };
 
   const handleNotificationRedirect = (notification: any) => {
-    const title = notification.title.toLowerCase();
+    const title = notification.title?.toLowerCase() || "";
     const body = notification.body?.toLowerCase() || "";
 
     // Déterminer le type de notification et rediriger
@@ -291,11 +291,11 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
                             <div className="flex items-start gap-3">
                               <div className="flex-shrink-0 mt-1">
                                 {notification.title
-                                  .toLowerCase()
+                                  ?.toLowerCase()
                                   .includes("rendez-vous") ? (
                                   <span className="text-lg">📅</span>
                                 ) : notification.title
-                                    .toLowerCase()
+                                    ?.toLowerCase()
                                     .includes("message") ? (
                                   <span className="text-lg">💬</span>
                                 ) : (

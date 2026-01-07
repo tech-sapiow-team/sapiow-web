@@ -3,6 +3,7 @@
 import enMessages from "@/messages/en";
 import frMessages from "@/messages/fr";
 import { useLocale, useTranslations } from "next-intl";
+import { sanitizeHtml } from "@/utils/sanitizeHtml";
 import Image from "next/image";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
@@ -41,7 +42,7 @@ const getTabs = (
       <div
         className="space-y-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-semibold [&_ul]:list-disc [&_ul]:ml-4 [&_p]:mb-2"
         dangerouslySetInnerHTML={{
-          __html: privacyHtml,
+          __html: sanitizeHtml(privacyHtml),
         }}
       />
     ),

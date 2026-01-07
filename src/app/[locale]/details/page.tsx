@@ -1,4 +1,5 @@
 "use client";
+import confettiAnimation from "@/assets/confetti.json";
 import Accordion from "@/components/common/Accordion";
 import BookedSessionCard from "@/components/common/BookedSessionCard";
 import { Button } from "@/components/common/Button";
@@ -14,8 +15,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
+import Lottie from "lottie-react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import OfferSelection from "../home/OfferSelection";
@@ -182,6 +183,30 @@ function ProfessionalDetailContent() {
     toggleDescriptionExpanded,
   } = useDetailsLogic(expertData);
 
+  // Parser extra_data pour obtenir les questions et expectations personnalisées
+  const customQuestions: string[] = [];
+  const customExpectations: string[] = [];
+
+  if (expertData?.extra_data) {
+    try {
+      const parsed = JSON.parse(expertData.extra_data);
+      if (parsed.questions && Array.isArray(parsed.questions)) {
+        customQuestions.push(...parsed.questions);
+      }
+      if (parsed.expectations && Array.isArray(parsed.expectations)) {
+        customExpectations.push(...parsed.expectations);
+      }
+    } catch (e) {
+      console.error("Erreur lors du parsing de extra_data:", e);
+    }
+  }
+
+  // Utiliser uniquement les questions personnalisées (pas de valeurs par défaut)
+  const questionsToDisplay = customQuestions;
+
+  // Utiliser uniquement les expectations personnalisées (pas de valeurs par défaut)
+  const expectationsToDisplay = customExpectations;
+
   useEffect(() => {
     if (!expertId) {
       router.push("/");
@@ -243,9 +268,9 @@ function ProfessionalDetailContent() {
         <HeaderClient isBack classNameIsBack="py-1" />
         {/* <Expert /> */}
         <div className="w-full grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[1fr_386px] gap-6 pl-5 container pb-20 lg:pb-0 pr-5 md:pr-0">
-          <div className="w-full max-w-[753px]">
+          <div className="w-full max-w-[753px] min-w-0 overflow-hidden">
             <div className="flex justify-center flex-col md:flex-row gap-6 mt-3">
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <ProfessionalCard
                   professional={{
                     ...professional,
@@ -263,13 +288,13 @@ function ProfessionalDetailContent() {
                 />
               </div>
 
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 space-y-4 min-w-0 overflow-hidden">
                 <div>
                   <h2 className="xl:text-base text-sm font-bold mb-1 font-figtree mt-3">
                     {t("expertDetails.about")}
                   </h2>
                   <p
-                    className={`text-gray-700 leading-relaxed font-figtree xl:text-base text-sm ${
+                    className={`text-gray-700 leading-relaxed font-figtree xl:text-base text-sm overflow-hidden break-words ${
                       isDescriptionExpanded ? "" : "line-clamp-[7]"
                     }`}
                   >
@@ -287,16 +312,16 @@ function ProfessionalDetailContent() {
                   </ButtonUI>
                 </div>
 
-                <div>
+                <div className="min-w-0 overflow-hidden">
                   <h3 className="text-sm text-[#374151] font-semibold mb-3">
                     {t("expertDetails.expertiseDomains")}
                   </h3>
-                  <div className="max-w-[400px] flex gap-2 flex-wrap">
+                  <div className="w-full flex gap-2 flex-wrap">
                     {expertiseNames?.map(
                       (expertiseName: string, index: number) => (
                         <Badge
                           key={index}
-                          className="p-2 text-xs lg:text-[10px] xl:text-xs text-[#1F2937] font-medium bg-[#F3F4F6] hover:bg-[#F3F4F6] max-w-fit mb-2"
+                          className="p-2 text-xs lg:text-[10px] xl:text-xs text-[#1F2937] font-medium bg-[#F3F4F6] hover:bg-[#F3F4F6] max-w-full mb-2 break-words"
                           variant="secondary"
                         >
                           {expertiseName}
@@ -306,9 +331,9 @@ function ProfessionalDetailContent() {
                   </div>
                 </div>
 
-                <Card className="bg-ice-blue border-ice-blue shadow-none h-[72px] p-0">
-                  <CardContent className="p-4 text-center">
-                    <p className="text-[13px] lg:text-[11px] xl:text-base text-gray-700 font-figtree font-normal lg:font-medium xl:font-normal">
+                <Card className="bg-ice-blue border-ice-blue shadow-none h-[72px] p-0 min-w-0 overflow-hidden">
+                  <CardContent className="p-4 text-center min-w-0 overflow-hidden">
+                    <p className="text-[13px] lg:text-[11px] xl:text-base text-gray-700 font-figtree font-normal lg:font-medium xl:font-normal break-words overflow-hidden">
                       {t("expertDetails.revenueDestination")} <br />
                       <span className="text-[13px] lg:text-[11px] xl:text-base font-bold font-figtree">
                         {t("expertDetails.foundations")}
@@ -320,60 +345,79 @@ function ProfessionalDetailContent() {
             </div>
 
             {/* Questions and Expectations */}
-            <div className="grid md:grid-cols-2 gap-8 mt-7.5 mb-15">
-              <div className="bg-soft-ice-gray px-1 py-0.5 rounded-[8px] border border-soft-ice-gray">
+            <div className="grid md:grid-cols-2 gap-8 mt-7.5 mb-15 min-w-0">
+              <div className="bg-soft-ice-gray px-1 py-0.5 rounded-[8px] border border-soft-ice-gray min-w-0 overflow-hidden">
                 <h2 className="text-base font-bold mb-4 px-4 pt-3 font-figtree">
                   {t("expertDetails.questionsToAsk")}
                 </h2>
-                <ul className="space-y-3 text-gray-700 pl-6 pb-4 text-base font-figtree pr-1">
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-700 mt-1">•</span>
-                    <span>{t("expertDetails.question1")}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-700 mt-1">•</span>
-                    <span>{t("expertDetails.question2")}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-700 mt-1">•</span>
-                    <span>{t("expertDetails.question3")}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-700 mt-1">•</span>
-                    <span>{t("expertDetails.question4")}</span>
-                  </li>
-                </ul>
+                {questionsToDisplay.length > 0 ? (
+                  <ul className="space-y-3 text-gray-700 pl-6 pb-4 text-base font-figtree pr-4 min-w-0 overflow-hidden">
+                    {questionsToDisplay.map((question, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start gap-2 min-w-0"
+                      >
+                        <span className="text-gray-700 mt-1 flex-shrink-0">
+                          •
+                        </span>
+                        <span
+                          className="break-words min-w-0 flex-1"
+                          style={{
+                            overflowWrap: "anywhere",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {question}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="pl-6 pb-4 pr-1">
+                    <p className="text-gray-500 text-sm font-figtree italic">
+                      {t("expertDetails.noQuestionsAvailable")}
+                    </p>
+                  </div>
+                )}
               </div>
 
-              <div className="bg-soft-ice-gray px-1 py-0.5 rounded-[8px] border border-soft-ice-gray">
+              <div className="bg-soft-ice-gray px-1 py-0.5 rounded-[8px] border border-soft-ice-gray min-w-0 overflow-hidden">
                 <h2 className="text-base font-bold mb-4 pl-6 pt-3">
                   {t("expertDetails.expectations")}
                 </h2>
-                <div className="space-y-4 text-base">
-                  <div className="pl-6 pr-1">
-                    <h3 className="text-base font-normal">
-                      {t("expertDetails.visio15min")}
-                    </h3>
-                    <ul className="mt-2 space-y-2 text-gray-700 pl-2 font-figtree">
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-700 mt-1">•</span>
-                        <span>{t("expertDetails.expectation1")}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-700 mt-1">•</span>
-                        <span>{t("expertDetails.expectation2")}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-700 mt-1">•</span>
-                        <span>{t("expertDetails.expectation3")}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-700 mt-1">•</span>
-                        <span>{t("expertDetails.expectation4")}</span>
-                      </li>
-                    </ul>
+                {expectationsToDisplay.length > 0 ? (
+                  <div className="space-y-4 text-base min-w-0 overflow-hidden">
+                    <div className="pl-6 pr-4 min-w-0 overflow-hidden">
+                      <ul className="mt-2 space-y-2 text-gray-700 pl-2 font-figtree min-w-0 overflow-hidden">
+                        {expectationsToDisplay.map((expectation, index) => (
+                          <li
+                            key={index}
+                            className="flex items-start gap-2 min-w-0"
+                          >
+                            <span className="text-gray-700 mt-1 flex-shrink-0">
+                              •
+                            </span>
+                            <span
+                              className="break-words min-w-0 flex-1"
+                              style={{
+                                overflowWrap: "anywhere",
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {expectation}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="pl-6 pb-4 pr-1">
+                    <p className="text-gray-500 text-sm font-figtree italic">
+                      {t("expertDetails.noExpectationsAvailable")}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
             {/* How it works */}
@@ -406,22 +450,22 @@ function ProfessionalDetailContent() {
             </div>
 
             {/* Similar Experts */}
-            <div className="mb-15">
-              <div>
-                <div className="flex items-center justify-between mb-6 mt-3">
-                  <h2 className="text-xl font-bold">
+            <div className="mb-15 min-w-0 overflow-hidden">
+              <div className="min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between mb-6 mt-3 min-w-0">
+                  <h2 className="text-xl font-bold min-w-0 truncate">
                     {t("expertDetails.similarExperts")}
                   </h2>
                   <ButtonUI
                     onClick={() => router.push("/")}
                     variant="link"
-                    className="text-cobalt-blue font-figtree cursor-pointer"
+                    className="text-cobalt-blue font-figtree cursor-pointer flex-shrink-0"
                   >
                     {t("expertDetails.seeAll")}{" "}
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </ButtonUI>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 min-w-0 overflow-hidden">
                   {expertsimilar
                     ?.filter((expert: Expert) => expert.id !== expertId)
                     ?.map((professional: Expert) => (
@@ -480,13 +524,14 @@ function ProfessionalDetailContent() {
           <div className="hidden xl:block xl:border-l xl:border-gray-200">
             {isPaid ? (
               <aside className="w-full">
-                <Image
-                  src="/assets/icons/congruation.svg"
-                  alt={t("sessionDetail.congratulationAlt")}
-                  width={421}
-                  height={381}
-                  className="-mt-29 animate-celebrate"
-                />
+                <div className="-mt-29 flex items-center justify-center">
+                  <Lottie
+                    animationData={confettiAnimation}
+                    loop={true}
+                    autoplay={true}
+                    style={{ width: 421, height: 381 }}
+                  />
+                </div>
                 <div className="flex flex-col items-center justify-center gap-4 mt-7">
                   <h2 className="text-[28px] font-bold text-charcoal-blue">
                     {t("expertDetails.congratulations")}
@@ -566,13 +611,14 @@ function ProfessionalDetailContent() {
           <HeaderClient isBack />
           <div className="flex-1 overflow-y-auto">
             <div className="min-h-full flex flex-col items-center justify-center px-6 py-8">
-              <Image
-                src="/assets/icons/congruation.svg"
-                alt={t("sessionDetail.congratulationAlt")}
-                width={300}
-                height={250}
-                className="mb-8 animate-celebrate"
-              />
+              <div className="mb-8 flex items-center justify-center">
+                <Lottie
+                  animationData={confettiAnimation}
+                  loop={true}
+                  autoplay={true}
+                  style={{ width: 300, height: 250 }}
+                />
+              </div>
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-charcoal-blue mb-4">
                   {t("expertDetails.congratulations")}

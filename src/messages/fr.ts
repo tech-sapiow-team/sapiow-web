@@ -272,6 +272,7 @@ export default {
   visioSessionsConfig: {
     loadingSessions: "Chargement des sessions...",
     loadingError: "Erreur lors du chargement des sessions",
+    saving: "Sauvegarde en cours...",
     price: "Prix",
     expectations: "Attentes",
     questionExamples: "Exemples de questions",
@@ -285,6 +286,15 @@ export default {
       "Je pense à créer une entreprise. Quelles sont les prochaines choses auxquelles je devrais me concentrer ?",
     question2: "Comment savoir si mon idée d'entreprise va fonctionner ?",
     question3: "Comment aborder votre le croissance de ma startup ?",
+    // Editing actions
+    add: "Ajouter",
+    edit: "Modifier",
+    finishEditing: "Terminer l'édition",
+    // Empty states
+    noQuestionsAvailable:
+      "Aucune question disponible. Cliquez sur 'Ajouter' pour en créer une.",
+    noExpectationsAvailable:
+      "Aucune attente disponible. Cliquez sur 'Ajouter' pour en créer une.",
   },
 
   // Payment Page
@@ -622,6 +632,7 @@ We encourage you to review it periodically.</p>
     // Payment Status
     paid: "Payé",
     pending: "En attente",
+    refunded: "Remboursé",
     // Calendar
     calendarAlt: "Calendrier",
     // Payment History
@@ -730,6 +741,9 @@ We encourage you to review it periodically.</p>
     expectation2: "Conseils pour démarrer une entreprise prospère",
     expectation3: "Conseils pour obtenir vos 10 000 premiers clients",
     expectation4: "Astuces de croissance et démarrage de la croissance",
+    // Empty States
+    noQuestionsAvailable: "Aucune question disponible pour le moment",
+    noExpectationsAvailable: "Aucune attente disponible pour le moment",
     // How it works
     howItWorks: "Comment ça marche ?",
     findExpert: "Trouvez un expert",
@@ -947,6 +961,7 @@ We encourage you to review it periodically.</p>
     unknownError: "Erreur inconnue",
     yourNextVisio: "Votre prochaine visio",
     accelerateProject: "Accélérez votre projet, Réservez une Visio.",
+    noTopExperts: "Aucun top expert disponible pour le moment.",
   },
 
   // Share Link Button

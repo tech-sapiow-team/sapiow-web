@@ -30,6 +30,7 @@ export interface ProExpert {
   availability_end_date?: string;
   pro_expertises?: any[]; // JSON parsed
   schedules?: any[]; // JSON parsed
+  extra_data?: string | null; // JSON string au format {"questions":[],"expectations":[]}
   status: ProExpertStatus;
   created_at: string;
   updated_at: string;
@@ -91,6 +92,7 @@ export interface UpdateProExpertData {
   availability_end_date?: string; // Format date YYYY-MM-DD
   expertises?: any[]; // Sera converti en JSON string
   schedules?: any[]; // Sera converti en JSON string
+  extra_data?: string; // JSON string au format {"questions":[],"expectations":[]}
 }
 
 // Interface pour les données de mise à jour (FormData pour API)
@@ -142,8 +144,10 @@ export const transformUpdateDataToFormData = (
   if (data.description !== undefined)
     formData.append("description", data.description);
   if (data.job !== undefined) formData.append("job", data.job);
-  if (data.linkedin !== undefined) formData.append("linkedin", data.linkedin);
-  if (data.website !== undefined) formData.append("website", data.website);
+  // Toujours inclure linkedin dans le payload, même s'il est vide
+  formData.append("linkedin", data.linkedin ?? "");
+  // Toujours inclure website dans le payload, même s'il est vide
+  formData.append("website", data.website ?? "");
   if (data.language !== undefined) formData.append("language", data.language);
   if (data.availability_start_date !== undefined)
     formData.append("availability_start_date", data.availability_start_date);
@@ -193,6 +197,9 @@ export const transformUpdateDataToFormData = (
   if (data.schedules && data.schedules.length > 0) {
     formData.append("schedules", JSON.stringify(data.schedules));
   }
+  if (data.extra_data !== undefined) {
+    formData.append("extra_data", data.extra_data);
+  }
 
   return formData;
 };
@@ -233,15 +240,6 @@ export const validateUpdateProExpertData = (
     }
   }
 
-  // Validation de l'email format si linkedin/website fournis
-  if (
-    data.linkedin !== undefined &&
-    data.linkedin &&
-    !data.linkedin.includes("linkedin.com")
-  ) {
-    errors.push("Le lien LinkedIn doit être valide");
-  }
-
   return {
     isValid: errors.length === 0,
     errors,
@@ -265,12 +263,16 @@ export const useGetProExpert = (enabled: boolean = true) => {
         // Détecter les erreurs spécifiques qui indiquent qu'aucun profil n'existe
         const errorMessage = error?.message || "";
         const errorData = error?.response?.data || {};
-        
+
         // Si l'erreur est vide {} ou un objet vide, traiter comme 404 (ressource absente)
         if (
           errorMessage === "Resource not found" ||
-          (typeof errorData === "object" && errorData !== null && Object.keys(errorData).length === 0) ||
-          (errorData?.error && typeof errorData.error === "object" && Object.keys(errorData.error).length === 0) ||
+          (typeof errorData === "object" &&
+            errorData !== null &&
+            Object.keys(errorData).length === 0) ||
+          (errorData?.error &&
+            typeof errorData.error === "object" &&
+            Object.keys(errorData.error).length === 0) ||
           errorMessage === "{}" ||
           errorMessage.includes("Cannot coerce the result")
         ) {
@@ -293,11 +295,15 @@ export const useGetProExpert = (enabled: boolean = true) => {
       // Ne pas réessayer si c'est une erreur "profile not found" ou erreur vide
       const errorMessage = error?.message || "";
       const errorData = (error as any)?.response?.data || {};
-      
+
       if (
         errorMessage === "Resource not found" ||
-        (typeof errorData === "object" && errorData !== null && Object.keys(errorData).length === 0) ||
-        (errorData?.error && typeof errorData.error === "object" && Object.keys(errorData.error).length === 0) ||
+        (typeof errorData === "object" &&
+          errorData !== null &&
+          Object.keys(errorData).length === 0) ||
+        (errorData?.error &&
+          typeof errorData.error === "object" &&
+          Object.keys(errorData.error).length === 0) ||
         errorMessage === "{}" ||
         errorMessage.includes("Cannot coerce the result")
       ) {

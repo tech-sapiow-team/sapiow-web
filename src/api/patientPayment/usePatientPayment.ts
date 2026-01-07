@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase/client";
 import { getSupabaseFunctionErrorMessage } from "@/lib/supabase/handleFunctionError";
 import { useCurrentUserData } from "@/store/useCurrentUser";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 // Types pour les transactions de paiement
 export interface PaymentTransaction {
@@ -16,7 +16,7 @@ export interface PaymentTransaction {
   appointment: {
     id: string;
     appointment_at: string;
-    status: "confirmed" | "pending" | "cancelled" | "completed";
+    status: "confirmed" | "pending" | "cancelled" | "completed" | "refunded";
     pro: {
       id: string;
       first_name: string;
@@ -46,6 +46,7 @@ export interface TransactionDisplay {
   transactionId: string;
   session: string;
   receiptUrl?: string;
+  appointmentStatus?: string; // Pour gérer l'affichage de "Remboursé"
 }
 
 // Hook pour récupérer l'historique des paiements du patient
@@ -93,16 +94,20 @@ export const usePatientPaymentHistory = () => {
 // Fonction utilitaire pour transformer les données API en format d'affichage
 export const transformTransactionForDisplay = (
   transaction: PaymentTransaction,
-  t: (key: string) => string
+  t: (key: string) => string,
+  currentLocale: string
 ): TransactionDisplay => {
-  // Formatage du montant (conversion des centimes en euros)
-  const amountInEuros = transaction.amount / 100;
-  const formattedAmount = `${amountInEuros.toFixed(2)}€`;
+  // Formatage du montant avec Intl.NumberFormat
+  const locale = currentLocale === "fr" ? "fr-FR" : "en-US";
+  const formattedAmount = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: transaction.currency.toUpperCase(),
+  }).format(transaction.amount); // amount est déjà en euros
 
   // Formatage de la date de création (timestamp Unix)
   const createdDate = new Date(transaction.created * 1000);
-  const formattedDate = createdDate.toLocaleDateString("fr-FR");
-  const formattedDateTime = createdDate.toLocaleDateString("fr-FR", {
+  const formattedDate = createdDate.toLocaleDateString(locale);
+  const formattedDateTime = createdDate.toLocaleDateString(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -114,12 +119,13 @@ export const transformTransactionForDisplay = (
   const expertName =
     `${transaction.appointment.pro.first_name} ${transaction.appointment.pro.last_name}`.trim();
 
-  // Mapping du statut - utilise les clés anglaises pour la compatibilité TypeScript
+  // Mapping du statut
   const statusMapping: Record<string, "completed" | "pending" | "cancelled"> = {
     succeeded: "completed",
     pending: "pending",
     failed: "cancelled",
   };
+  const statut = statusMapping[transaction.status] || "pending";
 
   // Titre de la transaction
   const title = `${t("paymentHistory.paymentConsultationWith")} ${expertName}`;
@@ -134,10 +140,11 @@ export const transformTransactionForDisplay = (
     amount: formattedAmount,
     expert: expertName,
     dateHeure: formattedDateTime,
-    statut: statusMapping[transaction.status] || "pending",
+    statut,
     transactionId: transaction.id,
     session,
     receiptUrl: transaction.receipt_url,
+    appointmentStatus: transaction.appointment.status, // Pour gérer l'affichage de "Remboursé"
   };
 };
 
@@ -145,11 +152,15 @@ export const transformTransactionForDisplay = (
 export const usePatientPaymentHistoryDisplay = () => {
   const { data: transactions, ...queryResult } = usePatientPaymentHistory();
   const t = useTranslations();
+  const currentLocale = useLocale();
 
-  const transformedData =
-    transactions?.map((transaction) =>
-      transformTransactionForDisplay(transaction, t)
-    ) || [];
+  // Trier les transactions du plus récent au plus ancien avant de les transformer
+  const sortedTransactions =
+    transactions?.sort((a, b) => b.created - a.created) || [];
+
+  const transformedData = sortedTransactions.map((transaction) =>
+    transformTransactionForDisplay(transaction, t, currentLocale)
+  );
 
   return {
     ...queryResult,

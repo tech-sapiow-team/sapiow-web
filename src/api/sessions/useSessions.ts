@@ -64,6 +64,7 @@ export interface SessionGetResponse {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  extra_data?: string | null; // JSON string au format {"questions":[],"expectations":[]}
 }
 
 // Interface pour les données de mise à jour de session
@@ -80,6 +81,7 @@ export interface SessionUpdate {
   webinar?: boolean;
   name?: string;
   is_active?: boolean;
+  extra_data?: string; // JSON string au format {"questions":[],"expectations":[]}
 }
 
 // Interface pour la réponse de mise à jour
@@ -282,9 +284,10 @@ export const useUpdateProSession = () => {
 };
 
 export const useGetProSession = () => {
-  return useQuery<SessionGetResponse>({
+  return useQuery<SessionGetResponse | SessionGetResponse[]>({
     queryKey: ["pro-session"],
-    queryFn: () => apiClient.get<SessionGetResponse>("pro-session"),
+    queryFn: () =>
+      apiClient.get<SessionGetResponse | SessionGetResponse[]>("pro-session"),
   });
 };
 

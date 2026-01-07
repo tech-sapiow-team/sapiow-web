@@ -24,11 +24,15 @@ export default function PaymentHistory() {
     return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: currency.toUpperCase(),
-    }).format(amount / 100); // amount est en centimes
+    }).format(amount); // amount est déjà en euros
   };
 
   // Fonction pour mapper le statut avec traductions
-  const mapStatus = (status: string): string => {
+  const mapStatus = (status: string, appointmentStatus?: string): string => {
+    // Si l'appointment est remboursé, afficher "Remboursé"
+    if (appointmentStatus === "refunded") {
+      return t("revenue.refunded");
+    }
     return status === "succeeded" ? t("revenue.paid") : t("revenue.pending");
   };
 
@@ -67,7 +71,10 @@ export default function PaymentHistory() {
     );
   }
 
-  const payments = payouts?.payments || [];
+  const payments = (payouts?.payments || []).sort(
+    (a, b) => b.created - a.created
+  );
+
   return (
     <div className="space-y-4">
       <h2 className="text-sm font-medium font-figtree text-charcoal-blue">
@@ -86,9 +93,12 @@ export default function PaymentHistory() {
             // Vérifications de sécurité pour éviter les erreurs null
             const patient = payment.appointment?.patients;
             const session = payment.appointment?.sessions;
+            const appointmentStatus = payment.appointment?.status;
             const firstName = patient?.first_name || "N/A";
             const lastName = patient?.last_name || "";
             const sessionName = session?.name || t("revenue.unknownSession");
+            const statusLabel = mapStatus(payment.status, appointmentStatus);
+            const isRefunded = appointmentStatus === "refunded";
 
             return (
               <div
@@ -121,12 +131,14 @@ export default function PaymentHistory() {
                   </div>
                   <div
                     className={`text-xs bg-snow-blue font-bold rounded-[100px] px-2 py-1 h-[24px] ${
-                      mapStatus(payment.status) === t("revenue.paid")
+                      isRefunded
+                        ? "text-[#CC5802]"
+                        : statusLabel === t("revenue.paid")
                         ? "text-exford-blue"
                         : "text-[#CC5802]"
                     }`}
                   >
-                    {mapStatus(payment.status)}
+                    {statusLabel}
                   </div>
                 </div>
               </div>

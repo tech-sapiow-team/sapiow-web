@@ -12,6 +12,7 @@ interface TransactionDetailsProps {
   id: string;
   onBack?: () => void;
   isMobile?: boolean;
+  appointmentStatus?: string; // Pour gérer l'affichage de "Remboursé"
 }
 
 const TransactionDetails: React.FC<TransactionDetailsProps> = ({
@@ -23,10 +24,15 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
   id,
   onBack,
   isMobile = false,
+  appointmentStatus,
 }) => {
   const t = useTranslations();
 
-  const getStatutColor = (statut: string) => {
+  const getStatutColor = (statut: string, appointmentStatus?: string) => {
+    // Si l'appointment est remboursé, afficher en rouge
+    if (appointmentStatus === "refunded") {
+      return "text-red-500";
+    }
     switch (statut) {
       case "completed":
         return "text-green-600";
@@ -39,7 +45,11 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
     }
   };
 
-  const getStatutLabel = (statut: string) => {
+  const getStatutLabel = (statut: string, appointmentStatus?: string) => {
+    // Si l'appointment est remboursé, afficher "Remboursé"
+    if (appointmentStatus === "refunded") {
+      return t("revenue.refunded");
+    }
     switch (statut) {
       case "completed":
         return t("paymentHistory.completed");
@@ -116,8 +126,13 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
             <span className="text-base font-semibold text-exford-blue">
               {t("paymentHistory.status")}
             </span>
-            <span className={`text-base font-normal ${getStatutColor(statut)}`}>
-              {getStatutLabel(statut)}
+            <span
+              className={`text-base font-normal ${getStatutColor(
+                statut,
+                appointmentStatus
+              )}`}
+            >
+              {getStatutLabel(statut, appointmentStatus)}
             </span>
           </div>
 
@@ -184,8 +199,13 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
           <span className="text-base font-semibold text-exford-blue">
             {t("paymentHistory.status")}
           </span>
-          <span className={`text-base font-normal ${getStatutColor(statut)}`}>
-            {getStatutLabel(statut)}
+          <span
+            className={`text-base font-normal ${getStatutColor(
+              statut,
+              appointmentStatus
+            )}`}
+          >
+            {getStatutLabel(statut, appointmentStatus)}
           </span>
         </div>
 

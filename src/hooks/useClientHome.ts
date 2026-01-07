@@ -71,14 +71,27 @@ export const useClientHome = (currentUserExpertId?: string) => {
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [sortOption, setSortOption] = useState("recommended");
 
+  // Déterminer si on cherche les top experts ou un domaine spécifique
+  const isTopExpert = selectedCategory === "top";
+  const isDomainId = !isNaN(Number(selectedCategory));
+
   // Hook API pour récupérer la liste des experts avec recherche
   const {
     data: expertList,
     isLoading: isLoadingExperts,
     error,
   } = useListExperts({
-    search: searchQuery,
-    searchFields: "first_name,last_name,job,domains.name",
+    search:
+      searchQuery ||
+      (isTopExpert ? "gold" : isDomainId ? selectedCategory : ""),
+    searchFields: searchQuery
+      ? "first_name,last_name,job,domains.name"
+      : isTopExpert
+      ? "badge"
+      : isDomainId
+      ? "domain_id"
+      : "first_name,last_name,job,domains.name",
+    limit: 100,
   });
 
   // Hook logique favoris (séparé pour réutilisabilité)
@@ -128,18 +141,18 @@ export const useClientHome = (currentUserExpertId?: string) => {
    * Grouper les professionnels par catégorie pour l'affichage "Top"
    * Chaque catégorie devient une section horizontale
    * Note: allProfessionals est déjà filtré pour exclure l'utilisateur connecté
+   * Seuls les professionnels avec badge "gold" (topExpertise === true) sont inclus
    */
-  const groupedProfessionals = allProfessionals.reduce(
-    (acc: Record<string, Professional[]>, prof: Professional) => {
+  const groupedProfessionals = allProfessionals
+    .filter((prof: Professional) => prof.topExpertise === true)
+    .reduce((acc: Record<string, Professional[]>, prof: Professional) => {
       const category = prof.category || "business";
       if (!acc[category]) {
         acc[category] = [];
       }
       acc[category].push(prof);
       return acc;
-    },
-    {} as Record<string, Professional[]>
-  );
+    }, {} as Record<string, Professional[]>);
 
   /**
    * Filtrer les professionnels selon la catégorie et sous-catégorie sélectionnées

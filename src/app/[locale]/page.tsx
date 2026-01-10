@@ -1,5 +1,4 @@
 "use client";
-import { withAuth } from "@/components/common/withAuth";
 import { Header } from "@/components/layout/header/Header";
 import { HeaderClient } from "@/components/layout/header/HeaderClient";
 import { AppSidebar } from "@/components/layout/Sidebare";
@@ -86,4 +85,4 @@ function Home() {
   );
 }
 
-export default withAuth(Home);
+export default Home;

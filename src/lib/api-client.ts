@@ -21,6 +21,22 @@ export interface ApiError extends Error {
 }
 
 /**
+ * Endpoints accessibles sans authentification (pas de token requis).
+ * Important: l'accès public dépend aussi des règles côté backend.
+ */
+const isPublicEndpoint = (endpoint: string) => {
+  // `search` (avec ou sans querystring) doit être public pour afficher la liste des pros sans login
+  if (endpoint === "search" || endpoint.startsWith("search?")) return true;
+  // Catégories (domaines) + sous-catégories (expertises) utilisées sur la home
+  if (endpoint === "domain") return true;
+  if (endpoint.startsWith("expertise?")) return true;
+  // Fiche pro: autoriser `pro/{id}` en public (mais pas `pro` seul)
+  if (endpoint.startsWith("pro/") && endpoint.length > "pro/".length)
+    return true;
+  return false;
+};
+
+/**
  * Client API centralisé avec gestion automatique de l'authentification Supabase
  */
 export const apiClient = {
@@ -109,21 +125,25 @@ export const fetchApi = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
-  // Vérifier et rafraîchir le token si nécessaire avant la requête
-  const isTokenValid = await authUtils.ensureValidToken();
+  const publicEndpoint = isPublicEndpoint(endpoint);
 
-  if (!isTokenValid) {
-    // Si impossible d'obtenir un token valide, rediriger vers la connexion
-    const error = new Error(
-      "Session expirée. Veuillez vous reconnecter."
-    ) as ApiError;
-    error.status = 401;
-    error.statusText = "Unauthorized";
-    throw error;
+  // Vérifier et rafraîchir le token si nécessaire avant la requête
+  // Sauf pour les endpoints publics (ex: `search`)
+  if (!publicEndpoint) {
+    const isTokenValid = await authUtils.ensureValidToken();
+
+    if (!isTokenValid) {
+      const error = new Error(
+        "Session expirée. Veuillez vous reconnecter."
+      ) as ApiError;
+      error.status = 401;
+      error.statusText = "Unauthorized";
+      throw error;
+    }
   }
 
   // Récupération des headers d'authentification via authUtils (localStorage)
-  const authHeaders = authUtils.getAuthHeaders();
+  const authHeaders = publicEndpoint ? {} : authUtils.getAuthHeaders();
 
   const headers = {
     ...(options.body instanceof FormData
@@ -162,7 +182,10 @@ export const fetchApi = async <T>(
 
       if (errorData.error) {
         // Si l'erreur a un champ "error"
-        if (typeof errorData.error === "object" && Object.keys(errorData.error).length === 0) {
+        if (
+          typeof errorData.error === "object" &&
+          Object.keys(errorData.error).length === 0
+        ) {
           // Objet vide {} - traiter comme ressource absente
           errorMessage = "Resource not found";
         } else if (typeof errorData.error === "string") {
@@ -176,7 +199,10 @@ export const fetchApi = async <T>(
       } else if (typeof errorData === "string") {
         // Si c'est une chaîne simple
         errorMessage = errorData;
-      } else if (typeof errorData === "object" && Object.keys(errorData).length === 0) {
+      } else if (
+        typeof errorData === "object" &&
+        Object.keys(errorData).length === 0
+      ) {
         // Objet vide {} - traiter comme ressource absente
         errorMessage = "Resource not found";
       }

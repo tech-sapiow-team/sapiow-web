@@ -105,12 +105,13 @@ export const useRemoveFavorite = () => {
 };
 
 // Hook pour récupérer tous les favoris
-export const useGetFavorites = () => {
+export const useGetFavorites = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ["favorites"],
     queryFn: async (): Promise<GetFavoritesResponse> => {
       return await apiClient.get<GetFavoritesResponse>("favorites");
     },
+    enabled,
   });
 };
 

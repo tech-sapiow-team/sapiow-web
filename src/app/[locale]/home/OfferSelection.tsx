@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAppointmentStore } from "@/store/useAppointmentStore";
 import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
+import { authUtils } from "@/utils/auth";
 import { Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -72,6 +73,7 @@ export default function OfferSelection({
 }: OfferSelectionProps) {
   const t = useTranslations();
   const currentLocale = useLocale();
+  const isAuthenticated = authUtils.isAuthenticated();
   const [selectedOption, setSelectedOption] = useState<"session" | string>(
     "session"
   );
@@ -107,6 +109,10 @@ export default function OfferSelection({
 
   // Fonction pour gérer le paiement de l'abonnement
   const handleSubscriptionPayment = async (sessionId: string) => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
     const selectedSession = subscriptionSessions.find(
       (s: any) => s.id === sessionId
     );
@@ -246,7 +252,14 @@ export default function OfferSelection({
                       ? "bg-cobalt-blue hover:bg-cobalt-blue/80 text-white"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
-                  onClick={() => hasSlotsAvailable && setIsPlaning(true)}
+                  onClick={() => {
+                    if (!hasSlotsAvailable) return;
+                    if (!isAuthenticated) {
+                      router.push("/login");
+                      return;
+                    }
+                    setIsPlaning(true);
+                  }}
                   disabled={!hasSlotsAvailable}
                 />
               )}

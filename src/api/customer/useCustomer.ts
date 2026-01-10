@@ -96,7 +96,7 @@ export interface UpdateCustomerData {
 /**
  * Hook pour récupérer les données du client
  */
-export const useGetCustomer = () => {
+export const useGetCustomer = (enabled: boolean = true) => {
   return useQuery<Customer | null, ProExpertError>({
     queryKey: ["customer"],
     queryFn: async () => {
@@ -161,6 +161,7 @@ export const useGetCustomer = () => {
       // Ne pas réessayer pour les autres erreurs non plus (profil patient optionnel)
       return false;
     },
+    enabled,
   });
 };
 

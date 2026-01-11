@@ -3,7 +3,8 @@ import { Header } from "@/components/layout/header/Header";
 import { HeaderClient } from "@/components/layout/header/HeaderClient";
 import { AppSidebar } from "@/components/layout/Sidebare";
 import { useUserStore } from "@/store/useUser";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Client from "./home/Client";
@@ -13,6 +14,7 @@ function Home() {
   const { user } = useUserStore();
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentUserType, setCurrentUserType] = useState(user.type);
   const [isRedirectingOAuth, setIsRedirectingOAuth] = useState(false);
@@ -80,6 +82,30 @@ function Home() {
             {currentUserType === "client" ? <Client /> : <Expert />}
           </div>
         </div>
+
+        {/* Footer - uniquement sur la home */}
+        <footer className="mt-auto border-t border-soft-ice-gray px-5 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-ash-gray">
+            <Link
+              href={`/${locale}/mentions-legales`}
+              className="hover:underline underline-offset-4 w-fit"
+            >
+              {t("account.legalMentions")}
+            </Link>
+            <Link
+              href={`/${locale}/mentions-legales#tos`}
+              className="hover:underline underline-offset-4 w-fit"
+            >
+              {t("legalMentions.termsOfService")}
+            </Link>
+            <Link
+              href={`/${locale}/mentions-legales#privacy`}
+              className="hover:underline underline-offset-4 w-fit"
+            >
+              {t("legalMentions.privacyPolicy")}
+            </Link>
+          </div>
+        </footer>
       </div>
     </div>
   );

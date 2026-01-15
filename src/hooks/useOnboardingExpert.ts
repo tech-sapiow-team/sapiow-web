@@ -63,9 +63,9 @@ export const useOnboardingExpert = () => {
 
   const isDomainValid = !!selectedDomain;
   const isSpecialtyValid = selectedSpecialties.length > 0;
-  // Validation des sessions : si une session est activée, elle doit avoir un prix > 0
+  // Validation des sessions : si une session est activée, elle doit avoir un prix >= 0 (0 est accepté pour les consultations gratuites)
   const isVisioValid = visioOptions.every(
-    (option) => !option.enabled || (option.price && Number(option.price) > 0)
+    (option) => !option.enabled || (option.price !== "" && option.price !== null && option.price !== undefined && Number(option.price) >= 0)
   );
 
   // Actions
@@ -88,7 +88,12 @@ export const useOnboardingExpert = () => {
   ) => {
     setVisioOptions((prev) => {
       const newOptions = [...prev];
-      newOptions[index] = { ...newOptions[index], [field]: value };
+      // Si on active l'option (enabled devient true) et que le prix est vide, mettre 0 par défaut
+      if (field === "enabled" && value === true && !newOptions[index].price) {
+        newOptions[index] = { ...newOptions[index], [field]: value, price: "0" };
+      } else {
+        newOptions[index] = { ...newOptions[index], [field]: value };
+      }
       return newOptions;
     });
   };
@@ -159,9 +164,9 @@ export const useOnboardingExpert = () => {
       // ÉTAPE 1: Soumettre toutes les données de l'expert à l'API
       const expertResult = await onboardingMutation.mutateAsync(onboardingData);
 
-      // ÉTAPE 2: Créer TOUTES les sessions activées avec un prix > 0
+      // ÉTAPE 2: Créer TOUTES les sessions activées avec un prix >= 0 (0 est accepté pour les consultations gratuites)
       const enabledOptions = visioOptions.filter(
-        (option) => option.enabled && option.price && Number(option.price) > 0
+        (option) => option.enabled && option.price !== "" && option.price !== null && option.price !== undefined && Number(option.price) >= 0
       );
 
       if ((expertResult as any)?.id && enabledOptions.length > 0) {

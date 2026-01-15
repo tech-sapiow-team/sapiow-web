@@ -84,6 +84,10 @@ export default {
     validate: "Validate",
     skip: "Skip",
     finish: "Finish",
+    // Visio Configuration
+    addFirstVisio: "Add your first video session",
+    minutes: "minutes",
+    price: "Price",
   },
 
   // Visios/Appointments

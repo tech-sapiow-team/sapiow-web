@@ -1,5 +1,6 @@
 "use client";
 import { VisioOption } from "@/hooks/useOnboardingExpert";
+import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { Switch } from "../ui/switch";
 
@@ -16,6 +17,7 @@ export const VisioConfiguration: React.FC<VisioConfigurationProps> = ({
   visioOptions,
   onUpdateVisioOption,
 }) => {
+  const t = useTranslations();
   const [focusedFields, setFocusedFields] = useState<Set<number>>(new Set());
 
   const handleFocus = (index: number) => {
@@ -33,7 +35,7 @@ export const VisioConfiguration: React.FC<VisioConfigurationProps> = ({
   return (
     <div className="w-full max-w-[350px] sm:max-w-[380px] lg:max-w-[391px] flex flex-col ">
       <h2 className="text-sm sm:text-base lg:text-xl font-bold text-left pl-6 mb-8">
-        Ajoutez votre première visio
+        {t("onboarding.addFirstVisio")}
       </h2>
 
       <div className="w-full space-y-4 mb-8">
@@ -43,7 +45,7 @@ export const VisioConfiguration: React.FC<VisioConfigurationProps> = ({
             className="flex items-center justify-between bg-white border-1 border-[#E5E7EB] rounded-[12px] px-4 py-3.5 w-[317px] h-[56px]"
           >
             <span className="text-base font-medium text-exford-blue w-24">
-              {option.duration} minutes
+              {option.duration} {t("onboarding.minutes")}
             </span>
 
             <div
@@ -78,7 +80,7 @@ export const VisioConfiguration: React.FC<VisioConfigurationProps> = ({
                       : "text-[#CBD5E1]"
                   }`}
                 >
-                  {option.price || focusedFields.has(idx) ? "Prix" : "0"}
+                  {option.price || focusedFields.has(idx) ? t("onboarding.price") : "0"}
                 </label>
               </div>
               <span

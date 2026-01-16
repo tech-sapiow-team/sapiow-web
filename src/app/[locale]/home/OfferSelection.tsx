@@ -78,7 +78,8 @@ export default function OfferSelection({
     "session"
   );
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
-
+  console.log("expertData", expertData);
+  
   const { setIsPaid } = usePayStore();
   const { setIsPlaning } = usePlaningStore();
   const { setAppointmentData } = useAppointmentStore();

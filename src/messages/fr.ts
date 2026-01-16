@@ -86,6 +86,10 @@ export default {
     validate: "Valider",
     skip: "Passer",
     finish: "Terminer",
+    // Visio Configuration
+    addFirstVisio: "Ajoutez votre première visio",
+    minutes: "minutes",
+    price: "Prix",
   },
 
   // Visios/Appointments

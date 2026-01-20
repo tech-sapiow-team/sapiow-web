@@ -105,13 +105,13 @@ export class GoogleCalendarService {
   public async completeConnection(authCode: string): Promise<boolean> {
     try {
       const response = await apiClient.post<{
-        access_token: string;
+        sapiow_access_token: string;
         refresh_token: string;
         expires_in: number;
       }>('google-calendar/callback', { code: authCode });
 
       // Sauvegarder les tokens
-      this.saveTokensToStorage(response.access_token, response.refresh_token);
+      this.saveTokensToStorage(response.sapiow_access_token, response.refresh_token);
       if (typeof window !== 'undefined') {
         localStorage.setItem('google_calendar_connected', 'true');
       }
@@ -130,7 +130,7 @@ export class GoogleCalendarService {
     try {
       if (this.accessToken) {
         await apiClient.post('google-calendar/revoke', { 
-          access_token: this.accessToken 
+          sapiow_access_token: this.accessToken 
         });
       }
     } catch (error) {

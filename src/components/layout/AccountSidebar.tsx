@@ -90,7 +90,7 @@ export function AccountSidebar({ isMobile = false }: AccountSidebarProps) {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      localStorage.removeItem("access_token");
+      localStorage.removeItem("sapiow_access_token");
       // 0. Nettoyer TOUTES les connexions Stream avant la déconnexion
       await cleanupAllStreamConnections();
 

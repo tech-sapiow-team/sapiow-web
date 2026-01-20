@@ -8,8 +8,8 @@ export const authUtils = {
   /**
    * Stocker les tokens d'authentification
    */
-  setTokens: (access_token: string, refreshToken: string, userId: string) => {
-    localStorage.setItem("access_token", access_token);
+  setTokens: (sapiow_access_token: string, refreshToken: string, userId: string) => {
+    localStorage.setItem("sapiow_access_token", sapiow_access_token);
     localStorage.setItem("refresh_token", refreshToken);
     localStorage.setItem("user_id", userId);
   },
@@ -18,7 +18,7 @@ export const authUtils = {
    * Récupérer le token d'accès
    */
   getAccessToken: (): string | null => {
-    return localStorage.getItem("access_token");
+    return localStorage.getItem("sapiow_access_token");
   },
 
   /**
@@ -53,7 +53,7 @@ export const authUtils = {
    * Vérifier si l'utilisateur est authentifié avec un token valide
    */
   isAuthenticated: (): boolean => {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("sapiow_access_token");
     if (!token) return false;
     
     // Vérifier si le token est expiré
@@ -124,7 +124,7 @@ export const authUtils = {
    * Nettoyer tous les tokens (déconnexion)
    */
   clearTokens: () => {
-    localStorage.removeItem("access_token");
+    localStorage.removeItem("sapiow_access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user_id");
   },
@@ -133,7 +133,7 @@ export const authUtils = {
    * Récupérer les headers d'authentification pour les requêtes API
    */
   getAuthHeaders: (): Record<string, string> => {
-    const access_token = authUtils.getAccessToken();
-    return access_token ? { Authorization: `Bearer ${access_token}` } : {};
+    const sapiow_access_token = authUtils.getAccessToken();
+    return sapiow_access_token ? { Authorization: `Bearer ${sapiow_access_token}` } : {};
   },
 };

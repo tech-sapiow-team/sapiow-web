@@ -205,7 +205,7 @@ export const useClientProfileUpdate = ({
       console.log("✅ Compte client supprimé avec succès");
 
       // Redirection vers la page de connexion après suppression
-      localStorage.removeItem("access_token");
+      localStorage.removeItem("sapiow_access_token");
       router.push("/login");
     } catch (error) {
       console.error("❌ Erreur lors de la suppression du compte:", error);

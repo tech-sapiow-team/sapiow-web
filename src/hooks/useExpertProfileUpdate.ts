@@ -1,13 +1,13 @@
+import { useGetProAppointments } from "@/api/appointments/useAppointments";
 import {
   UpdateProExpertData,
   useDeleteProExpert,
   useUpdateProExpert,
 } from "@/api/proExpert/useProExpert";
-import { useGetProAppointments } from "@/api/appointments/useAppointments";
+import { showToast } from "@/utils/toast";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
-import { showToast } from "@/utils/toast";
 
 export interface ExpertFormData {
   firstName: string;
@@ -324,7 +324,7 @@ export const useExpertProfileUpdate = ({
       console.log("✅ Compte expert supprimé avec succès");
 
       // Redirection vers la page de connexion après suppression
-      localStorage.removeItem("access_token");
+      localStorage.removeItem("sapiow_access_token");
       router.push("/login");
     } catch (error) {
       console.error("❌ Erreur lors de la suppression du compte:", error);

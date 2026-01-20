@@ -90,11 +90,11 @@ export function AccountSidebar({ isMobile = false }: AccountSidebarProps) {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      localStorage.removeItem("access_token");
+      
       // 0. Nettoyer TOUTES les connexions Stream avant la déconnexion
       await cleanupAllStreamConnections();
 
-      // Déconnexion via Supabase
+      // Déconnexion via Supabase (gère automatiquement la suppression de la session et des cookies)
       const { error } = await supabase.auth.signOut();
 
       if (error) {
@@ -102,11 +102,9 @@ export function AccountSidebar({ isMobile = false }: AccountSidebarProps) {
         return;
       }
 
-      // 1. Nettoyer le localStorage
+      // 1. Nettoyer le localStorage (données temporaires uniquement)
       localStorage.removeItem("phoneNumber");
       localStorage.removeItem("selectedCountry");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("user_id");
 
       // 2. Nettoyer le localStorage persisté de Zustand
       localStorage.removeItem("user-storage");

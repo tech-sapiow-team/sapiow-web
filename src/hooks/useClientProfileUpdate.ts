@@ -3,6 +3,7 @@ import {
   useDeleteCustomer,
   useUpdateCustomer,
 } from "@/api/customer/useCustomer";
+import { authUtils } from "@/utils/auth";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -204,8 +205,8 @@ export const useClientProfileUpdate = ({
       await deleteCustomer();
       console.log("✅ Compte client supprimé avec succès");
 
-      // Redirection vers la page de connexion après suppression
-      localStorage.removeItem("access_token");
+      // Déconnexion propre via Supabase
+      await authUtils.signOut();
       router.push("/login");
     } catch (error) {
       console.error("❌ Erreur lors de la suppression du compte:", error);

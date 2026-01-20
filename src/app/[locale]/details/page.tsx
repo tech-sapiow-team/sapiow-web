@@ -17,7 +17,7 @@ import { usePlaningStore } from "@/store/usePlaning";
 import Lottie from "lottie-react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import OfferSelection from "../home/OfferSelection";
 import ProfessionalCard from "../home/ProfessionalCard";
 
@@ -90,7 +90,12 @@ interface Appointment {
 function ProfessionalDetailContent() {
   const t = useTranslations();
   const locale = useLocale();
-  const isAuthenticated = authUtils.isAuthenticated();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  useEffect(() => {
+    authUtils.isAuthenticated().then(setIsAuthenticated);
+  }, []);
+  
   const { data: customer } = useGetCustomer(isAuthenticated);
   const { data: appointments } = useGetPatientAppointments(customer?.id) as {
     data: Appointment[];

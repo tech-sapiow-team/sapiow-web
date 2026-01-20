@@ -1,7 +1,7 @@
 "use client";
 import {
-  useCreatePatientAppointment,
-  useGetProAppointments,
+    useCreatePatientAppointment,
+    useGetProAppointments,
 } from "@/api/appointments/useAppointments";
 import { Button } from "@/components/common/Button";
 import SessionFeaturesList from "@/components/common/SessionFeaturesList";
@@ -13,7 +13,7 @@ import { authUtils } from "@/utils/auth";
 import { Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface OfferSelectionProps {
   price: string;
@@ -73,11 +73,15 @@ export default function OfferSelection({
 }: OfferSelectionProps) {
   const t = useTranslations();
   const currentLocale = useLocale();
-  const isAuthenticated = authUtils.isAuthenticated();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedOption, setSelectedOption] = useState<"session" | string>(
     "session"
   );
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+
+  useEffect(() => {
+    authUtils.isAuthenticated().then(setIsAuthenticated);
+  }, []);
 
   const { setIsPaid } = usePayStore();
   const { setIsPlaning } = usePlaningStore();

@@ -142,8 +142,8 @@ export const fetchApi = async <T>(
     }
   }
 
-  // Récupération des headers d'authentification via authUtils (localStorage)
-  const authHeaders = publicEndpoint ? {} : authUtils.getAuthHeaders();
+  // Récupération des headers d'authentification via authUtils (session Supabase)
+  const authHeaders = publicEndpoint ? {} : await authUtils.getAuthHeaders();
 
   const headers = {
     ...(options.body instanceof FormData
@@ -163,7 +163,7 @@ export const fetchApi = async <T>(
     // Gestion spéciale des erreurs d'authentification
     if (response.status === 401 || response.status === 403) {
       console.log("Erreur d'authentification détectée, nettoyage des tokens");
-      authUtils.clearTokens();
+      await authUtils.clearTokens();
 
       const error = new Error(
         "Session expirée. Veuillez vous reconnecter."

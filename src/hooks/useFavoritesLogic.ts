@@ -1,10 +1,10 @@
 import {
-  useAddFavorite,
-  useGetFavorites,
-  useRemoveFavorite,
+    useAddFavorite,
+    useGetFavorites,
+    useRemoveFavorite,
 } from "@/api/favorites/useFavorites";
 import { authUtils } from "@/utils/auth";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 /**
  * Hook personnalisé pour gérer la logique des favoris
@@ -21,8 +21,14 @@ import { useMemo } from "react";
  * - Invalidation automatique du cache React Query
  */
 export const useFavoritesLogic = (options?: { enabled?: boolean }) => {
-  const isAuthenticated =
-    typeof window !== "undefined" && authUtils.isAuthenticated();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      authUtils.isAuthenticated().then(setIsAuthenticated);
+    }
+  }, []);
+
   const enabled = options?.enabled ?? isAuthenticated;
 
   // Hooks API pour les favoris

@@ -30,9 +30,9 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
-        const authenticated = authUtils.isAuthenticated();
+        const authenticated = await authUtils.isAuthenticated();
         setIsAuthenticated(authenticated);
 
         if (!authenticated) {

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { authUtils } from "@/utils/auth";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface RedirectIfAuthenticatedProps {
   children: React.ReactNode;
@@ -24,9 +24,9 @@ export const RedirectIfAuthenticated: React.FC<RedirectIfAuthenticatedProps> = (
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
-        const authenticated = authUtils.isAuthenticated();
+        const authenticated = await authUtils.isAuthenticated();
         setIsAuthenticated(authenticated);
         
         if (authenticated) {

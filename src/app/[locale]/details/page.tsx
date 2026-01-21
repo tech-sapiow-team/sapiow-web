@@ -6,7 +6,6 @@ import { Button } from "@/components/common/Button";
 import HowItWorksCard from "@/components/common/HowItWorksCard";
 import { LoadingScreen } from "@/components/common/LoadingScreen";
 import VisioPlanningCalendar from "@/components/common/VisioPlanningCalendar";
-import { withAuth } from "@/components/common/withAuth";
 import { HeaderClient } from "@/components/layout/header/HeaderClient";
 import { AppSidebar } from "@/components/layout/Sidebare";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +17,7 @@ import { usePlaningStore } from "@/store/usePlaning";
 import Lottie from "lottie-react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import OfferSelection from "../home/OfferSelection";
 import ProfessionalCard from "../home/ProfessionalCard";
 
@@ -30,6 +29,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsMobileOrTablet } from "@/hooks/use-mobile-tablet";
 import { useDetailsLogic } from "@/hooks/useDetailsLogic";
 import { useUserStore } from "@/store/useUser";
+import { authUtils } from "@/utils/auth";
 import { useLocale, useTranslations } from "next-intl";
 
 // Type definitions based on actual API response
@@ -87,63 +87,16 @@ interface Appointment {
   updated_at: string;
 }
 
-// Données des professionnels (à déplacer dans un contexte ou API plus tard)
-const professionalsSimilar = [
-  {
-    id: "1",
-    name: "Jean-Pierre Fauch",
-    price: "199.00 €",
-    image: "/assets/icons/pro1.png",
-    verified: true,
-    category: "business",
-    linkedin: "https://www.linkedin.com/in/jean-pierre-fauch/",
-  },
-  {
-    id: "2",
-    name: "Dr Amandine Bergère",
-    price: "120.00 €",
-    image: "/assets/icons/pro2.png",
-    verified: true,
-    category: "business",
-  },
-  {
-    id: "3",
-    name: "Jean-Pierre Fauch",
-    price: "199.00 €",
-    image: "/assets/icons/pro1.png",
-    verified: true,
-    category: "business",
-  },
-  {
-    id: "4",
-    name: "Dr Amandine Bergère",
-    price: "120.00 €",
-    image: "/assets/icons/pro2.png",
-    verified: true,
-    category: "business",
-  },
-  {
-    id: "5",
-    name: "Jean-Pierre Fauch",
-    price: "199.00 €",
-    image: "/assets/icons/pro1.png",
-    verified: true,
-    category: "business",
-  },
-  {
-    id: "6",
-    name: "Dr Amandine Bergère",
-    price: "120.00 €",
-    image: "/assets/icons/pro1.png",
-    verified: true,
-    category: "business",
-  },
-];
-
 function ProfessionalDetailContent() {
   const t = useTranslations();
   const locale = useLocale();
-  const { data: customer } = useGetCustomer();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  useEffect(() => {
+    authUtils.isAuthenticated().then(setIsAuthenticated);
+  }, []);
+  
+  const { data: customer } = useGetCustomer(isAuthenticated);
   const { data: appointments } = useGetPatientAppointments(customer?.id) as {
     data: Appointment[];
   };
@@ -181,7 +134,7 @@ function ProfessionalDetailContent() {
     isLiked,
     setIsOfferSheetOpen,
     toggleDescriptionExpanded,
-  } = useDetailsLogic(expertData);
+  } = useDetailsLogic(expertData, { favoritesEnabled: isAuthenticated });
 
   // Parser extra_data pour obtenir les questions et expectations personnalisées
   const customQuestions: string[] = [];
@@ -678,12 +631,20 @@ function ProfessionalDetailContent() {
       {!isPaid && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 xl:hidden">
           <Sheet open={isOfferSheetOpen} onOpenChange={setIsOfferSheetOpen}>
-            <SheetTrigger asChild>
+            {isAuthenticated ? (
+              <SheetTrigger asChild>
+                <Button
+                  label={t("sessionDetail.bookSession")}
+                  className="w-full h-[48px] bg-exford-blue text-white font-bold font-figtree"
+                />
+              </SheetTrigger>
+            ) : (
               <Button
                 label={t("sessionDetail.bookSession")}
                 className="w-full h-[48px] bg-exford-blue text-white font-bold font-figtree"
+                onClick={() => router.push("/login")}
               />
-            </SheetTrigger>
+            )}
             <SheetContent
               side="bottom"
               className="h-[90vh] overflow-y-auto bg-white"
@@ -725,4 +686,4 @@ function ProfessionalDetail() {
   );
 }
 
-export default withAuth(ProfessionalDetail);
+export default ProfessionalDetail;

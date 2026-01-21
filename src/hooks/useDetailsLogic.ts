@@ -12,14 +12,17 @@ import { useFavoritesLogic } from "./useFavoritesLogic";
  * - Gestion UI (modals, description étendue)
  * - Délégation des favoris au hook useFavoritesLogic
  */
-export const useDetailsLogic = (expertData: any) => {
+export const useDetailsLogic = (
+  expertData: any,
+  options?: { favoritesEnabled?: boolean }
+) => {
   // États UI locaux
   const [isOfferSheetOpen, setIsOfferSheetOpen] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // Hook logique favoris (partagé avec la page d'accueil)
   const { likedProfs, handleToggleLike, isLoadingFavorites } =
-    useFavoritesLogic();
+    useFavoritesLogic({ enabled: options?.favoritesEnabled });
 
   // Récupérer les expertises pour le mapping
   const { data: expertises } = useGetExpertises(

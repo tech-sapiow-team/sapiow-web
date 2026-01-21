@@ -1,38 +1,53 @@
 import { supabase } from '../lib/supabase/client';
 
 /**
- * Utilitaires pour gérer l'authentification via localStorage avec support Supabase
+ * Utilitaires pour gérer l'authentification via Supabase
+ * Utilise la gestion native de session Supabase (cookies) au lieu de localStorage
  */
 
 export const authUtils = {
   /**
-   * Stocker les tokens d'authentification
+   * Récupérer la session Supabase actuelle
    */
-  setTokens: (access_token: string, refreshToken: string, userId: string) => {
-    localStorage.setItem("access_token", access_token);
-    localStorage.setItem("refresh_token", refreshToken);
-    localStorage.setItem("user_id", userId);
+  getSession: async () => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Erreur lors de la récupération de la session:', error);
+      return null;
+    }
+    return session;
   },
 
   /**
-   * Récupérer le token d'accès
+   * Récupérer le token d'accès depuis la session Supabase
    */
-  getAccessToken: (): string | null => {
-    return localStorage.getItem("access_token");
+  getAccessToken: async (): Promise<string | null> => {
+    const session = await authUtils.getSession();
+    return session?.access_token || null;
   },
 
   /**
-   * Récupérer le token de rafraîchissement
+   * Récupérer le token de rafraîchissement depuis la session Supabase
    */
-  getRefreshToken: (): string | null => {
-    return localStorage.getItem("refresh_token");
+  getRefreshToken: async (): Promise<string | null> => {
+    const session = await authUtils.getSession();
+    return session?.refresh_token || null;
   },
 
   /**
-   * Récupérer l'ID utilisateur
+   * Récupérer l'ID utilisateur depuis la session Supabase
    */
-  getUserId: (): string | null => {
-    return localStorage.getItem("user_id");
+  getUserId: async (): Promise<string | null> => {
+    const session = await authUtils.getSession();
+    return session?.user?.id || null;
+  },
+
+  /**
+   * Récupérer l'utilisateur complet depuis la session Supabase
+   */
+  getUser: async () => {
+    const session = await authUtils.getSession();
+    return session?.user || null;
   },
 
   /**
@@ -50,17 +65,16 @@ export const authUtils = {
   },
 
   /**
-   * Vérifier si l'utilisateur est authentifié avec un token valide
+   * Vérifier si l'utilisateur est authentifié avec une session valide
    */
-  isAuthenticated: (): boolean => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return false;
+  isAuthenticated: async (): Promise<boolean> => {
+    const session = await authUtils.getSession();
+    if (!session?.access_token) return false;
     
     // Vérifier si le token est expiré
-    if (authUtils.isTokenExpired(token)) {
-      console.log('Token expiré, nettoyage automatique');
-      authUtils.clearTokens();
-      return false;
+    if (authUtils.isTokenExpired(session.access_token)) {
+      console.log('Token expiré, tentative de refresh automatique');
+      return await authUtils.refreshAccessToken();
     }
     
     return true;
@@ -68,37 +82,23 @@ export const authUtils = {
 
   /**
    * Rafraîchir le token d'accès en utilisant le refresh token
+   * Supabase gère automatiquement le refresh via les cookies
    */
   refreshAccessToken: async (): Promise<boolean> => {
-    const refreshToken = authUtils.getRefreshToken();
-    if (!refreshToken) {
-      console.log('Aucun refresh token disponible');
-      return false;
-    }
-
     try {
-      const { data, error } = await supabase.auth.refreshSession({
-        refresh_token: refreshToken
-      });
+      const { data, error } = await supabase.auth.refreshSession();
 
       if (error || !data?.session) {
         console.error('Erreur lors du refresh du token:', error);
-        authUtils.clearTokens();
+        await authUtils.signOut();
         return false;
       }
-
-      // Mettre à jour les tokens avec la nouvelle session
-      authUtils.setTokens(
-        data.session.access_token,
-        data.session.refresh_token,
-        data.user?.id || authUtils.getUserId() || ''
-      );
 
       console.log('Token rafraîchi avec succès');
       return true;
     } catch (error) {
       console.error('Erreur lors du refresh du token:', error);
-      authUtils.clearTokens();
+      await authUtils.signOut();
       return false;
     }
   },
@@ -107,7 +107,7 @@ export const authUtils = {
    * Vérifier et rafraîchir automatiquement le token si nécessaire
    */
   ensureValidToken: async (): Promise<boolean> => {
-    const token = authUtils.getAccessToken();
+    const token = await authUtils.getAccessToken();
     if (!token) return false;
 
     // Si le token n'est pas expiré, tout va bien
@@ -121,19 +121,33 @@ export const authUtils = {
   },
 
   /**
-   * Nettoyer tous les tokens (déconnexion)
+   * Déconnexion complète (supprime la session Supabase et les cookies)
    */
-  clearTokens: () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user_id");
+  signOut: async (): Promise<void> => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
+  },
+
+  /**
+   * Alias pour la compatibilité avec l'ancien code
+   * @deprecated Utiliser signOut() à la place
+   */
+  clearTokens: async (): Promise<void> => {
+    console.warn('clearTokens() est déprécié, utilisez signOut() à la place');
+    await authUtils.signOut();
   },
 
   /**
    * Récupérer les headers d'authentification pour les requêtes API
    */
-  getAuthHeaders: (): Record<string, string> => {
-    const access_token = authUtils.getAccessToken();
+  getAuthHeaders: async (): Promise<Record<string, string>> => {
+    const access_token = await authUtils.getAccessToken();
     return access_token ? { Authorization: `Bearer ${access_token}` } : {};
   },
 };

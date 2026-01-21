@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  useGetProExpert,
-  useUpdateProExpert,
+    useGetProExpert,
+    useUpdateProExpert,
 } from "@/api/proExpert/useProExpert";
 import { Switch } from "@/components/ui/switch";
 import { useProSessionsConfig } from "@/hooks/useProSessionsConfig";

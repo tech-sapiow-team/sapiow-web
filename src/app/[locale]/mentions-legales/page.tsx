@@ -8,35 +8,50 @@ import Image from "next/image";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 
+type LegalTabId = "tos" | "privacy" | "licenses";
+
+type NavItem = {
+  id: LegalTabId;
+  label: string;
+  href: `#${LegalTabId}`;
+};
+
+type LegalTab = {
+  id: LegalTabId;
+  label: string;
+  content: ReactNode;
+  href: `#${LegalTabId}`;
+};
+
 // Fonction pour générer les éléments de navigation avec traductions
-const getNavItems = (t: any) => [
+const getNavItems = (t: any): NavItem[] => [
   {
+    id: "tos",
     label: t("legalMentions.termsOfService"),
-    href: "/#",
+    href: "#tos",
   },
   {
+    id: "privacy",
     label: t("legalMentions.privacyPolicy"),
-    href: "/#",
+    href: "#privacy",
   },
   {
+    id: "licenses",
     label: t("legalMentions.openSourceLicenses"),
-    href: "/#",
+    href: "#licenses",
   },
 ];
 
 // Fonction pour générer les onglets avec traductions et contenu spécifique
-const getTabs = (
-  t: any,
-  privacyHtml: string
-): { id: number; label: string; content: ReactNode; href: string }[] => [
+const getTabs = (t: any, privacyHtml: string): LegalTab[] => [
   {
-    id: 1,
+    id: "tos",
     label: t("legalMentions.termsOfService"),
     content: t("legalMentions.termsContent"),
-    href: "/#",
+    href: "#tos",
   },
   {
-    id: 2,
+    id: "privacy",
     label: t("legalMentions.privacyPolicy"),
     content: (
       <div
@@ -46,13 +61,13 @@ const getTabs = (
         }}
       />
     ),
-    href: "/#",
+    href: "#privacy",
   },
   {
-    id: 3,
+    id: "licenses",
     label: t("legalMentions.openSourceLicenses"),
     content: t("legalMentions.licensesContent"),
-    href: "/#",
+    href: "#licenses",
   },
 ];
 
@@ -82,8 +97,38 @@ export default function MentionsLegales() {
   const TABS = getTabs(t, messages.legalMentions.privacyContent as string);
   const activeTab = TABS[activeIdx];
 
+  const syncActiveTabFromHash = () => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash.replace("#", "") as LegalTabId | "";
+    if (!hash) return;
+    const idx = TABS.findIndex((tab) => tab.id === hash);
+    if (idx !== -1) {
+      setActiveIdx(idx);
+      // Sur mobile, si on arrive directement avec un hash, on affiche le contenu
+      if (isMobile) setShowContent(true);
+    }
+  };
+
+  // Sync état ↔ hash (deep link + back/forward)
+  useEffect(() => {
+    syncActiveTabFromHash();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, locale]);
+
+  useEffect(() => {
+    const onHashChange = () => syncActiveTabFromHash();
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile]);
+
   const handleTabClick = (idx: number) => {
     setActiveIdx(idx);
+    // Mettre à jour le hash sans dépendre du label (pas d'espaces)
+    const tab = TABS[idx];
+    if (typeof window !== "undefined" && tab) {
+      window.history.replaceState(null, "", tab.href);
+    }
     if (isMobile) {
       setShowContent(true);
     }
@@ -227,6 +272,7 @@ export default function MentionsLegales() {
                   </Link>
                 </div>
                 <div className="text-ash-gray text-base leading-relaxed">
+                  <div id={activeTab.id} />
                   {activeTab.content}
                 </div>
               </div>

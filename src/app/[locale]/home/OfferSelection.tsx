@@ -1,7 +1,7 @@
 "use client";
 import {
-  useCreatePatientAppointment,
-  useGetProAppointments,
+    useCreatePatientAppointment,
+    useGetProAppointments,
 } from "@/api/appointments/useAppointments";
 import { Button } from "@/components/common/Button";
 import SessionFeaturesList from "@/components/common/SessionFeaturesList";
@@ -9,10 +9,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAppointmentStore } from "@/store/useAppointmentStore";
 import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
+import { authUtils } from "@/utils/auth";
 import { Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface OfferSelectionProps {
   price: string;
@@ -72,10 +73,15 @@ export default function OfferSelection({
 }: OfferSelectionProps) {
   const t = useTranslations();
   const currentLocale = useLocale();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedOption, setSelectedOption] = useState<"session" | string>(
     "session"
   );
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+
+  useEffect(() => {
+    authUtils.isAuthenticated().then(setIsAuthenticated);
+  }, []);
 
   const { setIsPaid } = usePayStore();
   const { setIsPlaning } = usePlaningStore();
@@ -107,6 +113,10 @@ export default function OfferSelection({
 
   // Fonction pour gérer le paiement de l'abonnement
   const handleSubscriptionPayment = async (sessionId: string) => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
     const selectedSession = subscriptionSessions.find(
       (s: any) => s.id === sessionId
     );
@@ -246,7 +256,14 @@ export default function OfferSelection({
                       ? "bg-cobalt-blue hover:bg-cobalt-blue/80 text-white"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
-                  onClick={() => hasSlotsAvailable && setIsPlaning(true)}
+                  onClick={() => {
+                    if (!hasSlotsAvailable) return;
+                    if (!isAuthenticated) {
+                      router.push("/login");
+                      return;
+                    }
+                    setIsPlaning(true);
+                  }}
                   disabled={!hasSlotsAvailable}
                 />
               )}

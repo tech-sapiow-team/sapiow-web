@@ -1,10 +1,11 @@
 "use client";
-import { withAuth } from "@/components/common/withAuth";
 import { Header } from "@/components/layout/header/Header";
 import { HeaderClient } from "@/components/layout/header/HeaderClient";
 import { AppSidebar } from "@/components/layout/Sidebare";
 import { useUserStore } from "@/store/useUser";
-import { useLocale } from "next-intl";
+import { authUtils } from "@/utils/auth";
+import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Client from "./home/Client";
@@ -14,9 +15,34 @@ function Home() {
   const { user } = useUserStore();
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentUserType, setCurrentUserType] = useState(user.type);
   const [isRedirectingOAuth, setIsRedirectingOAuth] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Vérifier l'authentification au chargement de la page
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const authenticated = await authUtils.isAuthenticated();
+        setIsAuthenticated(authenticated);
+        
+        if (!authenticated) {
+          console.log('❌ Non authentifié, redirection vers /login');
+          router.push(`/${locale}/login`);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification d\'authentification:', error);
+        router.push(`/${locale}/login`);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+  }, [router, locale]);
 
   // Gérer le retour OAuth de Google Calendar (doit être le premier useEffect)
   useEffect(() => {
@@ -46,6 +72,23 @@ function Home() {
       return () => clearTimeout(timer);
     }
   }, [user.type, currentUserType]);
+
+  // Afficher un loader pendant la vérification d'authentification
+  if (isCheckingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">{t("loading")}...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si non authentifié, ne rien afficher (redirection en cours)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   // Afficher un loader pendant la redirection OAuth
   if (isRedirectingOAuth) {
@@ -81,9 +124,33 @@ function Home() {
             {currentUserType === "client" ? <Client /> : <Expert />}
           </div>
         </div>
+
+        {/* Footer - uniquement sur la home */}
+        <footer className="mt-auto border-t border-soft-ice-gray px-5 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-ash-gray">
+            <Link
+              href={`/${locale}/mentions-legales`}
+              className="hover:underline underline-offset-4 w-fit"
+            >
+              {t("account.legalMentions")}
+            </Link>
+            <Link
+              href={`/${locale}/mentions-legales#tos`}
+              className="hover:underline underline-offset-4 w-fit"
+            >
+              {t("legalMentions.termsOfService")}
+            </Link>
+            <Link
+              href={`/${locale}/mentions-legales#privacy`}
+              className="hover:underline underline-offset-4 w-fit"
+            >
+              {t("legalMentions.privacyPolicy")}
+            </Link>
+          </div>
+        </footer>
       </div>
     </div>
   );
 }
 
-export default withAuth(Home);
+export default Home;

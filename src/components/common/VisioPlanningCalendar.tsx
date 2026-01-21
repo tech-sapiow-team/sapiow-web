@@ -5,6 +5,7 @@ import {
 } from "@/api/appointments/useAppointments";
 import { Button } from "@/components/common/Button";
 import { useAppointmentStore } from "@/store/useAppointmentStore";
+import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -305,6 +306,7 @@ export default function VisioPlanningCalendar({
   const appointmentBlocks = expertData?.appointment_blocks || [];
 
   const { setIsPlaning } = usePlaningStore();
+  const { setIsPaid } = usePayStore();
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
@@ -346,7 +348,8 @@ export default function VisioPlanningCalendar({
   const selectedSession = availableDurations.find(
     (d: any) => d.value === selectedDuration
   );
-  const sessionPrice = selectedSession?.price || 120;
+ 
+  const sessionPrice = selectedSession?.price;
 
   // Générer les créneaux horaires dynamiquement
   const timeSlots = useMemo(() => {
@@ -430,7 +433,7 @@ export default function VisioPlanningCalendar({
 
   const handleReserve = async () => {
     if (!selectedDate || !selectedTime || !selectedSession?.sessionId) {
-      console.error("Données manquantes pour créer l'appointment");
+      
       return;
     }
 
@@ -459,12 +462,16 @@ export default function VisioPlanningCalendar({
         appointmentData,
         {
           onSuccess: (data: any) => {
-            console.log("Appointment créé avec succès:", data);
-            if (data?.appointment && data?.payment) {
+            // Si la réponse contient seulement appointment (sans payment), c'est une session gratuite
+            if (data?.appointment && !data?.payment) {
+              // Session gratuite confirmée - afficher le composant de succès
+              setIsPaid(true);
+              setIsPlaning(false);
+              setIsRedirecting(false);
+            } else if (data?.appointment && data?.payment) {
+              // Session payante - rediriger vers la page de paiement
               setAppointmentData(data.appointment, data.payment);
-              // Construire l'URL de retour avec l'ID de l'expert
               const returnUrl = `/details?id=${data.appointment.pro_id}`;
-              // La redirection va se faire, garder le loader actif
               router.push(
                 `/payment?returnUrl=${encodeURIComponent(returnUrl)}`
               );
@@ -490,9 +497,6 @@ export default function VisioPlanningCalendar({
       if (onDateTimeSelect) {
         onDateTimeSelect(selectedDateTime, selectedTime, selectedDuration);
       }
-
-      // Fermer le planning
-      setIsPlaning(false);
     } catch (error) {
       console.error("Erreur lors de la création de l'appointment:", error);
       // En cas d'erreur, désactiver le loader

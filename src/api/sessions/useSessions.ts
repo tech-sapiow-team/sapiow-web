@@ -105,10 +105,10 @@ export const useCreateProSession = () => {
   const queryClient = useQueryClient();
   return useMutation<SessionCreateResponse, SessionCreateError, SessionCreate>({
     mutationFn: async (sessionData: SessionCreate) => {
-      // Validation des données requises
-      if (!sessionData.price || sessionData.price <= 0) {
+      // Validation des données requises - 0 est accepté pour les consultations gratuites
+      if (sessionData.price === undefined || sessionData.price === null || sessionData.price < 0) {
         throw new Error(
-          "Le prix de la session est requis et doit être positif"
+          "Le prix de la session est requis et doit être positif ou égal à 0"
         );
       }
 
@@ -186,8 +186,8 @@ export const useCreateProSession = () => {
 export const validateSessionData = (data: SessionCreate): string[] => {
   const errors: string[] = [];
 
-  if (!data.price || data.price <= 0) {
-    errors.push("Le prix doit être un nombre positif");
+  if (data.price === undefined || data.price === null || data.price < 0) {
+    errors.push("Le prix doit être un nombre positif ou égal à 0");
   }
 
   // session_type requis seulement pour les sessions ponctuelles
@@ -297,8 +297,8 @@ export const useGetProSession = () => {
 export const validateSessionUpdateData = (data: SessionUpdate): string[] => {
   const errors: string[] = [];
 
-  if (data.price !== undefined && data.price <= 0) {
-    errors.push("Le prix doit être un nombre positif");
+  if (data.price !== undefined && data.price < 0) {
+    errors.push("Le prix doit être un nombre positif ou égal à 0");
   }
 
   if (

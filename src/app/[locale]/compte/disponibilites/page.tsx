@@ -8,10 +8,12 @@ import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { AvailabilityButtons } from "@/components/common/AvailabilityButtons";
 import AvailabilitySheet from "@/components/common/AvailabilitySheet";
 import CustomCalendar from "@/components/common/CustomCalendar";
+import GoogleCalendarConnectButton from "@/components/common/GoogleCalendarConnectButton";
 import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { PeriodType } from "@/components/common/PeriodToggle";
 import { SessionDetailsPanel } from "@/components/common/SessionDetailsPanel";
 import SyncedCalendarsSheet from "@/components/common/SyncedCalendarsSheet";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Sheet,
   SheetContent,
@@ -24,6 +26,7 @@ import { useVisiosAppointments } from "@/hooks/useVisiosAppointments";
 import { useCalendarStore } from "@/store/useCalendar";
 import { useProExpertStore } from "@/store/useProExpert";
 import { useLocale, useTranslations } from "next-intl";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import AccountLayout from "../AccountLayout";
 
@@ -185,10 +188,11 @@ export default function Disponibilites() {
               <AvailabilityButtons
                 onManageAvailability={handleManageAvailability}
                 onSyncCalendars={handleSyncCalendars}
+                isGoogleConnected={isGoogleConnected}
               />
 
               {/* Afficher la card de connexion seulement si Google Calendar n'est pas connecté */}
-              {/* {!isGoogleConnected && (
+              {!isGoogleConnected && (
                 <Card className="w-full fixed bottom-16 lg:bottom-0 max-w-[380px] bg-white border-none shadow-none h-[183px] mt-4">
                   <CardContent className="p-4 space-y-3">
                     <div>
@@ -218,14 +222,15 @@ export default function Disponibilites() {
                       </div>
                       <GoogleCalendarConnectButton
                         isLoading={isGoogleLoading}
-                        className="text-sm font-bold font-figtree"
+                        className="text-sm font-bold font-figtree text-black"
+                        redirectPath="/compte/disponibilites"
                       >
                         {t("disponibilites.connect")}
                       </GoogleCalendarConnectButton>
                     </div>
                   </CardContent>
                 </Card>
-              )} */}
+              )} 
             </div>
           </div>
 

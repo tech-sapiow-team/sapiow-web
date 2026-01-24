@@ -1,7 +1,7 @@
 import {
-  useCreateProAppointmentBlock,
-  useDeleteProAppointmentBlock,
-  useGetProAppointmentBlocks,
+    useCreateProAppointmentBlock,
+    useDeleteProAppointmentBlock,
+    useGetProAppointmentBlocks,
 } from "@/api/appointments/useAppointments";
 import { BlockDaySection } from "@/components/common/BlockDaySection";
 import { EmptySessionCard } from "@/components/common/EmptySessionCard";

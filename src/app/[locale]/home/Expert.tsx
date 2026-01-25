@@ -173,6 +173,7 @@ export default function Expert() {
           <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-5">
             {Array.isArray(appointments) && appointments.length > 0 ? (
               appointments
+                .filter((appointment: any) => appointment.type !== "calendar") // Exclure les rendez-vous de type calendar
                 .filter((appointment: any) => appointment.status === "pending")
                 .map((appointment: any) => {
                   const appointmentDate = new Date(appointment.appointment_at);
@@ -228,6 +229,7 @@ export default function Expert() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-20">
               {Array.isArray(appointments) && appointments.length > 0 ? (
                 appointments
+                  .filter((appointment: any) => appointment.type !== "calendar") // Exclure les rendez-vous de type calendar
                   .filter(
                     (appointment: any) => appointment.status === "confirmed"
                   )

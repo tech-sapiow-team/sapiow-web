@@ -29,11 +29,13 @@ const AvailabilityButton = ({
 interface AvailabilityButtonsProps {
   onManageAvailability: () => void;
   onSyncCalendars: () => void;
+  isGoogleConnected: boolean;
 }
 
 export const AvailabilityButtons = ({
   onManageAvailability,
   onSyncCalendars,
+  isGoogleConnected,
 }: AvailabilityButtonsProps) => {
   const t = useTranslations();
 
@@ -44,11 +46,13 @@ export const AvailabilityButtons = ({
         label={t("availabilityButtons.manageAvailability")}
         onClick={onManageAvailability}
       />
-      {/* <AvailabilityButton
-        icon="/assets/icons/calendar.svg"
-        label={t("availabilityButtons.syncCalendars")}
-        onClick={onSyncCalendars}
-      /> */}
+      {isGoogleConnected && (
+        <AvailabilityButton
+          icon="/assets/icons/calendar.svg"
+          label={t("availabilityButtons.syncCalendars")}
+          onClick={onSyncCalendars}
+        />
+      )}
     </div>
   );
 };

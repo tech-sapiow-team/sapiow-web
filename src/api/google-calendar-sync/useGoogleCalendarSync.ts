@@ -3,11 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Types basés sur les réponses backend réelles
 export interface GoogleCalendarConnectResponse {
-  success: boolean;
-  data: {
-    message: string;
-    connectedAt: string;
-  };
+  message: string;
+  connectedAt: string;
 }
 
 export interface GoogleCalendarConnectRequest {
@@ -16,10 +13,7 @@ export interface GoogleCalendarConnectRequest {
 }
 
 export interface GoogleCalendarDisconnectResponse {
-  success: boolean;
-  data: {
-    message: string;
-  };
+  message: string;
 }
 
 export interface GoogleCalendarStatusResponse {

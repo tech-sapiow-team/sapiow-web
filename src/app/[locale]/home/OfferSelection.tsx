@@ -1,7 +1,7 @@
 "use client";
 import {
-    useCreatePatientAppointment,
-    useGetProAppointments,
+  useCreatePatientAppointment,
+  useGetProAppointments,
 } from "@/api/appointments/useAppointments";
 import { Button } from "@/components/common/Button";
 import SessionFeaturesList from "@/components/common/SessionFeaturesList";
@@ -78,11 +78,7 @@ export default function OfferSelection({
     "session"
   );
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
-
-  useEffect(() => {
-    authUtils.isAuthenticated().then(setIsAuthenticated);
-  }, []);
-
+  
   const { setIsPaid } = usePayStore();
   const { setIsPlaning } = usePlaningStore();
   const { setAppointmentData } = useAppointmentStore();
@@ -101,6 +97,15 @@ export default function OfferSelection({
       Array.isArray(appointments) ? appointments : []
     );
   }, [expertData?.schedules, appointments]);
+
+  // Vérifier l'authentification au chargement du composant
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authenticated = await authUtils.isAuthenticated();
+      setIsAuthenticated(authenticated);
+    };
+    checkAuth();
+  }, []);
 
   // Récupérer toutes les sessions d'abonnement actives (session_type null et session_nature "subscription")
   const subscriptionSessions =

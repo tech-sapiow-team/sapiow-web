@@ -113,9 +113,10 @@ export const useProSessionsConfig = () => {
 
   const handlePriceBlur = async (id: string) => {
     const session = sessions.find((s) => s.id === id);
-    if (!session || !session.enabled || session.price <= 0) return;
+    // Accepter 0 comme prix valide pour les consultations gratuites
+    if (!session || !session.enabled || session.price < 0) return;
 
-    // Sauvegarder via API seulement si la session est activée et a un prix valide
+    // Sauvegarder via API seulement si la session est activée et a un prix valide (>= 0)
     try {
       setIsUpdating(id);
 

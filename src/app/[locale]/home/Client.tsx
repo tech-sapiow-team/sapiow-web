@@ -1,7 +1,6 @@
 "use client";
 import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { UpcomingVideoCall } from "@/components/common/DarkSessionCard";
-import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { useClientHome } from "@/hooks/useClientHome";
 import { usePatientAppointments } from "@/hooks/usePatientAppointments";
 import { Professional } from "@/types/professional";
@@ -39,10 +38,6 @@ export default function Client() {
   // Récupération des appointments du patient avec filtre de date et recherche
   const { confirmedAppointments: upcomingAppointments } =
     usePatientAppointments();
-
-  if (isLoading) {
-    return <LoadingScreen message={t("home.loadingExperts")} size="md" />;
-  }
 
   if (error) {
     return (
@@ -108,7 +103,14 @@ export default function Client() {
             onSortChange={handleSortChange}
           />
         )}
-        {selectedCategory === "top" ? (
+        {isLoading ? (
+          // Affichage des skeletons pendant le chargement
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4 min-h-[400px] py-6">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <ProfessionalCardSkeleton key={index} />
+            ))}
+          </div>
+        ) : selectedCategory === "top" ? (
           // Affichage par sections pour "Top"
           <div className="py-6 ">
             {Object.keys(groupedProfessionals).length === 0 ? (

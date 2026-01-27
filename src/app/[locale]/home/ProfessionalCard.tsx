@@ -166,3 +166,59 @@ export default function ProfessionalCard({
     </Card>
   );
 }
+
+// Skeleton component for loading state
+interface ProfessionalCardSkeletonProps {
+  imageWidth?: number;
+  imageHeight?: number;
+  maxWidth?: string;
+}
+
+export function ProfessionalCardSkeleton({
+  imageWidth = 205,
+  imageHeight = 196,
+  maxWidth = "max-w-[205px]",
+}: ProfessionalCardSkeletonProps) {
+  return (
+    <Card
+      className={`mx-auto p-0 m-0 border-none shadow-none ${maxWidth} w-full my-3 rounded-2xl animate-pulse`}
+    >
+      {/* Image skeleton */}
+      <div className="relative">
+        <div
+          className="bg-gray-200 rounded-[12px]"
+          style={{
+            width: imageWidth,
+            height: imageHeight,
+          }}
+        />
+        {/* Heart button skeleton */}
+        <div className="absolute top-3 right-3 bg-gray-300 rounded-full w-8 h-8" />
+      </div>
+
+      {/* Content skeleton */}
+      <CardContent className="flex items-center justify-between p-0 m-0 mt-2">
+        <div className="min-w-0 flex-1 overflow-hidden pr-2">
+          {/* Name and verified icon skeleton */}
+          <div className="flex items-center mb-1 gap-1">
+            <div className="h-4 bg-gray-200 rounded w-24" />
+            <div className="h-4 w-4 bg-gray-200 rounded-full flex-shrink-0" />
+          </div>
+
+          {/* Price skeleton */}
+          <div className="h-3 bg-gray-200 rounded w-20 mb-1" />
+
+          {/* Description skeleton - 3 lines */}
+          <div className="space-y-1">
+            <div className="h-3 bg-gray-200 rounded w-full" />
+            <div className="h-3 bg-gray-200 rounded w-full" />
+            <div className="h-3 bg-gray-200 rounded w-3/4" />
+          </div>
+        </div>
+
+        {/* LinkedIn icon skeleton */}
+        <div className="h-6 w-6 bg-gray-200 rounded flex-shrink-0" />
+      </CardContent>
+    </Card>
+  );
+}

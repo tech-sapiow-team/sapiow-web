@@ -81,11 +81,17 @@ export const useClientHome = (currentUserExpertId?: string) => {
     isLoading: isLoadingExperts,
     error,
   } = useListExperts({
-    search:
-      searchQuery ||
-      (isTopExpert ? "gold" : isDomainId ? selectedCategory : ""),
+    // Si searchQuery existe, faire une recherche générique sans filtre de catégorie
+    // Sinon, utiliser la logique de filtre par catégorie existante
+    search: searchQuery
+      ? searchQuery
+      : isTopExpert
+      ? "gold"
+      : isDomainId
+      ? selectedCategory
+      : "",
     searchFields: searchQuery
-      ? "first_name,last_name,job,domains.name"
+      ? "first_name,last_name,job,domains.name" // Recherche générique dans tous les champs
       : isTopExpert
       ? "badge"
       : isDomainId

@@ -12,6 +12,7 @@ import {
 import { loadStripe } from "@stripe/stripe-js";
 import { ChevronLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import React, { useMemo, useState } from "react";
 
@@ -37,15 +38,25 @@ function OrderSummary() {
 
   return (
     <div className="w-full lg:w-1/2 bg-gray-50 p-6 lg:p-8">
+      {/* Logo Sapiow */}
+
       {/* Bouton retour */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 cursor-pointer"
       >
         <ChevronLeft size={20} />
         <span className="text-sm font-medium">Retour</span>
       </button>
 
+      <div className="flex items-center gap-2 mb-6">
+        <Image
+          src="/assets/iconSidebare/logo.svg"
+          alt="Sapiow Logo"
+          width={48}
+          height={44}
+        />
+      </div>
       {/* Titre */}
       <h2 className="text-xl font-bold text-gray-900 mb-6">
         {t("paymentPage.orderSummary")}
@@ -127,14 +138,6 @@ function CheckoutForm() {
   return (
     <div className="w-full lg:w-1/2 bg-white p-6 lg:p-8">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Logo Link */}
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-sm">L</span>
-          </div>
-          <span className="font-semibold text-lg">link</span>
-        </div>
-
         {/* Stripe Payment Element */}
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <PaymentElement
@@ -176,25 +179,27 @@ function PaymentPage() {
   const stripePromise = loadStripe(payment.publishableKey);
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Récapitulatif de commande - Gauche */}
-      <OrderSummary />
+    <div className="flex items-center justify-center bg-gray-50">
+      <div className="w-full max-w-[1440px] flex flex-col lg:flex-row">
+        {/* Récapitulatif de commande - Gauche */}
+        <OrderSummary />
 
-      {/* Formulaire de paiement - Droite */}
-      <Elements
-        stripe={stripePromise}
-        options={{
-          clientSecret: payment.paymentIntent,
-          appearance: {
-            theme: "stripe",
-            variables: {
-              colorPrimary: "#10b981",
+        {/* Formulaire de paiement - Droite */}
+        <Elements
+          stripe={stripePromise}
+          options={{
+            clientSecret: payment.paymentIntent,
+            appearance: {
+              theme: "stripe",
+              variables: {
+                colorPrimary: "#10b981",
+              },
             },
-          },
-        }}
-      >
-        <CheckoutForm />
-      </Elements>
+          }}
+        >
+          <CheckoutForm />
+        </Elements>
+      </div>
     </div>
   );
 }

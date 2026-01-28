@@ -966,6 +966,10 @@ We encourage you to review it periodically.</p>
     yourNextVisio: "Votre prochaine visio",
     accelerateProject: "Accélérez votre projet, Réservez une Visio.",
     noTopExperts: "Aucun top expert disponible pour le moment.",
+    // Search Mode
+    searchResults: "Résultats de recherche pour",
+    noResultsFound: "Aucun résultat trouvé",
+    tryDifferentSearch: "Essayez avec d'autres mots-clés",
   },
 
   // Share Link Button

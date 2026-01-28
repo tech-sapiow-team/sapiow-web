@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Professional } from "@/types/professional";
+import { Heart } from "lucide-react";
 import Image from "next/image";
 
 interface ProfessionalCardProps {
@@ -17,6 +18,7 @@ interface ProfessionalCardProps {
   isLoadingFavorite?: boolean;
   nameSize?: string;
   iconSize?: number;
+  showPrice?: boolean;
 }
 
 export default function ProfessionalCard({
@@ -31,6 +33,7 @@ export default function ProfessionalCard({
   isLoadingFavorite = false,
   nameSize = "text-sm",
   iconSize = 16,
+  showPrice = true,
 }: ProfessionalCardProps) {
   return (
     <Card
@@ -69,7 +72,7 @@ export default function ProfessionalCard({
         <Button
           variant="ghost"
           size="icon"
-          className={`absolute top-3 right-3 bg-white/20 hover:bg-white rounded-full w-8 h-8 backdrop-blur-[1.4px] transition-all duration-200 ${
+          className={`absolute top-3 right-3 bg-white hover:bg-gray-50 shadow-sm rounded-full w-8 h-8 transition-all duration-200 cursor-pointer ${
             isLoadingFavorite ? "opacity-70 cursor-not-allowed" : ""
           }`}
           onClick={(e) => {
@@ -83,16 +86,10 @@ export default function ProfessionalCard({
           {isLoadingFavorite ? (
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
           ) : (
-            <Image
-              src={
-                isLiked
-                  ? "/assets/icons/heartactif.svg"
-                  : "/assets/icons/heart.svg"
-              }
-              alt="Heart"
-              width={16}
-              height={16}
-              className="transition-all duration-200"
+            <Heart
+              className={`w-4 h-4 transition-all duration-200 ${
+                isLiked ? "fill-red-600 text-red-600" : "text-gray-400"
+              }`}
             />
           )}
         </Button>
@@ -126,18 +123,20 @@ export default function ProfessionalCard({
               />
             )}
           </div>
-          <p className="text-xs text-black mb-1 truncate">
-            {professional.price ? (
-              <>
-                <span className="font-bold font-figtree">
-                  {professional.price}
-                </span>{" "}
-                / Session
-              </>
-            ) : (
-              ""
-            )}
-          </p>
+          {showPrice && (
+            <p className="text-xs text-black mb-1 truncate">
+              {professional.price ? (
+                <>
+                  <span className="font-bold font-figtree">
+                    {professional.price}
+                  </span>{" "}
+                  / Session
+                </>
+              ) : (
+                ""
+              )}
+            </p>
+          )}
           <p
             className={`text-xs text-gray-500 leading-relaxed font-figtree font-medium line-clamp-3`}
           >

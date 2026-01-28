@@ -18,6 +18,7 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
     pendingAppointments,
     historicAppointments,
     loadingStates,
+    isLoading,
     handleConfirmAppointment,
     handleCancelAppointment,
     handleStartVideoCall,
@@ -95,6 +96,7 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
                     key={appointment.id}
                     date={dateDisplay}
                     time={timeDisplay}
+                    isLoading={isLoading}
                     profileImage={
                       appointment.patient?.avatar || "/assets/icons/pro1.png"
                     }
@@ -121,6 +123,18 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
                   />
                 );
               })
+            ) : isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <SessionCard
+                  key={`skeleton-a-venir-${i}`}
+                  isLoading={true}
+                  date=""
+                  time=""
+                  profileImage=""
+                  name=""
+                  sessionDescription=""
+                />
+              ))
             ) : (
               <div className="col-span-full text-center py-8 text-gray-500">
                 {t("visios.noUpcomingVisios")}
@@ -202,6 +216,7 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
                     key={appointment.id}
                     date={dateDisplay}
                     time={timeDisplay}
+                    isLoading={isLoading}
                     profileImage={
                       appointment.patient?.avatar || "/assets/icons/pro1.png"
                     }
@@ -225,6 +240,18 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
                   />
                 );
               })
+            ) : isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <SessionCard
+                  key={`skeleton-history-${i}`}
+                  isLoading={true}
+                  date=""
+                  time=""
+                  profileImage=""
+                  name=""
+                  sessionDescription=""
+                />
+              ))
             ) : (
               <div className="col-span-full text-center py-8 text-gray-500">
                 {t("visios.noHistoryVisios")}

@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover";
 import Image from "next/image";
 import { useState } from "react";
-import SubCategorySkeleton from "./SubCategorySkeleton";
+import SubCategorySkeleton from "../../../components/layout/SubCategorySkeleton";
 
 interface SubCategory {
   id: string;

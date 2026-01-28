@@ -3,7 +3,7 @@ import { useGetDomaines } from "@/api/domaine/useDomaine";
 import { getDomainIcon } from "@/constants/onboarding";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import CategorySkeleton from "./CategorySkeleton";
+import CategorySkeleton from "../../../components/layout/CategorySkeleton";
 
 interface CategoryFilterProps {
   selectedCategory: string;

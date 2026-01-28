@@ -899,7 +899,16 @@ export default function VisioPlanningCalendar({
               {currentLocale === "fr" ? "minutes" : "minutes"}
             </h4>
             <p className="text-sm text-gray-600">
-              Ven {selectedDate ?? "-"} {months[currentDate.getMonth()].toLowerCase()}{" "}
+              {selectedDate
+                ? daysOfWeek[
+                    new Date(
+                      currentDate.getFullYear(),
+                      currentDate.getMonth(),
+                      selectedDate
+                    ).getDay()
+                  ]
+                : "-"}{" "}
+              {selectedDate ?? "-"} {months[currentDate.getMonth()].toLowerCase()}{" "}
               {currentDate.getFullYear()}{" "}
               {selectedTime ? (
                 <>à {selectedTime}</>

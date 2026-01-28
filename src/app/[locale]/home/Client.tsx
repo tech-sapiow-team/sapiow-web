@@ -1,22 +1,215 @@
 "use client";
 import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { UpcomingVideoCall } from "@/components/common/DarkSessionCard";
-import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { useClientHome } from "@/hooks/useClientHome";
 import { usePatientAppointments } from "@/hooks/usePatientAppointments";
+import { useSearchStore } from "@/store/useSearchStore";
 import { Professional } from "@/types/professional";
 import {
   transformAppointmentToSessionData,
   type ApiAppointment,
 } from "@/utils/appointmentUtils";
 import { useTranslations } from "next-intl";
+import { memo } from "react";
 import CategoryFilter from "./CategoryFilter";
 import CategorySection from "./CategorySection";
 import ProfessionalCard from "./ProfessionalCard";
+import SkeletonGrid from "./SkeletonGrid";
 import SubCategoryFilter from "./SubCategoryFilter";
+
+// Composant mémorisé pour la section des visios à venir
+// Ne se recharge PAS lors du changement de catégorie
+const UpcomingVisiosSection = memo(function UpcomingVisiosSection({
+  upcomingAppointments,
+  t,
+}: {
+  upcomingAppointments: ApiAppointment[];
+  t: any;
+}) {
+  if (upcomingAppointments.length === 0) return null;
+
+  return (
+    <div className="mb-6 mt-4">
+      <h2 className="mb-3 text-lg font-bold text-exford-blue font-figtree">
+        {t("home.yourNextVisio")}
+      </h2>
+      <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+        {upcomingAppointments
+          .slice(0, 2)
+          .map((appointment: ApiAppointment) => {
+            const sessionData =
+              transformAppointmentToSessionData(appointment);
+            return (
+              <UpcomingVideoCall
+                key={appointment.id}
+                date={sessionData.date}
+                appointmentAt={appointment.appointment_at}
+                profileImage={sessionData.profileImage}
+                name={sessionData.professionalName}
+                title={sessionData.professionalTitle}
+                variant="dark"
+                showButton={false}
+                sessionTime={sessionData.time}
+                className="w-full min-w-full md:min-w-[calc(50%-0.5rem)] md:w-[calc(50%-0.5rem)] lg:max-w-[324px] lg:min-w-[324px] h-[184px] border-none shadow-none"
+              />
+            );
+          })}
+      </div>
+    </div>
+  );
+});
+
+// Composant mémorisé pour les résultats d'experts
+// Se recharge UNIQUEMENT lors du changement de catégorie, sous-catégorie ou recherche
+const ExpertsResultsSection = memo(function ExpertsResultsSection({
+  isSearchMode,
+  searchQuery,
+  selectedCategory,
+  selectedSubCategory,
+  groupedProfessionals,
+  filteredProfessionals,
+  likedProfs,
+  isLoading,
+  handleCategoryChange,
+  handleSubCategoryChange,
+  handleSortChange,
+  handleToggleLike,
+  handleProfessionalClick,
+  t,
+}: {
+  isSearchMode: boolean;
+  searchQuery: string;
+  selectedCategory: string;
+  selectedSubCategory: string;
+  groupedProfessionals: Record<string, Professional[]>;
+  filteredProfessionals: Professional[];
+  likedProfs: Record<string, boolean>;
+  isLoading: boolean;
+  handleCategoryChange: (categoryId: string) => void;
+  handleSubCategoryChange: (subCategoryId: string) => void;
+  handleSortChange: (sortId: string) => void;
+  handleToggleLike: (professionalId: string) => void;
+  handleProfessionalClick: (professional: Professional) => void;
+  t: any;
+}) {
+  return (
+    <>
+      {/* Titre principal - Afficher un titre différent en mode recherche */}
+      <h2 className="my-2 text-lg lg:text-2xl font-normal text-exford-blue font-figtree">
+        {isSearchMode
+          ? `${t("home.searchResults")} "${searchQuery}"`
+          : t("home.accelerateProject")}
+      </h2>
+
+      {/* Filtres de catégorie et sous-catégorie - Cachés en mode recherche */}
+      {!isSearchMode && (
+        <>
+          <CategoryFilter
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+          />
+          {selectedCategory !== "top" && (
+            <SubCategoryFilter
+              selectedCategory={selectedCategory}
+              selectedSubCategory={selectedSubCategory}
+              onSubCategoryChange={handleSubCategoryChange}
+              onSortChange={handleSortChange}
+            />
+          )}
+        </>
+      )}
+
+      {/* Affichage des résultats */}
+      {isLoading ? (
+        <div className="py-6">
+          <SkeletonGrid />
+        </div>
+      ) : isSearchMode ? (
+        // Mode recherche : affichage en grille simple sans catégories
+        <div className="py-6">
+          {filteredProfessionals.length === 0 ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center">
+                <p className="text-gray-500 text-lg">
+                  {t("home.noResultsFound")}
+                </p>
+                <p className="text-gray-400 text-sm mt-2">
+                  {t("home.tryDifferentSearch")}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4">
+              {filteredProfessionals.map((professional: Professional) => (
+                <ProfessionalCard
+                  key={professional.id}
+                  professional={professional}
+                  isLiked={(() => {
+                    const profIdString = professional.id.toString();
+                    const isLiked = likedProfs[profIdString] || false;
+                    return isLiked;
+                  })()}
+                  onToggleLike={handleToggleLike}
+                  onProfessionalClick={handleProfessionalClick}
+                  lineClamp={3}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : selectedCategory === "top" ? (
+        // Affichage par sections pour "Top"
+        <div className="py-6 ">
+          {Object.keys(groupedProfessionals).length === 0 ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center">
+                <p className="text-gray-500 text-lg">
+                  {t("home.noTopExperts")}
+                </p>
+              </div>
+            </div>
+          ) : (
+            Object.entries(groupedProfessionals).map(
+              ([category, categoryProfessionals]) => (
+                <CategorySection
+                  key={category}
+                  category={category}
+                  professionals={categoryProfessionals as Professional[]}
+                  likedProfs={likedProfs}
+                  onToggleLike={handleToggleLike}
+                  onProfessionalClick={handleProfessionalClick}
+                />
+              )
+            )
+          )}
+        </div>
+      ) : (
+        // Affichage normal pour les autres catégories
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4 min-h-[400px]">
+          {filteredProfessionals.map((professional: Professional) => (
+            <ProfessionalCard
+              key={professional.id}
+              professional={professional}
+              isLiked={(() => {
+                const profIdString = professional.id.toString();
+                const isLiked = likedProfs[profIdString] || false;
+
+                return isLiked;
+              })()}
+              onToggleLike={handleToggleLike}
+              onProfessionalClick={handleProfessionalClick}
+              lineClamp={3}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+});
 
 export default function Client() {
   const t = useTranslations();
+  const { searchQuery } = useSearchStore();
 
   const { data: proExpert } = useGetProExpert(true);
 
@@ -40,9 +233,8 @@ export default function Client() {
   const { confirmedAppointments: upcomingAppointments } =
     usePatientAppointments();
 
-  if (isLoading) {
-    return <LoadingScreen message={t("home.loadingExperts")} size="md" />;
-  }
+  // Déterminer si on est en mode recherche
+  const isSearchMode = Boolean(searchQuery && searchQuery.trim().length > 0);
 
   if (error) {
     return (
@@ -62,98 +254,29 @@ export default function Client() {
   return (
     <>
       <div className=" w-full">
-        {/* Section visios confirmées à venir */}
-        {upcomingAppointments.length > 0 && (
-          <div className="mb-6 mt-4">
-            <h2 className="mb-3 text-lg font-bold text-exford-blue font-figtree">
-              {t("home.yourNextVisio")}
-            </h2>
-            <div className="flex gap-4 overflow-x-auto scrollbar-hide">
-              {upcomingAppointments
-                .slice(0, 2)
-                .map((appointment: ApiAppointment) => {
-                  const sessionData =
-                    transformAppointmentToSessionData(appointment);
-                  return (
-                    <UpcomingVideoCall
-                      key={appointment.id}
-                      date={sessionData.date}
-                      appointmentAt={appointment.appointment_at}
-                      profileImage={sessionData.profileImage}
-                      name={sessionData.professionalName}
-                      title={sessionData.professionalTitle}
-                      variant="dark"
-                      showButton={false}
-                      sessionTime={sessionData.time}
-                      className="w-full min-w-full md:min-w-[calc(50%-0.5rem)] md:w-[calc(50%-0.5rem)] lg:max-w-[324px] lg:min-w-[324px] h-[184px] border-none shadow-none"
-                    />
-                  );
-                })}
-            </div>
-          </div>
-        )}
-        <h2 className="my-2 text-lg lg:text-2xl font-normal text-exford-blue font-figtree">
-          {t("home.accelerateProject")}
-        </h2>{" "}
-        <CategoryFilter
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
+        {/* Section visios confirmées à venir - Mémorisée, ne se recharge PAS */}
+        <UpcomingVisiosSection
+          upcomingAppointments={upcomingAppointments}
+          t={t}
         />
-        {/* </div> */}
-        {selectedCategory !== "top" && (
-          <SubCategoryFilter
-            selectedCategory={selectedCategory}
-            selectedSubCategory={selectedSubCategory}
-            onSubCategoryChange={handleSubCategoryChange}
-            onSortChange={handleSortChange}
-          />
-        )}
-        {selectedCategory === "top" ? (
-          // Affichage par sections pour "Top"
-          <div className="py-6 ">
-            {Object.keys(groupedProfessionals).length === 0 ? (
-              <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center">
-                  <p className="text-gray-500 text-lg">
-                    {t("home.noTopExperts")}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              Object.entries(groupedProfessionals).map(
-                ([category, categoryProfessionals]) => (
-                  <CategorySection
-                    key={category}
-                    category={category}
-                    professionals={categoryProfessionals as Professional[]}
-                    likedProfs={likedProfs}
-                    onToggleLike={handleToggleLike}
-                    onProfessionalClick={handleProfessionalClick}
-                  />
-                )
-              )
-            )}
-          </div>
-        ) : (
-          // Affichage normal pour les autres catégories
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4 min-h-[400px]">
-            {filteredProfessionals.map((professional: Professional) => (
-              <ProfessionalCard
-                key={professional.id}
-                professional={professional}
-                isLiked={(() => {
-                  const profIdString = professional.id.toString();
-                  const isLiked = likedProfs[profIdString] || false;
 
-                  return isLiked;
-                })()}
-                onToggleLike={handleToggleLike}
-                onProfessionalClick={handleProfessionalClick}
-                lineClamp={3}
-              />
-            ))}
-          </div>
-        )}
+        {/* Section résultats d'experts - Mémorisée, se recharge uniquement si nécessaire */}
+        <ExpertsResultsSection
+          isSearchMode={isSearchMode}
+          searchQuery={searchQuery}
+          selectedCategory={selectedCategory}
+          selectedSubCategory={selectedSubCategory}
+          groupedProfessionals={groupedProfessionals}
+          filteredProfessionals={filteredProfessionals}
+          likedProfs={likedProfs}
+          isLoading={isLoading}
+          handleCategoryChange={handleCategoryChange}
+          handleSubCategoryChange={handleSubCategoryChange}
+          handleSortChange={handleSortChange}
+          handleToggleLike={handleToggleLike}
+          handleProfessionalClick={handleProfessionalClick}
+          t={t}
+        />
       </div>
     </>
   );

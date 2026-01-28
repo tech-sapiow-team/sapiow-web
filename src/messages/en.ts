@@ -955,6 +955,10 @@ We encourage you to review it periodically.</p>
     yourNextVisio: "Your next video call",
     accelerateProject: "Accelerate your project, Book a Video Call.",
     noTopExperts: "No top experts available at the moment.",
+    // Search Mode
+    searchResults: "Search results for",
+    noResultsFound: "No results found",
+    tryDifferentSearch: "Try different keywords",
   },
 
   // Share Link Button

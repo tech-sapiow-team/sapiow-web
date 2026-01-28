@@ -10,7 +10,7 @@ import { usePlaningStore } from "@/store/usePlaning";
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface VisioPlanningCalendarProps {
   onDateTimeSelect?: (date: Date, time: string, duration: number) => void;
@@ -50,7 +50,7 @@ const generateTimeSlots = (
   const timeSlots: any[] = [];
 
   const buildSlotsForWindow = (start: Date, end: Date) => {
-    // Générer les créneaux selon la durée sélectionnée
+    // Générer les créneaux horaires selon la durée sélectionnée
     let currentTime = new Date(start);
 
     while (currentTime < end) {
@@ -64,7 +64,7 @@ const generateTimeSlots = (
           hour12: false,
         });
 
-        // Créer une date complète pour ce créneau
+        // Créer une date complète pour ce créneau en combinant la date sélectionnée avec l'heure du créneau
         const slotDateTime = new Date(selectedDate);
         const [hours, minutes] = timeString.split(":");
         const slotHour = parseInt(hours);
@@ -110,7 +110,7 @@ const generateTimeSlots = (
           }
         }
 
-        // Obtenir l'heure actuelle
+        // Obtenir l'heure actuelle pour filtrer les créneaux passés
         const now = new Date();
 
         // Si c'est aujourd'hui, vérifier que le créneau n'est pas déjà passé
@@ -153,6 +153,7 @@ const generateTimeSlots = (
           );
         });
 
+        // Ajouter le créneau au tableau avec son statut de disponibilité
         timeSlots.push({
           time: timeString,
           available: !isSlotTaken,
@@ -167,6 +168,7 @@ const generateTimeSlots = (
 
   // 1) Si des "allow dates" existent pour ce jour, ils sont prioritaires
   if (allowedWindowsForDate && allowedWindowsForDate.length > 0) {
+    // Utiliser les fenêtres de disponibilité spécifiques définies pour cette date
     allowedWindowsForDate.forEach((window: any) => {
       if (!window?.start_date || !window?.end_date) return;
       const windowStart = new Date(window.start_date);
@@ -177,29 +179,45 @@ const generateTimeSlots = (
       buildSlotsForWindow(windowStart, windowEnd);
     });
   } else {
-    // 2) Sinon, on utilise les schedules récurrents
-    if (!schedules || schedules.length === 0) return [];
+    // 2) Sinon, on utilise les schedules récurrents (horaires hebdomadaires)
+    if (!schedules || schedules.length === 0) {
+      return [];
+    }
 
+    // Obtenir le jour de la semaine de la date sélectionnée
     const dayOfWeek =
       dayOfWeekMapping[selectedDate.getDay() as keyof typeof dayOfWeekMapping];
 
-    // Trouver les schedules pour ce jour
+    // Trouver les schedules qui correspondent à ce jour de la semaine
     const daySchedules = schedules.filter(
       (schedule) => schedule.day_of_week === dayOfWeek
     );
 
-    if (daySchedules.length === 0) return [];
+    if (daySchedules.length === 0) {
+      return [];
+    }
 
-    daySchedules.forEach((schedule) => {
-      // Parser les heures de début et fin
+    // Pour chaque schedule du jour, générer les créneaux horaires
+    daySchedules.forEach((schedule, index) => {
+      // Valider que les heures de début et fin existent
+      if (!schedule.start_time || !schedule.end_time) {
+        return;
+      }
+      
+      // Parser les heures de début et fin (format: "HH:MM:SS+00")
       let startTime = new Date(
         `1970-01-01T${schedule.start_time.replace("+00", "Z")}`
       );
       let endTime = new Date(
         `1970-01-01T${schedule.end_time.replace("+00", "Z")}`
       );
+      
+      // Vérifier que les dates parsées sont valides
+      if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+        return;
+      }
 
-      // Gérer les créneaux qui traversent minuit (end_time < start_time)
+      // Gérer les créneaux qui traversent minuit (end_time < startTime)
       if (endTime < startTime) {
         // L'heure de fin est le lendemain, ajouter 24 heures
         endTime = new Date(endTime.getTime() + 24 * 60 * 60 * 1000);
@@ -311,7 +329,7 @@ export default function VisioPlanningCalendar({
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
-  const [selectedDate, setSelectedDate] = useState(today.getDate()); // Jour actuel sélectionné par défaut
+  const [selectedDate, setSelectedDate] = useState<number | null>(null); // Sera défini par le useEffect à la première date disponible
   const { setAppointmentData } = useAppointmentStore();
   const router = useRouter();
   // Hook pour créer un appointment
@@ -353,6 +371,11 @@ export default function VisioPlanningCalendar({
 
   // Générer les créneaux horaires dynamiquement
   const timeSlots = useMemo(() => {
+    // Si aucune date n'est sélectionnée, retourner un tableau vide
+    if (selectedDate === null) {
+      return [];
+    }
+
     const selectedDateTime = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
@@ -508,7 +531,7 @@ export default function VisioPlanningCalendar({
   const hasAvailableSlots = (date: Date) => {
     const dateKey = getLocalDateKey(date);
 
-    // Si la date fait partie des "appointment_blocks", elle est totalement désactivée
+    // Vérifier si la date est bloquée dans appointment_blocks
     if (
       Array.isArray(appointmentBlocks) &&
       appointmentBlocks.some(
@@ -518,7 +541,7 @@ export default function VisioPlanningCalendar({
       return false;
     }
 
-    // Récupérer les fenêtres "allow" qui correspondent à cette date
+    // Récupérer les fenêtres de disponibilité spécifiques pour cette date
     const allowedWindowsForDate = Array.isArray(appointmentAllowDays)
       ? appointmentAllowDays.filter((allow: any) => {
           if (!allow?.start_date) return false;
@@ -528,6 +551,7 @@ export default function VisioPlanningCalendar({
         })
       : [];
 
+    // Générer les créneaux pour cette date
     const slots = generateTimeSlots(
       expertData?.schedules || [],
       date,
@@ -535,9 +559,106 @@ export default function VisioPlanningCalendar({
       Array.isArray(appointments) ? appointments : [],
       allowedWindowsForDate
     );
-    // Vérifier s'il y a au moins un créneau disponible (non pris)
+    
+    // Filtrer les créneaux disponibles (non pris)
+    const availableSlots = slots.filter((slot: any) => slot.available);
+    
+    // Retourner true s'il y a au moins un créneau disponible
     return slots.some((slot: any) => slot.available);
   };
+
+  // useEffect pour initialiser la date sélectionnée à la première date disponible
+  // Ce hook recherche automatiquement la première date avec des créneaux disponibles,
+  // même si elle se trouve dans plusieurs mois dans le futur
+  useEffect(() => {
+    // Ne s'exécuter que si les données nécessaires sont chargées
+    if (!expertData?.schedules && !appointmentAllowDays?.length) {
+      return;
+    }
+
+    // Date de référence : aujourd'hui à minuit (pour comparer les dates sans tenir compte de l'heure)
+    const todayAtMidnight = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+    // Fonction pour chercher la première date disponible dans un mois donné
+    const findFirstAvailableDateInMonth = (searchDate: Date): { day: number; found: boolean } => {
+      const daysInMonth = getDaysInMonth(searchDate);
+
+      // Parcourir tous les jours du mois
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayDate = new Date(
+          searchDate.getFullYear(),
+          searchDate.getMonth(),
+          day
+        );
+
+        // Ignorer les dates passées
+        const isFutureOrToday = dayDate >= todayAtMidnight;
+        if (!isFutureOrToday) {
+          continue;
+        }
+
+        // Vérifier si cette date a des créneaux disponibles
+        const hasSlotsAvailable = hasAvailableSlots(dayDate);
+        
+        if (hasSlotsAvailable) {
+          // Date trouvée !
+          return { day, found: true };
+        }
+      }
+
+      // Aucune date disponible trouvée dans ce mois
+      return { day: 1, found: false };
+    };
+
+    // Étape 1 : Chercher dans le mois actuellement affiché
+    const resultCurrentMonth = findFirstAvailableDateInMonth(currentDate);
+    
+    if (resultCurrentMonth.found) {
+      // Date trouvée dans le mois actuel
+      setSelectedDate(resultCurrentMonth.day);
+      setSelectedTime("");
+      return;
+    }
+
+    // Étape 2 : Si aucune date trouvée, chercher dans les mois suivants
+    // On cherche jusqu'à 24 mois dans le futur
+    let searchDate = new Date(currentDate);
+    const maxMonthsToSearch = 24;
+    
+    for (let monthOffset = 1; monthOffset <= maxMonthsToSearch; monthOffset++) {
+      searchDate = new Date(currentDate);
+      searchDate.setMonth(currentDate.getMonth() + monthOffset);
+      
+      const result = findFirstAvailableDateInMonth(searchDate);
+      
+      if (result.found) {
+        // Date trouvée dans un mois futur !
+        // Naviguer automatiquement vers ce mois
+        setCurrentDate(new Date(searchDate.getFullYear(), searchDate.getMonth(), 1));
+        setSelectedDate(result.day);
+        setSelectedTime("");
+        return;
+      }
+    }
+
+    // Étape 3 : Aucune date disponible trouvée dans les 24 prochains mois
+    // Sélectionner le premier jour par défaut
+    if (selectedDate === null) {
+      setSelectedDate(1);
+    }
+  }, [
+    expertData?.schedules,
+    appointmentAllowDays,
+    appointmentBlocks,
+    appointments,
+    selectedDuration,
+  ]);
+
+
 
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentDate);
@@ -778,7 +899,7 @@ export default function VisioPlanningCalendar({
               {currentLocale === "fr" ? "minutes" : "minutes"}
             </h4>
             <p className="text-sm text-gray-600">
-              Ven {selectedDate} {months[currentDate.getMonth()].toLowerCase()}{" "}
+              Ven {selectedDate ?? "-"} {months[currentDate.getMonth()].toLowerCase()}{" "}
               {currentDate.getFullYear()}{" "}
               {selectedTime ? (
                 <>à {selectedTime}</>

@@ -3,6 +3,7 @@ import { useGetDomaines } from "@/api/domaine/useDomaine";
 import { getDomainIcon } from "@/constants/onboarding";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import CategorySkeleton from "./CategorySkeleton";
 
 interface CategoryFilterProps {
   selectedCategory: string;
@@ -27,11 +28,7 @@ export default function CategoryFilter({
   ];
 
   if (isLoading) {
-    return (
-      <div className="flex items-center gap-6 py-4">
-        <div className="text-ash-gray text-sm">{t("loading")}...</div>
-      </div>
-    );
+    return <CategorySkeleton />;
   }
 
   return (

@@ -15,9 +15,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
 import Lottie from "lottie-react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import OfferSelection from "../home/OfferSelection";
 import ProfessionalCard from "../home/ProfessionalCard";
 
@@ -136,6 +136,29 @@ function ProfessionalDetailContent() {
     toggleDescriptionExpanded,
   } = useDetailsLogic(expertData, { favoritesEnabled: isAuthenticated });
 
+  // Ref et état pour détecter si la description est tronquée
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+  const [isDescriptionTruncated, setIsDescriptionTruncated] = useState(false);
+
+  // Vérifier si la description dépasse 7 lignes
+  useEffect(() => {
+    const checkTruncation = () => {
+      if (descriptionRef.current) {
+        const lineHeight = parseInt(
+          window.getComputedStyle(descriptionRef.current).lineHeight
+        );
+        const maxHeight = lineHeight * 7; // 7 lignes
+        const actualHeight = descriptionRef.current.scrollHeight;
+        setIsDescriptionTruncated(actualHeight > maxHeight);
+      }
+    };
+
+    checkTruncation();
+    // Revérifier lors du redimensionnement de la fenêtre
+    window.addEventListener("resize", checkTruncation);
+    return () => window.removeEventListener("resize", checkTruncation);
+  }, [expertData?.description]);
+
   // Parser extra_data pour obtenir les questions et expectations personnalisées
   const customQuestions: string[] = [];
   const customExpectations: string[] = [];
@@ -247,22 +270,26 @@ function ProfessionalDetailContent() {
                     {t("expertDetails.about")}
                   </h2>
                   <p
+                    ref={descriptionRef}
                     className={`text-gray-700 leading-relaxed font-figtree xl:text-base text-sm overflow-hidden break-words ${
                       isDescriptionExpanded ? "" : "line-clamp-[7]"
                     }`}
                   >
                     {expertData?.description}
                   </p>
-                  <ButtonUI
-                    onClick={toggleDescriptionExpanded}
-                    variant="link"
-                    className="text-sm font-bold p-0 h-auto text-cobalt-blue underline cursor-pointer"
-                  >
-                    {isDescriptionExpanded
-                      ? t("expertDetails.seeLess")
-                      : t("expertDetails.seeMore")}{" "}
-                    <ChevronDown className="h-4 w-4 ml-1" />
-                  </ButtonUI>
+                  {/* Afficher le bouton uniquement si le texte est tronqué */}
+                  {isDescriptionTruncated && (
+                    <ButtonUI
+                      onClick={toggleDescriptionExpanded}
+                      variant="link"
+                      className="text-sm font-bold p-0 h-auto text-cobalt-blue underline cursor-pointer"
+                    >
+                      {isDescriptionExpanded
+                        ? t("expertDetails.seeLess")
+                        : t("expertDetails.seeMore")}{" "}
+                      <ChevronDown className="h-4 w-4 ml-1" />
+                    </ButtonUI>
+                  )}
                 </div>
 
                 <div className="min-w-0 overflow-hidden">
@@ -409,14 +436,14 @@ function ProfessionalDetailContent() {
                   <h2 className="text-xl font-bold min-w-0 truncate">
                     {t("expertDetails.similarExperts")}
                   </h2>
-                  <ButtonUI
+                  {/* <ButtonUI
                     onClick={() => router.push("/")}
                     variant="link"
                     className="text-cobalt-blue font-figtree cursor-pointer flex-shrink-0"
                   >
                     {t("expertDetails.seeAll")}{" "}
                     <ChevronRight className="h-4 w-4 ml-1" />
-                  </ButtonUI>
+                  </ButtonUI> */}
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 min-w-0 overflow-hidden">
                   {expertsimilar

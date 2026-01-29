@@ -34,6 +34,7 @@ export interface ProExpert {
   status: ProExpertStatus;
   created_at: string;
   updated_at: string;
+  timezone?: string;
   sessions?: ProExpertSession[]; // Sessions associées
 }
 
@@ -93,6 +94,7 @@ export interface UpdateProExpertData {
   expertises?: any[]; // Sera converti en JSON string
   schedules?: any[]; // Sera converti en JSON string
   extra_data?: string; // JSON string au format {"questions":[],"expectations":[]}
+  timezone?: string;
 }
 
 // Interface pour les données de mise à jour (FormData pour API)
@@ -116,6 +118,7 @@ export interface UpdateProExpertFormData {
   availability_end_date?: string;
   expertises?: string;
   schedules?: string;
+  timezone?: string;
 }
 
 // Interface pour la réponse de mise à jour
@@ -153,6 +156,8 @@ export const transformUpdateDataToFormData = (
     formData.append("availability_start_date", data.availability_start_date);
   if (data.availability_end_date !== undefined)
     formData.append("availability_end_date", data.availability_end_date);
+  if (data.timezone !== undefined)
+    formData.append("timezone", data.timezone);
 
   // Avatar (File pour upload, null pour suppression)
   if (data.avatar !== undefined) {

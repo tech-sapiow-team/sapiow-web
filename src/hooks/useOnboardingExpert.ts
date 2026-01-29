@@ -123,6 +123,7 @@ export const useOnboardingExpert = () => {
         website: websiteUrl.trim() || undefined,
         job: profession.trim() || undefined,
         expertises: expertises.length > 0 ? expertises : undefined,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         ...(avatar && { avatar }),
       };
 
@@ -158,6 +159,7 @@ export const useOnboardingExpert = () => {
         linkedin: linkedinUrl.trim() || undefined,
         website: websiteUrl.trim() || undefined,
         expertises: expertises.length > 0 ? expertises : undefined,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         ...(avatar && { avatar }),
       };
 

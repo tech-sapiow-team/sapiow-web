@@ -77,6 +77,7 @@ export const useOnboardingSeeker = () => {
         last_name: lastName.trim(),
         email: email.trim(),
         domain_id: selectedDomains[0], // Prendre le premier domaine sélectionné
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       };
 
       // Appel API

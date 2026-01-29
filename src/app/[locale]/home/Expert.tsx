@@ -72,7 +72,7 @@ export default function Expert() {
   today.setHours(0, 0, 0, 0);
   const todayISO = today.toISOString();
 
-  const { data: appointments } = useGetProAppointments(proExpert?.id, {
+  const { data: appointments, isLoading: appointmentsLoading } = useGetProAppointments(proExpert?.id, {
     gteField: "appointment_at",
     gte: todayISO,
     orderBy: "appointment_at",
@@ -191,11 +191,12 @@ export default function Expert() {
                     }
                   );
 
-                  return (
+                   return (
                     <SessionCard
                       key={appointment.id}
                       date={dateDisplay}
                       time={timeDisplay}
+                      isLoading={appointmentsLoading}
                       profileImage={
                         appointment.patient?.avatar || "/assets/icons/pro1.png"
                       }
@@ -216,6 +217,18 @@ export default function Expert() {
                     />
                   );
                 })
+            ) : appointmentsLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <SessionCard
+                  key={`skeleton-pending-${i}`}
+                  isLoading={true}
+                  date=""
+                  time=""
+                  profileImage=""
+                  name=""
+                  sessionDescription=""
+                />
+              ))
             ) : (
               <div className="col-span-full text-center py-0 text-gray-500">
                 {/* {t("home.noPendingRequests")} */}
@@ -278,11 +291,12 @@ export default function Expert() {
                     const sessionDuration =
                       appointment.session?.session_type || "30mn";
 
-                    return (
+                     return (
                       <SessionCard
                         key={appointment.id}
                         date={dateDisplay}
                         time={timeDisplay}
+                        isLoading={appointmentsLoading}
                         profileImage={
                           appointment.patient?.avatar !== "undefined"
                             ? appointment.patient?.avatar
@@ -313,6 +327,18 @@ export default function Expert() {
                       />
                     );
                   })
+              ) : appointmentsLoading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <SessionCard
+                    key={`skeleton-next-${i}`}
+                    isLoading={true}
+                    date=""
+                    time=""
+                    profileImage=""
+                    name=""
+                    sessionDescription=""
+                  />
+                ))
               ) : (
                 <div className="col-span-full text-center py-8 text-gray-500">
                   {t("home.noScheduledVisio")}

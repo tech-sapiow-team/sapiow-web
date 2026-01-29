@@ -9,6 +9,7 @@ interface CategorySectionProps {
   likedProfs: Record<string, boolean>;
   onToggleLike: (id: string) => void;
   onProfessionalClick?: (professional: Professional) => void;
+  onSeeAll?: () => void;
   isMutatingFavorite?: boolean;
 }
 
@@ -18,6 +19,7 @@ export default function CategorySection({
   likedProfs,
   onToggleLike,
   onProfessionalClick,
+  onSeeAll,
   isMutatingFavorite = false,
 }: CategorySectionProps) {
   const t = useTranslations();
@@ -49,9 +51,14 @@ export default function CategorySection({
         <h2 className="text-lg font-bold text-exford-blue font-figtree">
           {getCategoryDisplayName(category)}
         </h2>
-        <button className="text-xs text-cobalt-blue font-medium cursor-pointer pr-4">
-          {t("expertDetails.seeAll")} →
-        </button>
+        {onSeeAll && (
+          <button
+            onClick={onSeeAll}
+            className="text-xs text-cobalt-blue font-medium cursor-pointer pr-4"
+          >
+            {t("expertDetails.seeAll")} →
+          </button>
+        )}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
         {professionals.map((professional) => {

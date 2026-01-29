@@ -345,13 +345,13 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
                       )}
                     </div>
 
-                    {notifications && notifications.length > 0 && (
+                    {/* {notifications && notifications.length > 0 && (
                       <div className="p-3 border-t border-gray-100 bg-gray-50">
                         <button className="w-full text-sm text-blue-600 hover:text-blue-800 transition-colors">
                           {t("header.seeAllNotifications")}
                         </button>
                       </div>
-                    )}
+                    )} */}
                   </div>
                 )}
               </div>

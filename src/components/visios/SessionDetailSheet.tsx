@@ -233,7 +233,7 @@ export function SessionDetailSheet({
                     professionalTitle={session.professionalTitle}
                     profileImage={session.profileImage}
                     sessionType={session.sessionType}
-                    duration={session.duration}
+                    // duration={session.duration}
                     date={session.date}
                     time={session.time}
                     className="max-w-[446px]"

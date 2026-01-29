@@ -737,8 +737,8 @@ We encourage you to review it periodically.</p>
     expectation3: "Tips for getting your first 10,000 customers",
     expectation4: "Growth tips and growth kickstart",
     // Empty States
-    noQuestionsAvailable: "No questions available at the moment",
-    noExpectationsAvailable: "No expectations available at the moment",
+    noQuestionsAvailable: "No questions necessary at the moment",
+    noExpectationsAvailable: "No expectations necessary at the moment",
     // How it works
     howItWorks: "How it works?",
     findExpert: "Find an expert",
@@ -752,6 +752,7 @@ We encourage you to review it periodically.</p>
       "Join the video call or chat, ask questions and get expert advice",
     // Similar Experts
     similarExperts: "Similar experts",
+    noSimilarExperts: "No similar experts found",
     seeAll: "See all",
     // FAQ
     frequentQuestions: "Frequently asked questions",

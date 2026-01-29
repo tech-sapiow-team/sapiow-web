@@ -15,7 +15,7 @@ export const useVisiosAppointments = () => {
   const todayISO = today.toISOString();
   
   // Requête pour les rendez-vous futurs (confirmés et en attente)
-  const { data: futureAppointments } = useGetProAppointments(proExpert?.id, {
+  const { data: futureAppointments, isLoading: isLoadingFuture } = useGetProAppointments(proExpert?.id, {
     gteField: "appointment_at",
     gte: todayISO,
     orderBy: "appointment_at",
@@ -23,7 +23,7 @@ export const useVisiosAppointments = () => {
   });
   
   // Requête pour l'historique (tous les rendez-vous sans filtre de date)
-  const { data: allAppointments } = useGetProAppointments(proExpert?.id, {
+  const { data: allAppointments, isLoading: isLoadingAll } = useGetProAppointments(proExpert?.id, {
     orderBy: "appointment_at",
     orderDirection: "desc",
   });
@@ -148,6 +148,7 @@ export const useVisiosAppointments = () => {
 
     // Loading states
     loadingStates,
+    isLoading: isLoadingFuture || isLoadingAll,
 
     // Actions
     handleConfirmAppointment,

@@ -11,10 +11,10 @@ import {
 } from "@/utils/appointmentUtils";
 import { useTranslations } from "next-intl";
 import { memo } from "react";
+import SkeletonGrid from "../../../components/layout/SkeletonGrid";
 import CategoryFilter from "./CategoryFilter";
 import CategorySection from "./CategorySection";
 import ProfessionalCard from "./ProfessionalCard";
-import SkeletonGrid from "./SkeletonGrid";
 import SubCategoryFilter from "./SubCategoryFilter";
 
 // Composant mémorisé pour la section des visios à venir
@@ -152,6 +152,7 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
                   onToggleLike={handleToggleLike}
                   onProfessionalClick={handleProfessionalClick}
                   lineClamp={3}
+                  showPrice={true}
                 />
               ))}
             </div>
@@ -199,6 +200,7 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
               onToggleLike={handleToggleLike}
               onProfessionalClick={handleProfessionalClick}
               lineClamp={3}
+              showPrice={true}
             />
           ))}
         </div>

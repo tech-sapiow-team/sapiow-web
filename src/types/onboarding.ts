@@ -10,6 +10,7 @@ export interface OnboardingSeekerData {
   email: string;
   avatar?: File | string; // File pour upload, string pour URL existante
   domain_id: number; // IDs des domaines sélectionnés
+  timezone?: string;
 }
 
 /**
@@ -21,6 +22,7 @@ export interface OnboardingSeekerFormData {
   email: string;
   avatar?: File;
   domain_id: number; // JSON string pour FormData
+  timezone?: string;
 }
 
 /**
@@ -74,6 +76,7 @@ export const transformOnboardingSeekerToFormData = (
   formData.append("first_name", data.first_name.trim());
   formData.append("last_name", data.last_name.trim());
   formData.append("email", data.email.trim());
+  if (data.timezone) formData.append("timezone", data.timezone);
 
   if (data.avatar instanceof File) {
     formData.append("avatar", data.avatar);
@@ -175,6 +178,7 @@ export interface OnboardingExpertData {
   website?: string; // URL site web (optionnel)
   expertises?: ExpertiseApiFormat[]; // Liste des expertises (nouveau format API)
   schedules?: Schedule[]; // Créneaux de disponibilité
+  timezone?: string;
 }
 
 /**
@@ -192,6 +196,7 @@ export interface OnboardingExpertFormData {
   website?: string; // URL site web (optionnel)
   expertises?: string; // JSON string pour FormData
   schedules?: string; // JSON string pour FormData
+  timezone?: string;
 }
 
 /**
@@ -240,6 +245,9 @@ export const transformOnboardingExpertToFormData = (
     formData.append("email", data.email.trim());
   }
   formData.append("domain_id", data.domain_id.toString());
+  if (data.timezone) {
+    formData.append("timezone", data.timezone);
+  }
 
   if (data.avatar instanceof File) {
     formData.append("avatar", data.avatar);

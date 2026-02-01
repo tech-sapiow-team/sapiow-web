@@ -91,7 +91,7 @@ export const useClientHome = (currentUserExpertId?: string) => {
       ? selectedCategory
       : "",
     searchFields: searchQuery
-      ? "first_name,last_name,job,domains.name" // Recherche générique dans tous les champs
+      ? "first_name,last_name" // Recherche uniquement sur le nom et prénom
       : isTopExpert
       ? "badge"
       : isDomainId

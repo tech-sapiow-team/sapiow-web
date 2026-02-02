@@ -1,3 +1,4 @@
+import { TimezoneUpdater } from "@/components/auth/TimezoneUpdater";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { routing } from "@/i18n/routing";
 import { QueryProvider } from "@/providers/QueryProvider";
@@ -53,6 +54,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <QueryProvider>
+            <TimezoneUpdater />
             <FavoritesProvider>
               {children}
               <Toaster

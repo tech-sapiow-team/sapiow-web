@@ -7,7 +7,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Button } from "./Button";
@@ -80,7 +79,7 @@ export default function SyncedCalendarsSheet({
           ) : null}
 
           {/* Bouton Ajouter un calendrier */}
-          <button
+          {/* <button
             onClick={() => {
               // Si déjà connecté, on ne fait rien pour l'instant
               // Sinon, on peut ouvrir le flux de connexion
@@ -94,12 +93,15 @@ export default function SyncedCalendarsSheet({
             <span className="text-sm font-semibold font-figtree text-gray-900">
               {t("syncedCalendars.addCalendar")}
             </span>
-          </button>
+          </button> */}
 
           {/* Si pas connecté, afficher le bouton de connexion */}
           {!isConnected && (
             <div className="pt-4">
-              <GoogleCalendarConnectButton className="w-full">
+              <GoogleCalendarConnectButton 
+                className="w-full"
+                redirectPath="/compte/disponibilites"
+              >
                 {t("disponibilites.connect")}
               </GoogleCalendarConnectButton>
             </div>

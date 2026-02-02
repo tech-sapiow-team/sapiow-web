@@ -746,8 +746,8 @@ We encourage you to review it periodically.</p>
     expectation3: "Conseils pour obtenir vos 10 000 premiers clients",
     expectation4: "Astuces de croissance et démarrage de la croissance",
     // Empty States
-    noQuestionsAvailable: "Aucune question disponible pour le moment",
-    noExpectationsAvailable: "Aucune attente disponible pour le moment",
+    noQuestionsAvailable: "Aucune question nécessaire pour le moment",
+    noExpectationsAvailable: "Aucune attente nécessaire pour le moment",
     // How it works
     howItWorks: "Comment ça marche ?",
     findExpert: "Trouvez un expert",
@@ -761,6 +761,7 @@ We encourage you to review it periodically.</p>
       "Rejoignez l'appel vidéo ou le chat, posez des questions et obtenez des conseils d'expert",
     // Similar Experts
     similarExperts: "Experts similaires",
+    noSimilarExperts: "Aucun expert similaire trouvé",
     seeAll: "Tout voir",
     // FAQ
     frequentQuestions: "Questions fréquentes",
@@ -966,6 +967,10 @@ We encourage you to review it periodically.</p>
     yourNextVisio: "Votre prochaine visio",
     accelerateProject: "Accélérez votre projet, Réservez une Visio.",
     noTopExperts: "Aucun top expert disponible pour le moment.",
+    // Search Mode
+    searchResults: "Résultats de recherche pour",
+    noResultsFound: "Aucun résultat trouvé",
+    tryDifferentSearch: "Essayez avec d'autres mots-clés",
   },
 
   // Share Link Button

@@ -9,10 +9,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAppointmentStore } from "@/store/useAppointmentStore";
 import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
+import { authUtils } from "@/utils/auth";
 import { Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface OfferSelectionProps {
   price: string;
@@ -77,7 +78,6 @@ export default function OfferSelection({
     "session"
   );
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
-  console.log("expertData", expertData);
   
   const { setIsPaid } = usePayStore();
   const { setIsPlaning } = usePlaningStore();
@@ -97,6 +97,15 @@ export default function OfferSelection({
       Array.isArray(appointments) ? appointments : []
     );
   }, [expertData?.schedules, appointments]);
+
+  // Vérifier l'authentification au chargement du composant
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authenticated = await authUtils.isAuthenticated();
+      setIsAuthenticated(authenticated);
+    };
+    checkAuth();
+  }, []);
 
   // Récupérer toutes les sessions d'abonnement actives (session_type null et session_nature "subscription")
   const subscriptionSessions =

@@ -1,87 +1,91 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useGoogleCalendarConnect } from "@/api/google-calendar-sync/useGoogleCalendarSync";
 import { Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
-export default function OAuthCallbackPage() {
+function OAuthCallbackContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const locale = useLocale();
   const t = useTranslations("oauthCallback");
   const [error, setError] = useState<string | null>(null);
-  const { mutate: connectGoogleCalendar, isPending } =
-    useGoogleCalendarConnect();
+  const hasProcessed = useRef(false);
+  const { mutateAsync: connectGoogleCalendar } = useGoogleCalendarConnect();
 
   useEffect(() => {
-    // Éviter les exécutions multiples
-    let isProcessing = false;
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
 
     const handleOAuthCallback = async () => {
-      if (isProcessing) return;
-      isProcessing = true;
-
       try {
-        const params = new URLSearchParams(window.location.search);
-        const authorizationCode = params.get("code");
-        const codeVerifier = localStorage.getItem("code_verifier");
+        const authorizationCode = searchParams.get("code");
+        const errorParam = searchParams.get("error");
+
+        // ✅ Récupérer le chemin de redirection stocké
+        const redirectPath = localStorage.getItem("google_redirect_path") || "/compte/disponibilites";
+
+        if (errorParam) {
+          console.error("❌ Erreur OAuth:", errorParam);
+          setError(`Erreur Google: ${errorParam}`);
+          setTimeout(() => router.replace(`/${locale}${redirectPath}`), 3000);
+          return;
+        }
 
         if (!authorizationCode) {
           console.error("❌ Code d'autorisation manquant.");
           setError(t("missingCode"));
-          setTimeout(() => {
-            router.replace(`/${locale}/compte/disponibilites`);
-          }, 2000);
+          setTimeout(() => router.replace(`/${locale}${redirectPath}`), 2000);
           return;
         }
 
-        console.log("✅ Code d'autorisation reçu:", authorizationCode.substring(0, 20) + "...");
-        console.log("✅ Code verifier récupéré:", codeVerifier ? "Oui" : "Non");
+        const codeVerifier = localStorage.getItem("google_code_verifier");
+        
+        if (!codeVerifier) {
+          console.error("❌ Code verifier manquant.");
+          setError(t("sessionExpired"));
+          setTimeout(() => router.replace(`/${locale}${redirectPath}`), 2000);
+          return;
+        }
 
-        connectGoogleCalendar(
-          { 
-            authorizationCode, 
-            codeVerifier: codeVerifier || undefined
-          },
-          {
-            onSuccess: (res) => {
-              console.log("✅ Connecté avec succès :", res);
-              // Nettoyer le code verifier
-              localStorage.removeItem("code_verifier");
-              // Rediriger immédiatement vers la page des disponibilités
-              router.replace(`/${locale}/compte/disponibilites`);
-            },
-            onError: (err) => {
-              console.error("❌ Erreur de connexion :", err);
-              setError(err.message || t("connectionError"));
-              setTimeout(() => {
-                router.replace(`/${locale}/compte/disponibilites`);
-              }, 2000);
-            },
-          }
-        );
+        // ✅ Utiliser mutateAsync avec try/catch
+        const data = await connectGoogleCalendar({ authorizationCode, codeVerifier });
+        
+        // ✅ Nettoyer tous les éléments stockés
+        localStorage.removeItem("google_code_verifier");
+        localStorage.removeItem("google_redirect_path");
+        
+        router.replace(`/${locale}${redirectPath}`);
+        
       } catch (err) {
-        console.error("❌ Erreur lors du traitement du callback:", err);
-        setError(t("processingError"));
+        console.error("❌ Erreur:", err);
+        // ✅ Typage amélioré de l'erreur
+        const errorMessage = err instanceof Error ? err.message : t("processingError");
+        setError(errorMessage);
+        const redirectPath = localStorage.getItem("google_redirect_path") || "/compte/disponibilites";
         setTimeout(() => {
-          router.replace(`/${locale}/compte/disponibilites`);
-        }, 2000);
+          router.replace(`/${locale}${redirectPath}`);
+        }, 3000);
       }
     };
 
     handleOAuthCallback();
-  }, [connectGoogleCalendar, router, locale, t]);
+  }, [searchParams, connectGoogleCalendar, router, locale, t]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="text-center">
+      <div className="w-full max-w-md p-8 space-y-6 text-center">
         {error ? (
           <div className="space-y-4">
-            <div className="text-red-500 text-xl font-semibold">
-              ❌ {t("error")}: {error}
+            <div className="rounded-lg bg-red-50 p-4 border border-red-200">
+              <div className="text-red-700">
+                <span className="text-lg font-semibold">{t("error")}: </span>
+                <span>{error}</span>
+              </div>
             </div>
-            <p className="text-gray-600">{t("redirecting")}</p>
+            <p className="text-gray-500 text-sm">{t("redirecting")}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -94,5 +98,19 @@ export default function OAuthCallbackPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+        </div>
+      }
+    >
+      <OAuthCallbackContent />
+    </Suspense>
   );
 }

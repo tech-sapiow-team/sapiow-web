@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/popover";
 import Image from "next/image";
 import { useState } from "react";
+import SubCategorySkeleton from "../../../components/layout/SubCategorySkeleton";
 
 interface SubCategory {
   id: string;
@@ -56,11 +57,7 @@ export default function SubCategoryFilter({
   if (isDomainId && isLoadingExpertises) {
     return (
       <div className="flex items-center justify-between mt-5 mb-2 px-0">
-        <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide flex-1 min-w-0">
-          <div className="text-ash-gray text-base font-normal font-figtree px-4 py-2">
-            Chargement des expertises...
-          </div>
-        </div>
+        <SubCategorySkeleton />
 
         <button className="w-[98px] h-[40px] rounded-[8px] border border-light-blue-gray flex items-center justify-center gap-1 px-3 py-2 text-sm text-gray-500 cursor-pointer flex-shrink-0 opacity-50">
           <Image

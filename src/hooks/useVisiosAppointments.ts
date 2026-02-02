@@ -1,6 +1,6 @@
 import {
-  useGetProAppointments,
-  useUpdateProAppointment,
+    useGetProAppointments,
+    useUpdateProAppointment,
 } from "@/api/appointments/useAppointments";
 import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { useCallStore } from "@/store/useCall";
@@ -15,7 +15,7 @@ export const useVisiosAppointments = () => {
   const todayISO = today.toISOString();
   
   // Requête pour les rendez-vous futurs (confirmés et en attente)
-  const { data: futureAppointments } = useGetProAppointments(proExpert?.id, {
+  const { data: futureAppointments, isLoading: isLoadingFuture } = useGetProAppointments(proExpert?.id, {
     gteField: "appointment_at",
     gte: todayISO,
     orderBy: "appointment_at",
@@ -23,7 +23,7 @@ export const useVisiosAppointments = () => {
   });
   
   // Requête pour l'historique (tous les rendez-vous sans filtre de date)
-  const { data: allAppointments } = useGetProAppointments(proExpert?.id, {
+  const { data: allAppointments, isLoading: isLoadingAll } = useGetProAppointments(proExpert?.id, {
     orderBy: "appointment_at",
     orderDirection: "desc",
   });
@@ -74,6 +74,7 @@ export const useVisiosAppointments = () => {
   // Organiser les appointments futurs par statut avec filtre de fin de session
   const confirmedAppointments = Array.isArray(futureAppointments)
     ? futureAppointments
+        .filter((apt: any) => apt.type !== "calendar") // Exclure les rendez-vous de type calendar
         .filter((apt: any) => apt.status === "confirmed")
         .filter((apt: any) => {
           // Calculer l'heure de fin du rendez-vous (date + durée)
@@ -98,38 +99,42 @@ export const useVisiosAppointments = () => {
     : [];
 
   const pendingAppointments = Array.isArray(futureAppointments)
-    ? futureAppointments.filter((apt: any) => apt.status === "pending")
+    ? futureAppointments
+        .filter((apt: any) => apt.type !== "calendar") // Exclure les rendez-vous de type calendar
+        .filter((apt: any) => apt.status === "pending")
     : [];
 
   // Historique : tous les rendez-vous passés (cancelled, completed) OU dont l'heure de fin est dépassée
   const historicAppointments = Array.isArray(allAppointments)
-    ? allAppointments.filter((apt: any) => {
-        // Inclure les rendez-vous annulés ou complétés
-        if (apt.status === "cancelled" || apt.status === "completed") {
-          return true;
-        }
-        
-        // Inclure les rendez-vous confirmés dont l'heure de fin est passée
-        if (apt.status === "confirmed") {
-          const appointmentDate = new Date(apt.appointment_at);
-          const sessionDuration = apt.session?.session_type || "30mn";
-          
-          let durationMinutes = 30;
-          if (sessionDuration.includes("mn")) {
-            durationMinutes = parseInt(sessionDuration);
-          } else if (sessionDuration.includes("h")) {
-            durationMinutes = parseInt(sessionDuration) * 60;
+    ? allAppointments
+        .filter((apt: any) => apt.type !== "calendar") // Exclure les rendez-vous de type calendar
+        .filter((apt: any) => {
+          // Inclure les rendez-vous annulés ou complétés
+          if (apt.status === "cancelled" || apt.status === "completed") {
+            return true;
           }
           
-          const endTime = new Date(appointmentDate.getTime() + durationMinutes * 60000);
-          const now = new Date();
+          // Inclure les rendez-vous confirmés dont l'heure de fin est passée
+          if (apt.status === "confirmed") {
+            const appointmentDate = new Date(apt.appointment_at);
+            const sessionDuration = apt.session?.session_type || "30mn";
+            
+            let durationMinutes = 30;
+            if (sessionDuration.includes("mn")) {
+              durationMinutes = parseInt(sessionDuration);
+            } else if (sessionDuration.includes("h")) {
+              durationMinutes = parseInt(sessionDuration) * 60;
+            }
+            
+            const endTime = new Date(appointmentDate.getTime() + durationMinutes * 60000);
+            const now = new Date();
+            
+            // Inclure si l'heure de fin est passée
+            return endTime <= now;
+          }
           
-          // Inclure si l'heure de fin est passée
-          return endTime <= now;
-        }
-        
-        return false;
-      })
+          return false;
+        })
     : [];
 
   return {
@@ -143,6 +148,7 @@ export const useVisiosAppointments = () => {
 
     // Loading states
     loadingStates,
+    isLoading: isLoadingFuture || isLoadingAll,
 
     // Actions
     handleConfirmAppointment,

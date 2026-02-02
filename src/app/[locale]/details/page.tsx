@@ -15,16 +15,16 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
 import Lottie from "lottie-react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import OfferSelection from "../home/OfferSelection";
 import ProfessionalCard from "../home/ProfessionalCard";
 
 import { useGetPatientAppointments } from "@/api/appointments/useAppointments";
 import { useGetCustomer } from "@/api/customer/useCustomer";
 import { Expert, useSearchExperts } from "@/api/listExpert/useListExpert";
-import { useGetProExpertById } from "@/api/proExpert/useProExpert";
+import { useGetProExpert, useGetProExpertById } from "@/api/proExpert/useProExpert";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsMobileOrTablet } from "@/hooks/use-mobile-tablet";
 import { useDetailsLogic } from "@/hooks/useDetailsLogic";
@@ -97,8 +97,9 @@ function ProfessionalDetailContent() {
   }, []);
   
   const { data: customer } = useGetCustomer(isAuthenticated);
-  const { data: appointments } = useGetPatientAppointments(customer?.id) as {
+  const { data: appointments, isLoading: isLoadingAppointments } = useGetPatientAppointments(customer?.id) as {
     data: Appointment[];
+    isLoading: boolean;
   };
   const { user: userClient } = useUserStore();
   const isMobile = useIsMobile();
@@ -118,11 +119,16 @@ function ProfessionalDetailContent() {
     error,
   } = useGetProExpertById(expertId || "");
 
+  const { data: myProProfile } = useGetProExpert(isAuthenticated);
+
   const {
     data: expertsimilar,
     isLoading: isLoadingExpertSimilar,
     error: errorExpertSimilar,
-  } = useSearchExperts();
+  } = useSearchExperts({
+    search: expertData?.domain_id?.toString(),
+    searchFields: "domain_id",
+  });
 
   // Utilisation du hook pour isoler la logique
   const {
@@ -135,6 +141,29 @@ function ProfessionalDetailContent() {
     setIsOfferSheetOpen,
     toggleDescriptionExpanded,
   } = useDetailsLogic(expertData, { favoritesEnabled: isAuthenticated });
+
+  // Ref et état pour détecter si la description est tronquée
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+  const [isDescriptionTruncated, setIsDescriptionTruncated] = useState(false);
+
+  // Vérifier si la description dépasse 7 lignes
+  useEffect(() => {
+    const checkTruncation = () => {
+      if (descriptionRef.current) {
+        const lineHeight = parseInt(
+          window.getComputedStyle(descriptionRef.current).lineHeight
+        );
+        const maxHeight = lineHeight * 7; // 7 lignes
+        const actualHeight = descriptionRef.current.scrollHeight;
+        setIsDescriptionTruncated(actualHeight > maxHeight);
+      }
+    };
+
+    checkTruncation();
+    // Revérifier lors du redimensionnement de la fenêtre
+    window.addEventListener("resize", checkTruncation);
+    return () => window.removeEventListener("resize", checkTruncation);
+  }, [expertData?.description]);
 
   // Parser extra_data pour obtenir les questions et expectations personnalisées
   const customQuestions: string[] = [];
@@ -238,6 +267,7 @@ function ProfessionalDetailContent() {
                   lineClamp={1}
                   nameSize="text-[20px]"
                   iconSize={24}
+                  showPrice={false}
                 />
               </div>
 
@@ -247,22 +277,26 @@ function ProfessionalDetailContent() {
                     {t("expertDetails.about")}
                   </h2>
                   <p
+                    ref={descriptionRef}
                     className={`text-gray-700 leading-relaxed font-figtree xl:text-base text-sm overflow-hidden break-words ${
                       isDescriptionExpanded ? "" : "line-clamp-[7]"
                     }`}
                   >
                     {expertData?.description}
                   </p>
-                  <ButtonUI
-                    onClick={toggleDescriptionExpanded}
-                    variant="link"
-                    className="text-sm font-bold p-0 h-auto text-cobalt-blue underline cursor-pointer"
-                  >
-                    {isDescriptionExpanded
-                      ? t("expertDetails.seeLess")
-                      : t("expertDetails.seeMore")}{" "}
-                    <ChevronDown className="h-4 w-4 ml-1" />
-                  </ButtonUI>
+                  {/* Afficher le bouton uniquement si le texte est tronqué */}
+                  {isDescriptionTruncated && (
+                    <ButtonUI
+                      onClick={toggleDescriptionExpanded}
+                      variant="link"
+                      className="text-sm font-bold p-0 h-auto text-cobalt-blue underline cursor-pointer"
+                    >
+                      {isDescriptionExpanded
+                        ? t("expertDetails.seeLess")
+                        : t("expertDetails.seeMore")}{" "}
+                      <ChevronDown className="h-4 w-4 ml-1" />
+                    </ButtonUI>
+                  )}
                 </div>
 
                 <div className="min-w-0 overflow-hidden">
@@ -409,34 +443,60 @@ function ProfessionalDetailContent() {
                   <h2 className="text-xl font-bold min-w-0 truncate">
                     {t("expertDetails.similarExperts")}
                   </h2>
-                  <ButtonUI
+                  {/* <ButtonUI
                     onClick={() => router.push("/")}
                     variant="link"
                     className="text-cobalt-blue font-figtree cursor-pointer flex-shrink-0"
                   >
                     {t("expertDetails.seeAll")}{" "}
                     <ChevronRight className="h-4 w-4 ml-1" />
-                  </ButtonUI>
+                  </ButtonUI> */}
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 min-w-0 overflow-hidden">
-                  {expertsimilar
-                    ?.filter((expert: Expert) => expert.id !== expertId)
-                    ?.map((professional: Expert) => (
-                      <ProfessionalCard
-                        key={professional.id}
-                        professional={{
-                          ...professional,
-                          description:
-                            professional.job || professional.description,
-                          topExpertise: professional.badge === "gold",
-                        }}
-                        isLiked={isLiked(String(professional.id))}
-                        onToggleLike={() => toggleLike(String(professional.id))}
-                        onProfessionalClick={() =>
-                          router.push(`/details?id=${professional.id}`)
-                        }
-                      />
-                    ))}
+                  {isLoadingExpertSimilar ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="animate-pulse space-y-4 my-3">
+                        <div className="bg-gray-200 aspect-[205/196] w-full rounded-[12px]"></div>
+                        <div className="space-y-2">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+                        </div>
+                      </div>
+                    ))
+                  ) : expertsimilar &&
+                    expertsimilar.filter(
+                      (expert: Expert) =>
+                        expert.id !== expertId && expert.id !== myProProfile?.id
+                    ).length > 0 ? (
+                    expertsimilar
+                      ?.filter(
+                        (expert: Expert) =>
+                          expert.id !== expertId &&
+                          expert.id !== myProProfile?.id
+                      )
+                      ?.map((professional: Expert) => (
+                        <ProfessionalCard
+                          key={professional.id}
+                          professional={{
+                            ...professional,
+                            description:
+                              professional.job || professional.description,
+                            topExpertise: professional.badge === "gold",
+                          }}
+                          isLiked={isLiked(String(professional.id))}
+                          onToggleLike={() => toggleLike(String(professional.id))}
+                          onProfessionalClick={() =>
+                            router.push(`/details?id=${professional.id}`)
+                          }
+                          showPrice={false}
+                        />
+                      ))
+                  ) : (
+                    <div className="col-span-full py-8 text-center text-gray-500">
+                      {t("expertDetails.noSimilarExperts")}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -477,24 +537,29 @@ function ProfessionalDetailContent() {
           <div className="hidden xl:block xl:border-l xl:border-gray-200">
             {isPaid ? (
               <aside className="w-full">
-                <div className="-mt-29 flex items-center justify-center">
-                  <Lottie
-                    animationData={confettiAnimation}
-                    loop={true}
-                    autoplay={true}
-                    style={{ width: 421, height: 381 }}
-                  />
-                </div>
-                <div className="flex flex-col items-center justify-center gap-4 mt-7">
-                  <h2 className="text-[28px] font-bold text-charcoal-blue">
-                    {t("expertDetails.congratulations")}
-                  </h2>
-                  <p className="text-xl text-black text-center font-medium mb-6">
-                    {t("expertDetails.sessionBookedSuccess")}
-                  </p>
+                <div className="relative flex flex-col items-center justify-center p-6">
+                  {/* Confetti overlay */}
+                  <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                    <Lottie
+                      animationData={confettiAnimation}
+                      loop={true}
+                      autoplay={true}
+                      style={{ width: 421, height: 381 }}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col items-center justify-center gap-4 mt-7 z-0">
+                    <h2 className="text-[28px] font-bold text-charcoal-blue">
+                      {t("expertDetails.congratulations")}
+                    </h2>
+                    <p className="text-xl text-black text-center font-medium mb-6">
+                      {t("expertDetails.sessionBookedSuccess")}
+                    </p>
+                  </div>
                 </div>
                 <div className="p-6">
                   <BookedSessionCard
+                    isLoading={isLoadingAppointments}
                     date={
                       appointments?.[0]?.appointment_at
                         ? new Date(
@@ -564,24 +629,29 @@ function ProfessionalDetailContent() {
           <HeaderClient isBack />
           <div className="flex-1 overflow-y-auto">
             <div className="min-h-full flex flex-col items-center justify-center px-6 py-8">
-              <div className="mb-8 flex items-center justify-center">
-                <Lottie
-                  animationData={confettiAnimation}
-                  loop={true}
-                  autoplay={true}
-                  style={{ width: 300, height: 250 }}
-                />
-              </div>
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-charcoal-blue mb-4">
-                  {t("expertDetails.congratulations")}
-                </h2>
-                <p className="text-lg text-black font-medium mb-6 font-figtree">
-                  {t("expertDetails.sessionBookedSuccess")}
-                </p>
+              <div className="relative w-full flex flex-col items-center justify-center mb-8">
+                {/* Confetti overlay */}
+                <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                  <Lottie
+                    animationData={confettiAnimation}
+                    loop={true}
+                    autoplay={true}
+                    style={{ width: 350, height: 300 }}
+                  />
+                </div>
+                
+                <div className="text-center z-0">
+                  <h2 className="text-2xl font-bold text-charcoal-blue mb-4">
+                    {t("expertDetails.congratulations")}
+                  </h2>
+                  <p className="text-lg text-black font-medium mb-6 font-figtree">
+                    {t("expertDetails.sessionBookedSuccess")}
+                  </p>
+                </div>
               </div>
               <div className="w-full max-w-[358px] mb-6">
                 <BookedSessionCard
+                  isLoading={isLoadingAppointments}
                   date={
                     appointments?.[0]?.appointment_at
                       ? new Date(

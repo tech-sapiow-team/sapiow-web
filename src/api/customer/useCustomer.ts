@@ -24,6 +24,7 @@ export interface Customer {
   promotions_notification_email?: boolean;
   created_at: string;
   updated_at: string;
+  timezone?: string;
 }
 
 // Interface pour les données d'un expert pro
@@ -91,6 +92,7 @@ export interface UpdateCustomerData {
   promotions_notification_sms?: boolean;
   promotions_notification_email?: boolean;
   domain_id?: number[];
+  timezone?: string;
 }
 
 /**
@@ -176,6 +178,7 @@ const transformUpdateCustomerToFormData = (
   if (data.last_name) formData.append("last_name", data.last_name);
   if (data.email) formData.append("email", data.email);
   if (data.language) formData.append("language", data.language);
+  if (data.timezone) formData.append("timezone", data.timezone);
 
   // Gérer domain_id comme un tableau JSON
   if (data.domain_id && data.domain_id.length > 0) {

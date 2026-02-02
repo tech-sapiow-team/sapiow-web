@@ -45,6 +45,7 @@ interface SessionCardProps {
   questions?: AppointmentQuestion[];
   loadingState?: "confirming" | "cancelling" | null;
   appointmentAt?: string;
+  isLoading?: boolean;
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
@@ -68,6 +69,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   questions = [],
   loadingState = null,
   appointmentAt,
+  isLoading = false,
 }) => {
   const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
@@ -83,6 +85,50 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   const viewButtonText = isUpcoming
     ? t("visios.viewDetails")
     : t("visios.viewRequest");
+
+  if (isLoading) {
+    return (
+      <Card
+        className={`w-full max-w-[470px] bg-snow-blue shadow-none border border-soft-ice-gray rounded-[12px] p-0 animate-pulse ${className}`}
+      >
+        <CardHeader className="m-0">
+          <div className="flex items-center justify-between gap-2 pt-3">
+            <div className="flex items-center gap-2">
+              <div className="w-4.5 h-4.5 bg-gray-200 rounded shrink-0" />
+              <div className="h-3 bg-gray-200 rounded-full w-28" />
+            </div>
+            {isComming && (
+              <div className="flex items-center gap-2">
+                <div className="w-4.5 h-4.5 bg-gray-200 rounded shrink-0" />
+                <div className="h-3 bg-gray-200 rounded-full w-20" />
+              </div>
+            )}
+          </div>
+        </CardHeader>
+
+        <CardContent className="-mt-5">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gray-200 shrink-0" />
+            <div className="flex-1 space-y-2.5 min-w-0">
+              <div className="h-5 bg-gray-200 rounded-full w-2/3" />
+              <div className="h-4 bg-gray-200 rounded-full w-1/2" />
+            </div>
+          </div>
+        </CardContent>
+
+        <CardFooter className="pb-3">
+          <div
+            className={`flex gap-4 w-full flex-col lg:flex-row ${classFooter}`}
+          >
+            <div className="h-10 bg-gray-200 rounded-[8px] flex-1" />
+            {!buttonStates.viewDisabled && (
+              <div className="h-10 bg-gray-200 rounded-[8px] flex-1" />
+            )}
+          </div>
+        </CardFooter>
+      </Card>
+    );
+  }
 
   return (
     <Card

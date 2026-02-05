@@ -5,6 +5,12 @@
       {
         "appID": "9UBADBYGRC.com.sapiow",
         "paths": [
+          "/fr/",
+          "/en/",
+          "/fr/messages",
+          "/fr/messages/*",
+          "/en/messages",
+          "/en/messages/*",
           "/fr/visios",
           "/fr/visios/*",
           "/en/visios",

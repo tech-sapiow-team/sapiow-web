@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.sapiow",
+      "sha256_cert_fingerprints": [
+        "B4:98:07:7D:C5:AF:BD:84:F8:54:1B:BD:5A:21:54:BA:32:AD:26:03:77:CA:53:25:F4:08:41:30:0B:ED:3B:79",
+        "79:BE:13:E2:8F:64:BE:CC:CA:47:8B:46:40:90:56:52:02:A6:20:7B:6B:99:00:35:65:12:02:3C:EA:ED:5F:89"
+      ]
+    }
+  }
+]

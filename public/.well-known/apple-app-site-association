@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "9UBADBYGRC.com.sapiow",
+        "paths": [
+          "/fr/visios",
+          "/fr/visios/*",
+          "/en/visios",
+          "/en/visios/*"
+        ]
+      }
+    ]
+  }
+}

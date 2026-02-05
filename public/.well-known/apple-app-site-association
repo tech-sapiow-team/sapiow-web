@@ -14,7 +14,11 @@
           "/fr/visios",
           "/fr/visios/*",
           "/en/visios",
-          "/en/visios/*"
+          "/en/visios/*",
+          "/fr/details",
+          "/fr/details/*",
+          "/en/details",
+          "/en/details/*"
         ]
       }
     ]

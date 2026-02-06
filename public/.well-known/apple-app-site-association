@@ -18,7 +18,11 @@
           "/fr/details",
           "/fr/details/*",
           "/en/details",
-          "/en/details/*"
+          "/en/details/*",
+          "/fr/compte/revenus",
+          "/fr/compte/revenus/*",
+          "/en/compte/revenus",
+          "/en/compte/revenus/*"
         ]
       }
     ]

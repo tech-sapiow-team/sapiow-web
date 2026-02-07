@@ -1,15 +1,19 @@
 "use client";
 
 import { useGetStatistics } from "@/api/statistics/useStatistics";
+import { getProSubscription } from "@/api/pro-payouts/proSubscription";
 import AddBankAccountModal from "@/components/common/AddBankAccountModal";
 import BankAccountSection from "@/components/revenue/BankAccountSection";
 import PaymentHistory from "@/components/revenue/PaymentHistory";
 import RevenueDisplay from "@/components/revenue/RevenueDisplay";
 import RevenueFilters from "@/components/revenue/RevenueFilters";
+import ProSubscriptionsList, {
+  type ProSubscription,
+} from "@/components/common/ProSubscriptionsList";
 import { useProtectedPage } from "@/hooks/useProtectedPage";
 import { getDateRangeByFilter } from "@/utils/dateFilters";
-import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import AccountLayout from "../AccountLayout";
 
@@ -17,12 +21,15 @@ export default function Revenus() {
   // Protéger la page : seuls les experts peuvent y accéder
   useProtectedPage({ allowedUserTypes: ["expert"] });
   const t = useTranslations();
+  const currentLocale = useLocale();
+  const dateLocale = currentLocale === "fr" ? "fr-FR" : "en-US";
   const [isAddBankModalOpen, setIsAddBankModalOpen] = useState(false);
   const [hasBankAccount, setHasBankAccount] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Ce mois-ci");
   const [customDateRange, setCustomDateRange] = useState<
     DateRange | undefined
   >();
+  const [subscriptions, setSubscriptions] = useState<ProSubscription[]>([]);
 
   const handleAddBankAccount = () => {
     setIsAddBankModalOpen(true);
@@ -72,6 +79,35 @@ export default function Revenus() {
       : undefined
   );
 
+  // Récupérer les abonnements côté expert
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      try {
+        const data = await getProSubscription<ProSubscription[]>();
+        if (!isMounted) return;
+        setSubscriptions(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("pro-subscription error:", e);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSubscriptionCancelled = (subscriptionId: string | number) => {
+    setSubscriptions((prev) =>
+      prev.map((s) =>
+        s.id === subscriptionId
+          ? { ...s, status: "cancelled", active: false }
+          : s
+      )
+    );
+  };
+
   return (
     <AccountLayout>
       <div className="space-y-8 mt-2.5 px-4 lg:px-2 xl:px-4">
@@ -100,6 +136,15 @@ export default function Revenus() {
               onModifyBankAccount={handleModifyBankAccount}
             />
           </div>
+        </div>
+
+        {/* Section Abonnements (expert) */}
+        <div className="p-4 bg-white border border-light-blue-gray rounded-[16px]">
+          <ProSubscriptionsList
+            subscriptions={subscriptions}
+            locale={dateLocale}
+            onCancelled={handleSubscriptionCancelled}
+          />
         </div>
 
         {/* Section Transactions à venir */}

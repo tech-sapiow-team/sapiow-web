@@ -1064,6 +1064,19 @@ We encourage you to review it periodically.</p>
     errorGeneric: "Une erreur est survenue.",
   },
 
+  // Pro subscriptions (expert)
+  proSubscriptions: {
+    modalTitleStop: "Arrêter l’abonnement",
+    modalTitleCancel: "Annuler l’abonnement",
+    modalQuestionStop: "Voulez-vous vraiment arrêter cet abonnement ?",
+    modalQuestionCancel: "Voulez-vous vraiment annuler cet abonnement ?",
+    modalWarning: "Cette action est irréversible.",
+    modalRefundInfo: "Cela rembourse le dernier paiement.",
+    back: "Retour",
+    confirm: "Confirmer",
+    submitting: "Confirmation...",
+  },
+
   // Phone Number Component
   phoneNumber: {
     label: "Numéro de téléphone",

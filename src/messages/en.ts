@@ -1053,6 +1053,19 @@ We encourage you to review it periodically.</p>
     errorGeneric: "An error occurred.",
   },
 
+  // Pro subscriptions (expert)
+  proSubscriptions: {
+    modalTitleStop: "Stop subscription",
+    modalTitleCancel: "Cancel subscription",
+    modalQuestionStop: "Do you really want to stop this subscription?",
+    modalQuestionCancel: "Do you really want to cancel this subscription?",
+    modalWarning: "This action is irreversible.",
+    modalRefundInfo: "This will refund the last payment.",
+    back: "Back",
+    confirm: "Confirm",
+    submitting: "Confirming...",
+  },
+
   // Phone Number Component
   phoneNumber: {
     label: "Phone number",

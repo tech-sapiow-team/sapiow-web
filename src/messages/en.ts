@@ -1035,6 +1035,24 @@ We encourage you to review it periodically.</p>
     paymentConsultationWith: "Payment consultation with",
   },
 
+  // Subscriptions (patient)
+  subscriptions: {
+    title: "Subscriptions",
+    subscriptionLabel: "Subscription",
+    statusLabel: "Status",
+    active: "Active",
+    cancelled: "Cancelled",
+    stop: "Stop",
+    empty: "No subscriptions yet.",
+    modalTitle: "Cancel subscription",
+    modalQuestion: "Do you really want to cancel this subscription?",
+    modalWarning: "This action is irreversible.",
+    back: "Back",
+    confirmCancel: "Cancel",
+    cancelling: "Cancelling...",
+    errorGeneric: "An error occurred.",
+  },
+
   // Phone Number Component
   phoneNumber: {
     label: "Phone number",

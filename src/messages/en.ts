@@ -306,6 +306,7 @@ export default {
     sessionWith: "Session with",
     quantity: "Qty",
     subtotal: "Subtotal",
+    serviceFee: "Service fee",
     tax: "Tax",
     totalAmount: "Total Amount",
     addPromoCode: "Add promo code",
@@ -660,6 +661,7 @@ We encourage you to review it periodically.</p>
     noOffersConfigured: "No offers configured",
     whatIsIncluded: "What's included",
     perMonth: "/ Month",
+    serviceFee: "Service fee",
     // Actions
     delete: "Delete",
     deleting: "Deleting...",

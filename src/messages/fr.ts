@@ -310,6 +310,7 @@ export default {
     sessionWith: "Session avec",
     quantity: "Qté",
     subtotal: "Sous-total",
+    serviceFee: "Frais de service",
     tax: "Taxe",
     totalAmount: "Montant total",
     addPromoCode: "Ajouter un code promotionnel",
@@ -666,6 +667,7 @@ We encourage you to review it periodically.</p>
     noOffersConfigured: "Aucune offre configurée",
     whatIsIncluded: "Ce qui est inclus",
     perMonth: "/ Mois",
+    serviceFee: "Frais de service",
     // Actions
     delete: "Supprimer",
     deleting: "Suppression...",

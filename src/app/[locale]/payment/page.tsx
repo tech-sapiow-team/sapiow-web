@@ -11,7 +11,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { ChevronLeft } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import React, { useMemo, useState } from "react";
@@ -19,6 +19,7 @@ import React, { useMemo, useState } from "react";
 // Composant récapitulatif de commande
 function OrderSummary() {
   const t = useTranslations();
+  const locale = useLocale();
   const { appointment } = useAppointmentStore();
   const router = useRouter();
 
@@ -34,7 +35,19 @@ function OrderSummary() {
   }, [expertData, appointment]);
 
   const sessionPrice = sessionData?.price || 0;
+  const serviceFeeRate = 0.15;
+  const serviceFee = Math.round(sessionPrice * serviceFeeRate * 100) / 100;
   const tax = 0; // Pas de taxe pour le moment
+  const total = sessionPrice + serviceFee + tax;
+
+  const moneyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    [locale]
+  );
 
   return (
     <div className="w-full lg:w-1/2 bg-gray-50 p-6 lg:p-8">
@@ -75,7 +88,7 @@ function OrderSummary() {
             </p>
           </div>
           <p className="text-sm font-semibold text-gray-900">
-            €{sessionPrice.toLocaleString()}
+            €{moneyFormatter.format(sessionPrice)}
           </p>
         </div>
       </div>
@@ -85,7 +98,14 @@ function OrderSummary() {
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">{t("paymentPage.subtotal")}</span>
           <span className="text-gray-900 font-medium">
-            €{sessionPrice.toLocaleString()}
+            €{moneyFormatter.format(sessionPrice)}
+          </span>
+        </div>
+
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">{t("offers.serviceFee")}</span>
+          <span className="text-gray-900 font-medium">
+            €{moneyFormatter.format(serviceFee)}
           </span>
         </div>
 
@@ -95,7 +115,7 @@ function OrderSummary() {
             {t("paymentPage.totalAmount")}
           </span>
           <span className="text-base font-bold text-gray-900">
-            €{(sessionPrice + tax).toLocaleString()}
+            €{moneyFormatter.format(total)}
           </span>
         </div>
       </div>

@@ -45,9 +45,80 @@ const generateTimeSlots = (
   selectedDate: Date,
   duration: number,
   existingAppointments: any[] = [],
-  allowedWindowsForDate: any[] = []
+  allowedWindowsForDate: any[] = [],
+  sessions: any[] = []
 ) => {
   const timeSlots: any[] = [];
+
+  const parseSessionTypeMinutes = (value: unknown): number | null => {
+    if (typeof value !== "string") return null;
+    const match = value.match(/(\d+)\s*m/i);
+    if (!match) return null;
+    const minutes = Number(match[1]);
+    return Number.isFinite(minutes) && minutes > 0 ? minutes : null;
+  };
+
+  const sessionDurationById = new Map<string, number>();
+  if (Array.isArray(sessions)) {
+    sessions.forEach((s: any) => {
+      const id = s?.id;
+      if (!id) return;
+      const minutes =
+        typeof s?.duration_minutes === "number"
+          ? s.duration_minutes
+          : typeof s?.duration === "number"
+          ? s.duration
+          : parseSessionTypeMinutes(s?.session_type);
+      if (
+        typeof minutes === "number" &&
+        Number.isFinite(minutes) &&
+        minutes > 0
+      ) {
+        sessionDurationById.set(String(id), minutes);
+      }
+    });
+  }
+
+  const getAppointmentDurationMinutes = (appointment: any): number => {
+    const direct =
+      typeof appointment?.duration_minutes === "number"
+        ? appointment.duration_minutes
+        : typeof appointment?.duration === "number"
+        ? appointment.duration
+        : parseSessionTypeMinutes(appointment?.session_type) ??
+          parseSessionTypeMinutes(appointment?.session?.session_type);
+
+    if (typeof direct === "number" && Number.isFinite(direct) && direct > 0) {
+      return direct;
+    }
+
+    const sessionId = appointment?.session_id;
+    if (sessionId && sessionDurationById.has(String(sessionId))) {
+      return sessionDurationById.get(String(sessionId))!;
+    }
+
+    // Fallback safe: si on ne connaît pas la durée, on assume 15 minutes
+    return 15;
+  };
+
+  const parseTimeLike = (
+    raw: unknown
+  ): { h: number; m: number; s: number } | null => {
+    if (typeof raw !== "string") return null;
+    // Accept formats like:
+    // - "10:30:00+01"
+    // - "10:30:00+01:00"
+    // - "10:30:00"
+    // - "10:30"
+    const match = raw.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (!match) return null;
+    const h = Number(match[1]);
+    const m = Number(match[2]);
+    const s = match[3] ? Number(match[3]) : 0;
+    if (![h, m, s].every(Number.isFinite)) return null;
+    if (h < 0 || h > 23 || m < 0 || m > 59 || s < 0 || s > 59) return null;
+    return { h, m, s };
+  };
 
   const buildSlotsForWindow = (start: Date, end: Date) => {
     // Générer les créneaux horaires selon la durée sélectionnée
@@ -140,16 +211,20 @@ const generateTimeSlots = (
           }
 
           const appointmentDate = new Date(appointment.appointment_at);
-          const appointmentTime = appointmentDate.toLocaleTimeString("fr-FR", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          });
+          if (isNaN(appointmentDate.getTime())) return false;
 
-          // Vérifier si c'est le même jour et la même heure
+          const appointmentDurationMinutes =
+            getAppointmentDurationMinutes(appointment);
+          const appointmentStartMs = appointmentDate.getTime();
+          const appointmentEndMs =
+            appointmentStartMs + appointmentDurationMinutes * 60 * 1000;
+
+          const slotStartMs = slotDateTime.getTime();
+          const slotEndMs = slotStartMs + duration * 60 * 1000;
+
+          // Chevauchement (si les intervalles se croisent)
           return (
-            appointmentDate.toDateString() === selectedDate.toDateString() &&
-            appointmentTime === timeString
+            slotStartMs < appointmentEndMs && slotEndMs > appointmentStartMs
           );
         });
 
@@ -171,9 +246,36 @@ const generateTimeSlots = (
     // Utiliser les fenêtres de disponibilité spécifiques définies pour cette date
     allowedWindowsForDate.forEach((window: any) => {
       if (!window?.start_date || !window?.end_date) return;
-      const windowStart = new Date(window.start_date);
-      const windowEnd = new Date(window.end_date);
+      const rawWindowStart = new Date(window.start_date);
+      const rawWindowEnd = new Date(window.end_date);
 
+      if (isNaN(rawWindowStart.getTime()) || isNaN(rawWindowEnd.getTime()))
+        return;
+
+      // Ancrer la fenêtre sur la date sélectionnée (évite les décalages timezone
+      // qui font tomber la fenêtre sur un autre jour côté JS).
+      const windowStart = new Date(selectedDate);
+      windowStart.setHours(
+        rawWindowStart.getHours(),
+        rawWindowStart.getMinutes(),
+        rawWindowStart.getSeconds(),
+        0
+      );
+
+      const windowEnd = new Date(selectedDate);
+      windowEnd.setHours(
+        rawWindowEnd.getHours(),
+        rawWindowEnd.getMinutes(),
+        rawWindowEnd.getSeconds(),
+        0
+      );
+
+      // Si ça traverse minuit (ou si end <= start), pousser la fin au lendemain
+      if (windowEnd <= windowStart) {
+        windowEnd.setDate(windowEnd.getDate() + 1);
+      }
+
+      // Validation finale
       if (windowStart >= windowEnd) return;
 
       buildSlotsForWindow(windowStart, windowEnd);
@@ -203,41 +305,47 @@ const generateTimeSlots = (
       if (!schedule.start_time || !schedule.end_time) {
         return;
       }
-      
-      // Parser les heures de début et fin (format: "HH:MM:SS+00")
-      let startTime = new Date(
-        `1970-01-01T${schedule.start_time.replace("+00", "Z")}`
-      );
-      let endTime = new Date(
-        `1970-01-01T${schedule.end_time.replace("+00", "Z")}`
-      );
-      
-      // Vérifier que les dates parsées sont valides
-      if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+
+      const start = parseTimeLike(schedule.start_time);
+      const end = parseTimeLike(schedule.end_time);
+
+      if (!start || !end) {
+        console.warn(
+          `Schedule invalide ignoré (parse): ${String(
+            schedule.start_time
+          )} - ${String(schedule.end_time)}`
+        );
         return;
       }
 
-      // Gérer les créneaux qui traversent minuit (end_time < startTime)
-      if (endTime < startTime) {
-        // L'heure de fin est le lendemain, ajouter 24 heures
-        endTime = new Date(endTime.getTime() + 24 * 60 * 60 * 1000);
+      // Construire une fenêtre ancrée sur la date sélectionnée
+      const startTime = new Date(selectedDate);
+      startTime.setHours(start.h, start.m, start.s, 0);
+
+      const endTime = new Date(selectedDate);
+      endTime.setHours(end.h, end.m, end.s, 0);
+
+      // Gérer les créneaux qui traversent minuit (end_time <= start_time)
+      if (endTime <= startTime) {
+        endTime.setDate(endTime.getDate() + 1);
       }
 
-      // Validation : s'assurer que nous avons maintenant un créneau valide
       if (startTime >= endTime) {
         console.warn(
-          `Schedule invalide ignoré: ${schedule.start_time} - ${schedule.end_time}`
+          `Schedule invalide ignoré: ${String(schedule.start_time)} - ${String(
+            schedule.end_time
+          )}`
         );
-        return; // Ignorer ce schedule
+        return;
       }
 
-      // Limiter endTime à 00h30 maximum du lendemain
-      // Créer une date pour 00h30 du lendemain (par rapport à 1970-01-01)
-      const maxEndTime = new Date("1970-01-02T00:30:00Z"); // 00h30 du lendemain
+      // Limiter endTime à 00h30 maximum du lendemain (par rapport à selectedDate)
+      const maxEndTime = new Date(selectedDate);
+      maxEndTime.setDate(maxEndTime.getDate() + 1);
+      maxEndTime.setHours(0, 30, 0, 0);
 
-      // Si endTime dépasse 00h30 du lendemain, le limiter à 00h30
       if (endTime > maxEndTime) {
-        endTime = maxEndTime;
+        endTime.setTime(maxEndTime.getTime());
       }
 
       buildSlotsForWindow(startTime, endTime);
@@ -277,6 +385,26 @@ export default function VisioPlanningCalendar({
 }: VisioPlanningCalendarProps) {
   const t = useTranslations();
   const currentLocale = useLocale();
+  const serviceFeeRate = 0.15;
+  const feeFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(currentLocale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    [currentLocale]
+  );
+
+  const parsePrice = (value: unknown) => {
+    if (typeof value === "number") return value;
+    const normalized = String(value ?? "")
+      .trim()
+      .replace("€", "")
+      .replace(/\s/g, "")
+      .replace(",", ".");
+    const num = Number(normalized);
+    return Number.isFinite(num) ? num : 0;
+  };
 
   // Variables traduites selon la locale
   const daysOfWeek =
@@ -366,8 +494,11 @@ export default function VisioPlanningCalendar({
   const selectedSession = availableDurations.find(
     (d: any) => d.value === selectedDuration
   );
- 
+
   const sessionPrice = selectedSession?.price;
+  const sessionPriceNumber = parsePrice(sessionPrice);
+  const serviceFee =
+    Math.round(sessionPriceNumber * serviceFeeRate * 100) / 100;
 
   // Générer les créneaux horaires dynamiquement
   const timeSlots = useMemo(() => {
@@ -411,7 +542,8 @@ export default function VisioPlanningCalendar({
       selectedDateTime,
       selectedDuration,
       Array.isArray(appointments) ? appointments : [],
-      allowedWindowsForDate
+      allowedWindowsForDate,
+      expertData?.sessions || []
     );
 
     return slots;
@@ -456,7 +588,6 @@ export default function VisioPlanningCalendar({
 
   const handleReserve = async () => {
     if (!selectedDate || !selectedTime || !selectedSession?.sessionId) {
-      
       return;
     }
 
@@ -557,12 +688,13 @@ export default function VisioPlanningCalendar({
       date,
       selectedDuration,
       Array.isArray(appointments) ? appointments : [],
-      allowedWindowsForDate
+      allowedWindowsForDate,
+      expertData?.sessions || []
     );
-    
+
     // Filtrer les créneaux disponibles (non pris)
     const availableSlots = slots.filter((slot: any) => slot.available);
-    
+
     // Retourner true s'il y a au moins un créneau disponible
     return slots.some((slot: any) => slot.available);
   };
@@ -584,7 +716,9 @@ export default function VisioPlanningCalendar({
     );
 
     // Fonction pour chercher la première date disponible dans un mois donné
-    const findFirstAvailableDateInMonth = (searchDate: Date): { day: number; found: boolean } => {
+    const findFirstAvailableDateInMonth = (
+      searchDate: Date
+    ): { day: number; found: boolean } => {
       const daysInMonth = getDaysInMonth(searchDate);
 
       // Parcourir tous les jours du mois
@@ -603,7 +737,7 @@ export default function VisioPlanningCalendar({
 
         // Vérifier si cette date a des créneaux disponibles
         const hasSlotsAvailable = hasAvailableSlots(dayDate);
-        
+
         if (hasSlotsAvailable) {
           // Date trouvée !
           return { day, found: true };
@@ -616,7 +750,7 @@ export default function VisioPlanningCalendar({
 
     // Étape 1 : Chercher dans le mois actuellement affiché
     const resultCurrentMonth = findFirstAvailableDateInMonth(currentDate);
-    
+
     if (resultCurrentMonth.found) {
       // Date trouvée dans le mois actuel
       setSelectedDate(resultCurrentMonth.day);
@@ -628,17 +762,19 @@ export default function VisioPlanningCalendar({
     // On cherche jusqu'à 24 mois dans le futur
     let searchDate = new Date(currentDate);
     const maxMonthsToSearch = 24;
-    
+
     for (let monthOffset = 1; monthOffset <= maxMonthsToSearch; monthOffset++) {
       searchDate = new Date(currentDate);
       searchDate.setMonth(currentDate.getMonth() + monthOffset);
-      
+
       const result = findFirstAvailableDateInMonth(searchDate);
-      
+
       if (result.found) {
         // Date trouvée dans un mois futur !
         // Naviguer automatiquement vers ce mois
-        setCurrentDate(new Date(searchDate.getFullYear(), searchDate.getMonth(), 1));
+        setCurrentDate(
+          new Date(searchDate.getFullYear(), searchDate.getMonth(), 1)
+        );
         setSelectedDate(result.day);
         setSelectedTime("");
         return;
@@ -657,8 +793,6 @@ export default function VisioPlanningCalendar({
     appointments,
     selectedDuration,
   ]);
-
-
 
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentDate);
@@ -908,7 +1042,8 @@ export default function VisioPlanningCalendar({
                     ).getDay()
                   ]
                 : "-"}{" "}
-              {selectedDate ?? "-"} {months[currentDate.getMonth()].toLowerCase()}{" "}
+              {selectedDate ?? "-"}{" "}
+              {months[currentDate.getMonth()].toLowerCase()}{" "}
               {currentDate.getFullYear()}{" "}
               {selectedTime ? (
                 <>à {selectedTime}</>
@@ -921,9 +1056,14 @@ export default function VisioPlanningCalendar({
           </div>
 
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xl font-bold text-gray-900">
-              {sessionPrice} €
-            </span>
+            <div>
+              <span className="text-xl font-bold text-gray-900">
+                {sessionPrice} €
+              </span>
+              <p className="mt-1 text-xs font-normal text-gray-500">
+                {t("offers.serviceFee")}: {feeFormatter.format(serviceFee)} €
+              </p>
+            </div>
           </div>
 
           <Button

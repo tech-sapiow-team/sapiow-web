@@ -78,12 +78,33 @@ export default function OfferSelection({
     "session"
   );
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
-  
+
   const { setIsPaid } = usePayStore();
   const { setIsPlaning } = usePlaningStore();
   const { setAppointmentData } = useAppointmentStore();
   const router = useRouter();
   const createAppointmentMutation = useCreatePatientAppointment();
+
+  const serviceFeeRate = 0.15;
+  const feeFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(currentLocale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    [currentLocale]
+  );
+
+  const parsePrice = (value: unknown) => {
+    if (typeof value === "number") return value;
+    const normalized = String(value ?? "")
+      .trim()
+      .replace("€", "")
+      .replace(/\s/g, "")
+      .replace(",", ".");
+    const num = Number(normalized);
+    return Number.isFinite(num) ? num : 0;
+  };
 
   // Récupérer les rendez-vous existants pour vérifier les créneaux
   const { data: appointments } = useGetProAppointments(
@@ -316,6 +337,15 @@ export default function OfferSelection({
                           <span className="text-sm font-normal text-slate-800 font-figtree">
                             {t("offers.perMonth")}
                           </span>
+                        </p>
+                        <p className="mt-1 text-xs font-normal text-gray-500 font-figtree">
+                          {t("offers.serviceFee")}:{" "}
+                          {feeFormatter.format(
+                            Math.round(
+                              parsePrice(session.price) * serviceFeeRate * 100
+                            ) / 100
+                          )}{" "}
+                          €
                         </p>
                       </div>
                       <div className="ml-4">

@@ -3,7 +3,7 @@ export interface Professional {
   name?: string;
   first_name?: string;
   last_name?: string;
-  price?: string;
+  price?: string | number;
   image?: string;
   avatar?: string | null;
   verified?: boolean;
@@ -13,4 +13,6 @@ export interface Professional {
   description?: string | null;
   linkedin?: string | null;
   job?: string | null;
+  // Optionnel: utile pour calculer le prix "à partir de" côté UI
+  sessions?: any[];
 }

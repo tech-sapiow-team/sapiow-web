@@ -17,14 +17,17 @@ import { usePlaningStore } from "@/store/usePlaning";
 import Lottie from "lottie-react";
 import { ChevronDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import OfferSelection from "../home/OfferSelection";
 import ProfessionalCard from "../home/ProfessionalCard";
 
 import { useGetPatientAppointments } from "@/api/appointments/useAppointments";
 import { useGetCustomer } from "@/api/customer/useCustomer";
 import { Expert, useSearchExperts } from "@/api/listExpert/useListExpert";
-import { useGetProExpert, useGetProExpertById } from "@/api/proExpert/useProExpert";
+import {
+  useGetProExpert,
+  useGetProExpertById,
+} from "@/api/proExpert/useProExpert";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsMobileOrTablet } from "@/hooks/use-mobile-tablet";
 import { useDetailsLogic } from "@/hooks/useDetailsLogic";
@@ -64,7 +67,7 @@ interface Session {
   price: number;
   pro_id: string;
   session_nature: string;
-  session_type: string;
+  session_type: string | null;
   strategic_session: boolean;
   support: boolean;
   updated_at: string;
@@ -91,16 +94,17 @@ function ProfessionalDetailContent() {
   const t = useTranslations();
   const locale = useLocale();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
   useEffect(() => {
     authUtils.isAuthenticated().then(setIsAuthenticated);
   }, []);
-  
+
   const { data: customer } = useGetCustomer(isAuthenticated);
-  const { data: appointments, isLoading: isLoadingAppointments } = useGetPatientAppointments(customer?.id) as {
-    data: Appointment[];
-    isLoading: boolean;
-  };
+  const { data: appointments, isLoading: isLoadingAppointments } =
+    useGetPatientAppointments(customer?.id) as {
+      data: Appointment[];
+      isLoading: boolean;
+    };
   const { user: userClient } = useUserStore();
   const isMobile = useIsMobile();
   const isMobileOrTablet = useIsMobileOrTablet();
@@ -141,6 +145,40 @@ function ProfessionalDetailContent() {
     setIsOfferSheetOpen,
     toggleDescriptionExpanded,
   } = useDetailsLogic(expertData, { favoritesEnabled: isAuthenticated });
+  console.log("professional", professional);
+
+  const priceNumberFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }),
+    [locale]
+  );
+
+  const startingFromPrice = useMemo(() => {
+    const sessions = Array.isArray(expertData?.sessions)
+      ? expertData.sessions
+      : [];
+    const oneTimeActive = sessions.filter(
+      (s: any) => s?.is_active === true && s?.session_nature === "one_time"
+    );
+    const oneTimeActiveVideo = oneTimeActive.filter(
+      (s: any) => s?.video_call === true
+    );
+    const candidates =
+      oneTimeActiveVideo.length > 0 ? oneTimeActiveVideo : oneTimeActive;
+
+    if (candidates.length === 0) return "";
+
+    const min = candidates.reduce((acc: number, s: any) => {
+      const price = typeof s?.price === "number" ? s.price : Number(s?.price);
+      return Number.isFinite(price) ? Math.min(acc, price) : acc;
+    }, Number.POSITIVE_INFINITY);
+
+    if (!Number.isFinite(min)) return "";
+    return `${priceNumberFormatter.format(min)} €`;
+  }, [expertData?.sessions, priceNumberFormatter]);
 
   // Ref et état pour détecter si la description est tronquée
   const descriptionRef = useRef<HTMLParagraphElement>(null);
@@ -485,7 +523,9 @@ function ProfessionalDetailContent() {
                             topExpertise: professional.badge === "gold",
                           }}
                           isLiked={isLiked(String(professional.id))}
-                          onToggleLike={() => toggleLike(String(professional.id))}
+                          onToggleLike={() =>
+                            toggleLike(String(professional.id))
+                          }
                           onProfessionalClick={() =>
                             router.push(`/details?id=${professional.id}`)
                           }
@@ -547,7 +587,7 @@ function ProfessionalDetailContent() {
                       style={{ width: 421, height: 381 }}
                     />
                   </div>
-                  
+
                   <div className="flex flex-col items-center justify-center gap-4 mt-7 z-0">
                     <h2 className="text-[28px] font-bold text-charcoal-blue">
                       {t("expertDetails.congratulations")}
@@ -607,7 +647,7 @@ function ProfessionalDetailContent() {
               <>
                 {!isPlaning && (
                   <OfferSelection
-                    price={professional?.price || ""}
+                    price={startingFromPrice}
                     expertData={expertData}
                   />
                 )}
@@ -639,7 +679,7 @@ function ProfessionalDetailContent() {
                     style={{ width: 350, height: 300 }}
                   />
                 </div>
-                
+
                 <div className="text-center z-0">
                   <h2 className="text-2xl font-bold text-charcoal-blue mb-4">
                     {t("expertDetails.congratulations")}
@@ -722,7 +762,7 @@ function ProfessionalDetailContent() {
               <div className="mt-4">
                 {!isPlaning && (
                   <OfferSelection
-                    price={professional?.price || ""}
+                    price={startingFromPrice}
                     expertData={expertData}
                   />
                 )}

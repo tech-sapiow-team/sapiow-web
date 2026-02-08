@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Professional } from "@/types/professional";
 import { Heart } from "lucide-react";
 import Image from "next/image";
+import { useMemo } from "react";
 
 interface ProfessionalCardProps {
   professional: Professional;
@@ -35,6 +36,52 @@ export default function ProfessionalCard({
   iconSize = 16,
   showPrice = true,
 }: ProfessionalCardProps) {
+  const priceNumberFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }),
+    []
+  );
+
+  const parsePrice = (value: unknown) => {
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    const normalized = String(value ?? "")
+      .trim()
+      .replace("€", "")
+      .replace(/\s/g, "")
+      .replace(",", ".");
+    if (normalized.length === 0) return null;
+    const num = Number(normalized);
+    return Number.isFinite(num) ? num : null;
+  };
+
+  const startingFromPrice = useMemo(() => {
+    const direct = parsePrice(professional.price);
+    if (direct !== null) return direct;
+
+    const sessions = Array.isArray((professional as any)?.sessions)
+      ? (professional as any).sessions
+      : [];
+    const oneTimeActive = sessions.filter(
+      (s: any) => s?.is_active === true && s?.session_nature === "one_time"
+    );
+    const oneTimeActiveVideo = oneTimeActive.filter(
+      (s: any) => s?.video_call === true
+    );
+    const candidates =
+      oneTimeActiveVideo.length > 0 ? oneTimeActiveVideo : oneTimeActive;
+    if (candidates.length === 0) return null;
+
+    const min = candidates.reduce((acc: number, s: any) => {
+      const price = parsePrice(s?.price);
+      return price === null ? acc : Math.min(acc, price);
+    }, Number.POSITIVE_INFINITY);
+
+    return Number.isFinite(min) ? min : null;
+  }, [professional, professional.price]);
+
   return (
     <Card
       className={`mx-auto p-0 m-0 border-none shadow-none ${maxWidth} w-full cursor-pointer duration-200 my-3 rounded-2xl`}
@@ -125,12 +172,12 @@ export default function ProfessionalCard({
           </div>
           {showPrice && (
             <p className="text-xs text-black mb-1 truncate">
-              {professional.price ? (
+              {startingFromPrice !== null ? (
                 <>
                   <span className="font-bold font-figtree">
-                    {professional.price}
+                    {priceNumberFormatter.format(startingFromPrice)}
                   </span>{" "}
-                  / Session
+                  € / Session
                 </>
               ) : (
                 ""

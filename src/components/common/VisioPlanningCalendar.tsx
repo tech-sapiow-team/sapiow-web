@@ -203,7 +203,7 @@ const generateTimeSlots = (
       if (!schedule.start_time || !schedule.end_time) {
         return;
       }
-      
+
       // Parser les heures de début et fin (format: "HH:MM:SS+00")
       let startTime = new Date(
         `1970-01-01T${schedule.start_time.replace("+00", "Z")}`
@@ -211,7 +211,7 @@ const generateTimeSlots = (
       let endTime = new Date(
         `1970-01-01T${schedule.end_time.replace("+00", "Z")}`
       );
-      
+
       // Vérifier que les dates parsées sont valides
       if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
         return;
@@ -277,6 +277,26 @@ export default function VisioPlanningCalendar({
 }: VisioPlanningCalendarProps) {
   const t = useTranslations();
   const currentLocale = useLocale();
+  const serviceFeeRate = 0.15;
+  const feeFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(currentLocale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    [currentLocale]
+  );
+
+  const parsePrice = (value: unknown) => {
+    if (typeof value === "number") return value;
+    const normalized = String(value ?? "")
+      .trim()
+      .replace("€", "")
+      .replace(/\s/g, "")
+      .replace(",", ".");
+    const num = Number(normalized);
+    return Number.isFinite(num) ? num : 0;
+  };
 
   // Variables traduites selon la locale
   const daysOfWeek =
@@ -366,8 +386,11 @@ export default function VisioPlanningCalendar({
   const selectedSession = availableDurations.find(
     (d: any) => d.value === selectedDuration
   );
- 
+
   const sessionPrice = selectedSession?.price;
+  const sessionPriceNumber = parsePrice(sessionPrice);
+  const serviceFee =
+    Math.round(sessionPriceNumber * serviceFeeRate * 100) / 100;
 
   // Générer les créneaux horaires dynamiquement
   const timeSlots = useMemo(() => {
@@ -456,7 +479,6 @@ export default function VisioPlanningCalendar({
 
   const handleReserve = async () => {
     if (!selectedDate || !selectedTime || !selectedSession?.sessionId) {
-      
       return;
     }
 
@@ -559,10 +581,10 @@ export default function VisioPlanningCalendar({
       Array.isArray(appointments) ? appointments : [],
       allowedWindowsForDate
     );
-    
+
     // Filtrer les créneaux disponibles (non pris)
     const availableSlots = slots.filter((slot: any) => slot.available);
-    
+
     // Retourner true s'il y a au moins un créneau disponible
     return slots.some((slot: any) => slot.available);
   };
@@ -584,7 +606,9 @@ export default function VisioPlanningCalendar({
     );
 
     // Fonction pour chercher la première date disponible dans un mois donné
-    const findFirstAvailableDateInMonth = (searchDate: Date): { day: number; found: boolean } => {
+    const findFirstAvailableDateInMonth = (
+      searchDate: Date
+    ): { day: number; found: boolean } => {
       const daysInMonth = getDaysInMonth(searchDate);
 
       // Parcourir tous les jours du mois
@@ -603,7 +627,7 @@ export default function VisioPlanningCalendar({
 
         // Vérifier si cette date a des créneaux disponibles
         const hasSlotsAvailable = hasAvailableSlots(dayDate);
-        
+
         if (hasSlotsAvailable) {
           // Date trouvée !
           return { day, found: true };
@@ -616,7 +640,7 @@ export default function VisioPlanningCalendar({
 
     // Étape 1 : Chercher dans le mois actuellement affiché
     const resultCurrentMonth = findFirstAvailableDateInMonth(currentDate);
-    
+
     if (resultCurrentMonth.found) {
       // Date trouvée dans le mois actuel
       setSelectedDate(resultCurrentMonth.day);
@@ -628,17 +652,19 @@ export default function VisioPlanningCalendar({
     // On cherche jusqu'à 24 mois dans le futur
     let searchDate = new Date(currentDate);
     const maxMonthsToSearch = 24;
-    
+
     for (let monthOffset = 1; monthOffset <= maxMonthsToSearch; monthOffset++) {
       searchDate = new Date(currentDate);
       searchDate.setMonth(currentDate.getMonth() + monthOffset);
-      
+
       const result = findFirstAvailableDateInMonth(searchDate);
-      
+
       if (result.found) {
         // Date trouvée dans un mois futur !
         // Naviguer automatiquement vers ce mois
-        setCurrentDate(new Date(searchDate.getFullYear(), searchDate.getMonth(), 1));
+        setCurrentDate(
+          new Date(searchDate.getFullYear(), searchDate.getMonth(), 1)
+        );
         setSelectedDate(result.day);
         setSelectedTime("");
         return;
@@ -657,8 +683,6 @@ export default function VisioPlanningCalendar({
     appointments,
     selectedDuration,
   ]);
-
-
 
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentDate);
@@ -908,7 +932,8 @@ export default function VisioPlanningCalendar({
                     ).getDay()
                   ]
                 : "-"}{" "}
-              {selectedDate ?? "-"} {months[currentDate.getMonth()].toLowerCase()}{" "}
+              {selectedDate ?? "-"}{" "}
+              {months[currentDate.getMonth()].toLowerCase()}{" "}
               {currentDate.getFullYear()}{" "}
               {selectedTime ? (
                 <>à {selectedTime}</>
@@ -921,9 +946,14 @@ export default function VisioPlanningCalendar({
           </div>
 
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xl font-bold text-gray-900">
-              {sessionPrice} €
-            </span>
+            <div>
+              <span className="text-xl font-bold text-gray-900">
+                {sessionPrice} €
+              </span>
+              <p className="mt-1 text-xs font-normal text-gray-500">
+                {t("offers.serviceFee")}: {feeFormatter.format(serviceFee)} €
+              </p>
+            </div>
           </div>
 
           <Button

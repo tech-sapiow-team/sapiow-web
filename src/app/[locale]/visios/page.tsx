@@ -15,7 +15,7 @@ function Visios() {
   return (
     <div className="flex w-full">
       <AppSidebar hideMobileNav={isVideoCallOpen} />
-      <div className="w-full flex-1 pb-10">
+      <div className="w-full flex-1 pb-10 bg-white min-h-screen">
         {user.type === "client" ? (
           <Client />
         ) : (

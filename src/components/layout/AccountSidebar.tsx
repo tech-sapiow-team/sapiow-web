@@ -85,7 +85,7 @@ export function AccountSidebar({ isMobile = false }: AccountSidebarProps) {
 
   const sidebarClasses = isMobile
     ? "w-full h-full flex flex-col px-4 py-4"
-    : " w-[302px] h-[calc(100vh-105px)] sticky top-[102px] z-30 flex flex-col px-4 py-4 border-r border-r-light-blue-gray";
+    : " w-[302px] h-[calc(100vh-105px)] sticky top-[102px] z-30 flex flex-col px-4 py-4 border-r border-r-light-blue-gray bg-white";
 
   const handleLogout = async () => {
     try {

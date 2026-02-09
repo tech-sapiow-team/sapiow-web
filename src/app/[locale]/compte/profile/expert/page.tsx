@@ -6,7 +6,9 @@ import AccountLayout from "../../AccountLayout";
 export default function ExpertProfilePage() {
   return (
     <AccountLayout>
-      <ExpertProfile />
+      <div className="w-full bg-white min-h-screen">
+        <ExpertProfile />
+      </div>
     </AccountLayout>
   );
 }

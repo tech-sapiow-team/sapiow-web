@@ -183,7 +183,7 @@ export default function Client() {
 
             if (!hasAnyAppointment) {
               return (
-                <div className="flex items-center justify-center h-32 bg-gray-50 rounded-lg mb-10">
+                <div className="flex items-center justify-center h-32 rounded-lg mb-10">
                   <p className="text-gray-500">
                     {t("visios.noConfirmedUpcoming")}
                   </p>

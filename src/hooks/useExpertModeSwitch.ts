@@ -1,5 +1,6 @@
 "use client";
 import { useGetProExpert } from "@/api/proExpert/useProExpert";
+import { useGetCustomer } from "@/api/customer/useCustomer";
 import { useUserStore } from "@/store/useUser";
 import { useRouter } from "next/navigation";
 
@@ -7,6 +8,7 @@ export const useExpertModeSwitch = () => {
   const router = useRouter();
   const { user, setUser } = useUserStore();
   const { data: proExpert } = useGetProExpert();
+  const { data: customer } = useGetCustomer();
 
   // Fonction pour vérifier si les données expert sont vides
   const checkIfProExpertEmpty = (data: any): boolean => {
@@ -18,13 +20,23 @@ export const useExpertModeSwitch = () => {
   };
 
   // Fonction pour gérer le passage en mode expert
-  const handleExpertModeSwitch = () => {
+  const handleExpertModeSwitch = async () => {
     const isProExpertEmpty = checkIfProExpertEmpty(proExpert);
 
     if (isProExpertEmpty) {
-      // Pas de profil expert -> rediriger vers onboarding expert
+      // Pas de profil expert -> rediriger vers l'étape 2 de l'onboarding expert
+      const firstName = (customer?.first_name ?? "").trim();
+      const lastName = (customer?.last_name ?? "").trim();
+
       sessionStorage.setItem("switchToExpert", "true");
-      router.push("/onboarding");
+      const startStep = "2";
+      sessionStorage.setItem("onboardingExpertStartStep", startStep);
+      sessionStorage.setItem(
+        "onboardingExpertPrefill",
+        JSON.stringify({ first_name: firstName, last_name: lastName })
+      );
+
+      router.push(`/onboarding?step=${startStep}`);
     } else {
       // Profil expert existe -> passer en mode expert
       setUser({ type: "expert" });

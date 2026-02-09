@@ -241,8 +241,8 @@ export function SessionDetailSheet({
                 </div>
 
                 {/* Section questions */}
-                <div>
-                  {/* Bloc d'invitation - affiché seulement s'il n'y a pas de questions */}
+                {/* Bloc d'invitation - affiché seulement s'il n'y a pas de questions */}
+                {/* <div>
                   {allQuestions.length === 0 && (
                     <div className="bg-[#E8F2FF] rounded-[8px] p-4">
                       <h1 className="text-exford-blue text-base font-bold font-figtree">
@@ -292,7 +292,7 @@ export function SessionDetailSheet({
                     </div>
                   )}
 
-                  {/* Bouton pour ajouter une question si des questions existent déjà */}
+
                   {allQuestions.length > 0 && (
                     <div className="mb-4">
                       {!showQuestionForm ? (
@@ -335,7 +335,7 @@ export function SessionDetailSheet({
                     </div>
                   )}
 
-                  {/* Affichage des questions existantes */}
+
                   {allQuestions.length > 0 && (
                     <div className="mt-4">
                       <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -348,7 +348,7 @@ export function SessionDetailSheet({
                             className="bg-gray-50 p-3 rounded-[8px]"
                           >
                             {editingQuestionId === question.id ? (
-                              // Mode édition
+
                               <div className="space-y-2">
                                 <textarea
                                   value={editingQuestionText}
@@ -384,7 +384,6 @@ export function SessionDetailSheet({
                                 </div>
                               </div>
                             ) : (
-                              // Mode affichage
                               <div className="flex items-start justify-between gap-2">
                                 <p className="text-sm text-gray-700 flex-1">
                                   {question.question}
@@ -402,16 +401,6 @@ export function SessionDetailSheet({
                                   >
                                     <Pencil className="h-4 w-4" />
                                   </button>
-                                  {/* <button
-                                    onClick={() =>
-                                      handleDeleteQuestion(question.id)
-                                    }
-                                    disabled={deleteQuestionMutation.isPending}
-                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title={t("sessionDetail.delete")}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button> */}
                                 </div>
                               </div>
                             )}
@@ -420,7 +409,7 @@ export function SessionDetailSheet({
                       </div>
                     </div>
                   )}
-                </div>
+                </div> */}
               </div>
             </div>
 

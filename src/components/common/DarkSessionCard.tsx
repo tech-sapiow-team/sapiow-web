@@ -155,7 +155,7 @@ export const UpcomingVideoCall: React.FC<UpcomingVideoCallProps> = ({
     : "bg-white hover:bg-white/90 text-exford-blue h-[40px] border border-light-blue-gray";
   return (
     <Card
-      className={`w-full ${cardClasses}  rounded-[16px] overflow-hidden p-3 ${className}`}
+      className={`w-full md:max-w-[424px] ${cardClasses}  rounded-[16px] overflow-hidden p-3 ${className}`}
       style={cardStyle}
     >
       {/* En-tête avec date et durée */}

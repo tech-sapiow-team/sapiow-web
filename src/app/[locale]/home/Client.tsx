@@ -47,7 +47,7 @@ const UpcomingVisiosSection = memo(function UpcomingVisiosSection({
               variant="dark"
               showButton={false}
               sessionTime={sessionData.time}
-              className="w-full min-w-full md:min-w-[calc(50%-0.5rem)] md:w-[calc(50%-0.5rem)] lg:max-w-[324px] lg:min-w-[324px] h-[184px] border-none shadow-none"
+              className="w-full shrink-0 md:w-[calc(50%-0.5rem)] md:max-w-[424px] border-none shadow-none"
             />
           );
         })}

@@ -213,7 +213,7 @@ export default function Client() {
                             title={sessionData.professionalTitle}
                             onViewDetails={() => handleViewDetails(sessionData)}
                             variant="dark"
-                            className="w-full md:max-w-[424px] h-[184px] border-none shadow-none"
+                            className="w-full md:max-w-[424px] border-none shadow-none"
                           />
                         );
                       })()}

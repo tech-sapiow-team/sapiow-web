@@ -282,12 +282,12 @@ function ProfessionalDetailContent() {
   const imageHeight = 378;
   const maxWidth = isMobile ? "max-w-[358px]" : "max-w-[303px]";
   return (
-    <div className="flex container">
+    <div className="flex w-full">
       <AppSidebar />
       <div className="w-full flex-1">
         <HeaderClient isBack classNameIsBack="py-1" />
         {/* <Expert /> */}
-        <div className="w-full grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[1fr_386px] gap-6 pl-5 container pb-20 lg:pb-0 pr-5 md:pr-0">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[1fr_386px] gap-6 pl-5 pb-20 lg:pb-0 pr-5 md:pr-0">
           <div className="w-full max-w-[753px] min-w-0 overflow-hidden">
             <div className="flex justify-center flex-col md:flex-row gap-6 mt-3">
               <div className="relative flex-shrink-0">

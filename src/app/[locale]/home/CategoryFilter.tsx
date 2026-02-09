@@ -32,12 +32,12 @@ export default function CategoryFilter({
   }
 
   return (
-    <div className="flex items-center overflow-x-auto scrollbar-hide gap-6 py-4">
+    <div className="w-full min-w-0 flex flex-nowrap items-center overflow-x-auto scrollbar-hide gap-6 py-4">
       {categories.map((category) => (
         <button
           key={category.id}
           onClick={() => onCategoryChange(category.id)}
-          className={`flex flex-col items-center gap-2 transition-all duration-200 cursor-pointer`}
+          className={`flex flex-col items-center gap-2 transition-all duration-200 cursor-pointer flex-shrink-0`}
         >
           <div
             className={`w-12 h-12 p-[3px] rounded-full flex items-center justify-center ${
@@ -56,7 +56,9 @@ export default function CategoryFilter({
               }`}
             />
           </div>
-          <span className="text-xs font-medium">{category.name}</span>
+          <span className="text-xs font-medium whitespace-nowrap">
+            {category.name}
+          </span>
         </button>
       ))}
     </div>

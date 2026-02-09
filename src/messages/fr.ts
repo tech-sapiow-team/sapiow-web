@@ -16,7 +16,7 @@ export default {
     title: "Entrez votre numéro de téléphone",
     subtitle: "Vous allez recevoir un code pour vous connecter.",
     sendingCode: "Envoi en cours...",
-    legalText: "En cliquant sur continuer, j'accepte les",
+    legalText: "J'ai lu et j'accepte les",
     termsOfService: "CGU",
     and: "et la",
     privacyPolicy: "Politique de Confidentialité",

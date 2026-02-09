@@ -6,9 +6,13 @@ import { useLogin } from "@/hooks/useLogin";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
+import { useId, useState } from "react";
 
 export default function Login() {
   const t = useTranslations();
+  const legalCheckboxId = useId();
+  const [isLegalAccepted, setIsLegalAccepted] = useState(false);
+
   const {
     phoneNumber,
     selectedCountry,
@@ -75,34 +79,48 @@ export default function Login() {
                   </div>
                 )}
 
+                {/* Acceptation CGU / Politique de confidentialité */}
+                <div className="mb-6">
+                  <div className="flex items-start gap-3">
+                    <input
+                      id={legalCheckboxId}
+                      type="checkbox"
+                      checked={isLegalAccepted}
+                      onChange={(e) => setIsLegalAccepted(e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-cyan-cobalt focus:ring-cyan-cobalt"
+                    />
+                    <label
+                      htmlFor={legalCheckboxId}
+                      className="text-xs sm:text-sm font-medium text-black leading-relaxed font-figtree"
+                    >
+                      {t("login.legalText")}{" "}
+                      <Link
+                        href="/mentions-legales"
+                        target="_blank"
+                        className="text-cyan-cobalt hover:underline"
+                      >
+                        {t("login.termsOfService")}
+                      </Link>{" "}
+                      {t("login.and")}{" "}
+                      <Link
+                        href="/mentions-legales"
+                        target="_blank"
+                        className="text-cyan-cobalt hover:underline"
+                      >
+                        {t("login.privacyPolicy")}
+                      </Link>{" "}
+                      {t("login.ofSapiow")}
+                    </label>
+                  </div>
+                </div>
+
                 {/* Bouton */}
                 <Button
                   label={isLoading ? t("login.sendingCode") : t("continue")}
                   className="w-full rounded-[8px] h-[56px] text-base font-medium"
-                  disabled={!isPhoneValid || isLoading}
+                  disabled={!isPhoneValid || isLoading || !isLegalAccepted}
                   onClick={handleContinue}
                 />
-
-                {/* Texte légal responsive */}
-                <p className="text-xs sm:text-sm font-medium text-black mt-6 lg:mt-4 text-center lg:text-left leading-relaxed font-figtree">
-                  {t("login.legalText")}{" "}
-                  <Link
-                    href="/mentions-legales"
-                    target="_blank"
-                    className="text-cyan-cobalt hover:underline"
-                  >
-                    {t("login.termsOfService")}
-                  </Link>{" "}
-                  {t("login.and")}{" "}
-                  <Link
-                    href="/mentions-legales"
-                    target="_blank"
-                    className="text-cyan-cobalt hover:underline"
-                  >
-                    {t("login.privacyPolicy")}
-                  </Link>{" "}
-                  {t("login.ofSapiow")}
-                </p>
               </div>
             </div>
           </div>

@@ -34,26 +34,23 @@ const UpcomingVisiosSection = memo(function UpcomingVisiosSection({
         {t("home.yourNextVisio")}
       </h2>
       <div className="flex gap-4 overflow-x-auto scrollbar-hide">
-        {upcomingAppointments
-          .slice(0, 2)
-          .map((appointment: ApiAppointment) => {
-            const sessionData =
-              transformAppointmentToSessionData(appointment);
-            return (
-              <UpcomingVideoCall
-                key={appointment.id}
-                date={sessionData.date}
-                appointmentAt={appointment.appointment_at}
-                profileImage={sessionData.profileImage}
-                name={sessionData.professionalName}
-                title={sessionData.professionalTitle}
-                variant="dark"
-                showButton={false}
-                sessionTime={sessionData.time}
-                className="w-full min-w-full md:min-w-[calc(50%-0.5rem)] md:w-[calc(50%-0.5rem)] lg:max-w-[324px] lg:min-w-[324px] h-[184px] border-none shadow-none"
-              />
-            );
-          })}
+        {upcomingAppointments.slice(0, 2).map((appointment: ApiAppointment) => {
+          const sessionData = transformAppointmentToSessionData(appointment);
+          return (
+            <UpcomingVideoCall
+              key={appointment.id}
+              date={sessionData.date}
+              appointmentAt={appointment.appointment_at}
+              profileImage={sessionData.profileImage}
+              name={sessionData.professionalName}
+              title={sessionData.professionalTitle}
+              variant="dark"
+              showButton={false}
+              sessionTime={sessionData.time}
+              className="w-full min-w-full md:min-w-[calc(50%-0.5rem)] md:w-[calc(50%-0.5rem)] lg:max-w-[324px] lg:min-w-[324px] h-[184px] border-none shadow-none"
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -139,7 +136,7 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-[repeat(auto-fit,205px)] lg:justify-start gap-4">
               {filteredProfessionals.map((professional: Professional) => (
                 <ProfessionalCard
                   key={professional.id}
@@ -186,7 +183,7 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
         </div>
       ) : (
         // Affichage normal pour les autres catégories
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4 min-h-[400px]">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-[repeat(auto-fit,205px)] lg:justify-start gap-4 min-h-[400px]">
           {filteredProfessionals.map((professional: Professional) => (
             <ProfessionalCard
               key={professional.id}

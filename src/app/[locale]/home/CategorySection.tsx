@@ -60,7 +60,7 @@ export default function CategorySection({
           </button>
         )}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-[repeat(auto-fit,205px)] lg:justify-start gap-4">
         {professionals.map((professional) => {
           const profIdString = professional.id.toString();
           const isLiked = likedProfs[profIdString] || false;

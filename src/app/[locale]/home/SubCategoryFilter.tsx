@@ -55,23 +55,7 @@ export default function SubCategoryFilter({
 
   // Afficher loading si on charge les expertises
   if (isDomainId && isLoadingExpertises) {
-    return (
-      <div className="flex items-center justify-between mt-5 mb-2 px-0">
-        <SubCategorySkeleton />
-
-        <button className="w-[98px] h-[40px] rounded-[8px] border border-light-blue-gray flex items-center justify-center gap-1 px-3 py-2 text-sm text-gray-500 cursor-pointer flex-shrink-0 opacity-50">
-          <Image
-            src="/assets/icons/sort.svg"
-            alt="Sort"
-            width={24}
-            height={24}
-          />
-          <span className="text-exford-blue text-base font-bold font-figtree">
-            Trier
-          </span>
-        </button>
-      </div>
-    );
+    return <SubCategorySkeleton />;
   }
 
   if (currentSubCategories.length === 0) {
@@ -79,19 +63,21 @@ export default function SubCategoryFilter({
   }
 
   return (
-    <div className="flex items-center justify-between mt-5 mb-2 px-0">
-      <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide flex-1 min-w-0">
-        {currentSubCategories.map((subCategory) => (
-          <button
-            key={subCategory.id}
-            onClick={() => onSubCategoryChange(subCategory.id)}
-            className={`text-exford-blue px-4 py-2 rounded-full border border-light-blue-gray text-base font-normal font-figtree transition-all duration-200 cursor-pointer whitespace-nowrap flex-shrink-0 ${
-              selectedSubCategory === subCategory.id ? "bg-snow-blue" : ""
-            }`}
-          >
-            {subCategory.name}
-          </button>
-        ))}
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 mt-5 mb-2 px-0 w-full min-w-0 max-w-full overflow-x-hidden">
+      <div className="min-w-0 max-w-full overflow-x-auto pr-2 overscroll-x-contain">
+        <div className="flex items-center gap-4 w-max">
+          {currentSubCategories.map((subCategory) => (
+            <button
+              key={subCategory.id}
+              onClick={() => onSubCategoryChange(subCategory.id)}
+              className={`text-exford-blue px-4 py-2 rounded-full border border-light-blue-gray text-base font-normal font-figtree transition-all duration-200 cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                selectedSubCategory === subCategory.id ? "bg-snow-blue" : ""
+              }`}
+            >
+              {subCategory.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>

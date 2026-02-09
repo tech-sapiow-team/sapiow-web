@@ -6,7 +6,9 @@ import AccountLayout from "../../AccountLayout";
 export default function ClientProfilePage() {
   return (
     <AccountLayout>
-      <ClientProfile />
+      <div className="w-full bg-white min-h-screen">
+        <ClientProfile />
+      </div>
     </AccountLayout>
   );
 }

@@ -140,7 +140,7 @@ export default function HistoriquePaiements() {
   }
 
   return (
-    <AccountLayout className="h-screen overflow-hidden">
+    <AccountLayout className="h-screen overflow-hidden bg-white">
       <div
         className={`w-full h-screen overflow-hidden lg:px-5 ${
           isTablet ? "" : "flex justify-between space-y-4"

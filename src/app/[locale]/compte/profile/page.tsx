@@ -11,8 +11,10 @@ export default function Profile() {
   // Affichage de chargement pendant la redirection
   return (
     <AccountLayout>
-      <div className="flex justify-center items-center py-8">
-        {user?.type === "client" ? <ClientProfile /> : <ExpertProfile />}
+      <div className="w-full bg-white min-h-screen">
+        <div className="flex justify-center items-center py-8">
+          {user?.type === "client" ? <ClientProfile /> : <ExpertProfile />}
+        </div>
       </div>
     </AccountLayout>
   );

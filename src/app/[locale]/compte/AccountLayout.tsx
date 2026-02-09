@@ -45,7 +45,9 @@ export default function AccountLayout({
             </div>
 
             {/* Zone de contenu */}
-            <div className="w-full mx-auto lg:px-0 pb-20">{children}</div>
+            <div className="w-full mx-auto lg:px-0 pb-20 bg-white">
+              {children}
+            </div>
           </div>
         </div>
       </div>

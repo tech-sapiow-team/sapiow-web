@@ -130,37 +130,37 @@ export default function Disponibilites() {
 
       {/* Sheet pour MOBILE et TABLETTE (< 1024px) - Sur desktop, le panneau est fixe à droite */}
       {isMobileOrTablet && (
-      <Sheet
-        open={showSessionDetailsSheet}
-        onOpenChange={setShowSessionDetailsSheet}
-      >
-        <SheetContent
-          side="bottom"
-          className="h-[80vh] overflow-y-auto bg-white"
+        <Sheet
+          open={showSessionDetailsSheet}
+          onOpenChange={setShowSessionDetailsSheet}
         >
-          <SheetHeader>
-            <SheetTitle>
-              {selectedDate
-                ? selectedDate.toLocaleDateString(
-                    currentLocale === "fr" ? "fr-FR" : "en-US",
-                    {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    }
-                  )
-                : t("disponibilites.sessionDetails")}
-            </SheetTitle>
-          </SheetHeader>
-          <div className="mt-6 flex flex-col items-center justify-center">
-            {renderSessionDetailsPanel(true)}
-          </div>
-        </SheetContent>
-      </Sheet>
+          <SheetContent
+            side="bottom"
+            className="h-[80vh] overflow-y-auto bg-white"
+          >
+            <SheetHeader>
+              <SheetTitle>
+                {selectedDate
+                  ? selectedDate.toLocaleDateString(
+                      currentLocale === "fr" ? "fr-FR" : "en-US",
+                      {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )
+                  : t("disponibilites.sessionDetails")}
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mt-6 flex flex-col items-center justify-center">
+              {renderSessionDetailsPanel(true)}
+            </div>
+          </SheetContent>
+        </Sheet>
       )}
 
-      <div className="space-y-0 w-full container pr-6">
+      <div className="space-y-0 w-full pr-6">
         <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_2px_1fr] gap-x-4 lg:gap-x-0 gap-y-8 lg:gap-y-0">
           <div className="w-full space-y-0 relative">
             <div className="w-full flex items-center justify-center">
@@ -230,7 +230,7 @@ export default function Disponibilites() {
                     </div>
                   </CardContent>
                 </Card>
-              )} 
+              )}
             </div>
           </div>
 

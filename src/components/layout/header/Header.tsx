@@ -120,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <header
-        className={`container pt-8 ${
+        className={`w-full pt-8 ${
           isBorder ? "lg:border-b-2" : ""
         } lg:border-snow-blue bg-white px-6 py-1 sticky top-0 z-20`}
       >

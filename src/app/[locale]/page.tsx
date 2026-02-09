@@ -28,13 +28,16 @@ function Home() {
       try {
         const authenticated = await authUtils.isAuthenticated();
         setIsAuthenticated(authenticated);
-        
+
         if (!authenticated) {
-          console.log('❌ Non authentifié, redirection vers /login');
+          console.log("❌ Non authentifié, redirection vers /login");
           router.push(`/${locale}/login`);
         }
       } catch (error) {
-        console.error('Erreur lors de la vérification d\'authentification:', error);
+        console.error(
+          "Erreur lors de la vérification d'authentification:",
+          error
+        );
         router.push(`/${locale}/login`);
       } finally {
         setIsCheckingAuth(false);
@@ -103,7 +106,7 @@ function Home() {
   }
 
   return (
-    <div className="container lg:flex min-h-screen bg-white">
+    <div className="w-full lg:flex min-h-screen bg-white">
       <AppSidebar />
       <div className="flex-1 flex flex-col">
         <div className="transition-all duration-300 ease-in-out sticky top-0 z-20">

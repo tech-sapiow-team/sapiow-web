@@ -30,7 +30,9 @@ const getAvailableLanguages = (t: any): Language[] => [
 
 // Fonction pour définir le cookie de locale côté client
 const setLocaleCookie = (locale: string) => {
-  document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+  document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=${
+    60 * 60 * 24 * 365
+  }; SameSite=Lax`;
 };
 
 export default function LanguePage() {
@@ -58,7 +60,7 @@ export default function LanguePage() {
     try {
       // 1. Définir le cookie de locale pour la persistance
       setLocaleCookie(localeId);
-      
+
       // 2. Sauvegarder dans la base de données (API)
       const languageName =
         localeToLanguageMap[localeId as keyof typeof localeToLanguageMap];
@@ -68,8 +70,8 @@ export default function LanguePage() {
 
       // 3. Utiliser le router de next-intl pour changer la locale
       // Cela garantit que la locale est correctement gérée dans toute l'application
-      router.replace(pathname, { locale: localeId as 'fr' | 'en' });
-      
+      router.replace(pathname, { locale: localeId as "fr" | "en" });
+
       // 4. Forcer un refresh pour s'assurer que tous les composants utilisent la nouvelle locale
       router.refresh();
     } catch (error) {
@@ -83,7 +85,7 @@ export default function LanguePage() {
   if (isLoading && !currentLanguage) {
     return (
       <AccountLayout>
-        <div className="container px-6 space-y-6">
+        <div className="w-full px-6 space-y-6">
           <h1 className="text-2xl font-bold text-gray-900 mt-5">
             {t("account.language")}
           </h1>
@@ -99,7 +101,7 @@ export default function LanguePage() {
 
   return (
     <AccountLayout>
-      <div className="container px-6 space-y-6">
+      <div className="w-full px-6 space-y-6">
         <h1 className="text-2xl font-bold text-gray-900 mt-5">
           {t("account.language")}
         </h1>

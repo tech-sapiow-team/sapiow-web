@@ -44,7 +44,7 @@ export const HeaderVisio: React.FC<HeaderVisioProps> = ({
   };
 
   return (
-    <header className="container flex justify-between items-center lg:border-b-2 lg:border-snow-blue py-4 sticky top-0 z-20 bg-white">
+    <header className="w-full flex justify-between items-center lg:border-b-2 lg:border-snow-blue py-4 sticky top-0 z-20 bg-white">
       <div className="flex items-center justify-between pl-4">
         {/* Section gauche - Photo de profil et message */}
         <div className="w-full max-w-[320px] flex items-center gap-4">

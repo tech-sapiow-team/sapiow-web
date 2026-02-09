@@ -104,7 +104,7 @@ export default function MentionsLegales() {
 
   return (
     <AccountLayout>
-      <div className="container px-4 md:px-6">
+      <div className="w-full px-4 md:px-6">
         {/* Version mobile avec navigation conditionnelle */}
         {isMobile ? (
           <div className="mt-5">
@@ -246,7 +246,7 @@ export default function MentionsLegales() {
         {/* Modal plein écran */}
         {isFullScreen && (
           <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
-            <div className="container mx-auto px-4 md:px-6 py-6">
+            <div className="w-full px-4 md:px-6 py-6">
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl md:text-3xl font-bold">
                   {activeTab.label}

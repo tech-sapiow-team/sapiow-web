@@ -35,7 +35,7 @@ export default function Notifications() {
 
   return (
     <AccountLayout>
-      <div className="container w-full py-0 px-5">
+      <div className="w-full py-0 px-5">
         {error && (
           <div className="mt-4 p-4 bg-red-100 border border-red-300 rounded-md">
             <p className="text-red-700 text-sm">{error}</p>

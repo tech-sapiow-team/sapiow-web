@@ -46,11 +46,11 @@ export const MessagesLayout = ({
   currentUserId,
 }: MessagesLayoutProps) => {
   return (
-    <div className="flex h-screen bg-white container">
+    <div className="flex h-screen bg-white w-full">
       <AppSidebar hideMobileNav={!!selectedConversation} />
 
       {/* Desktop (lg+) : sidebar + chat */}
-      <div className="hidden lg:flex flex-1 flex-col container ">
+      <div className="hidden lg:flex flex-1 flex-col">
         {header}
         <div className="flex-1 flex h-[83vh] mt-[22px] mr-5">
           {/* Sidebar des conversations */}
@@ -143,4 +143,3 @@ export const MessagesLayout = ({
     </div>
   );
 };
-

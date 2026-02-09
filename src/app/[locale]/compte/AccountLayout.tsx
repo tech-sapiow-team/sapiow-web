@@ -20,7 +20,7 @@ export default function AccountLayout({
 
   return (
     <AuthGuard>
-      <div className={`container flex ${className}`}>
+      <div className={`w-full flex ${className ?? ""}`}>
         <AppSidebar />
 
         {/* Layout principal */}
@@ -29,7 +29,12 @@ export default function AccountLayout({
           {user?.type === "client" ? (
             <HeaderClient text={t("nav.account")} showHamburger={true} />
           ) : (
-            <Header hideProfile text={t("nav.account")} isBorder showHamburger={true} />
+            <Header
+              hideProfile
+              text={t("nav.account")}
+              isBorder
+              showHamburger={true}
+            />
           )}
 
           {/* Contenu principal */}
@@ -40,7 +45,7 @@ export default function AccountLayout({
             </div>
 
             {/* Zone de contenu */}
-            <div className="container mx-auto lg:px-0 pb-20">{children}</div>
+            <div className="w-full mx-auto lg:px-0 pb-20">{children}</div>
           </div>
         </div>
       </div>

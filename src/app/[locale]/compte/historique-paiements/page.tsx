@@ -129,7 +129,7 @@ export default function HistoriquePaiements() {
   if (error) {
     return (
       <AccountLayout className="h-screen overflow-hidden">
-        <div className="container h-screen overflow-hidden lg:px-5 flex items-center justify-center">
+        <div className="w-full h-screen overflow-hidden lg:px-5 flex items-center justify-center">
           <div className="text-center">
             <p className="text-red-500">{t("error")}</p>
             <p className="text-gray-500 mt-2">{error.message}</p>
@@ -142,7 +142,7 @@ export default function HistoriquePaiements() {
   return (
     <AccountLayout className="h-screen overflow-hidden">
       <div
-        className={`container h-screen overflow-hidden lg:px-5 ${
+        className={`w-full h-screen overflow-hidden lg:px-5 ${
           isTablet ? "" : "flex justify-between space-y-4"
         }`}
       >

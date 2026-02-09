@@ -200,7 +200,7 @@ export default function OffresPage() {
 
   return (
     <AccountLayout className="h-screen overflow-hidden">
-      <div className="container h-screen overflow-hidden lg:px-5">
+      <div className="w-full h-screen overflow-hidden lg:px-5">
         {/* Titre */}
         <h1 className="text-base font-bold text-exford-blue px-4 lg:px-0 pt-4 mb-6">
           {t("account.offers")}

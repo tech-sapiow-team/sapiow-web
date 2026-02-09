@@ -10,6 +10,19 @@ import { notFound } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
+const siteUrl = (() => {
+  const raw =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : undefined) ??
+    "http://localhost:3000";
+
+  return raw.startsWith("http://") || raw.startsWith("https://")
+    ? raw
+    : `https://${raw}`;
+})();
+
 const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
@@ -22,8 +35,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Sapiow",
   description: "Sapiow",
+  openGraph: {
+    title: "Sapiow",
+    description: "Sapiow",
+    type: "website",
+    images: [{ url: "/assets/icon.png", alt: "Sapiow" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Sapiow",
+    description: "Sapiow",
+    images: ["/assets/icon.png"],
+  },
 };
 
 export const generateStaticParams = () => {
@@ -48,7 +74,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html>
+    <html lang={locale}>
       <body
         className={` ${figtree.variable} ${geistMono.variable} antialiased`}
       >

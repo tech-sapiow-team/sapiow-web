@@ -16,7 +16,7 @@ export default {
     title: "Enter your phone number",
     subtitle: "You will receive a code to log in.",
     sendingCode: "Sending...",
-    legalText: "By clicking continue, I accept the",
+    legalText: "I have read and accept the",
     termsOfService: "Terms of Use",
     and: "and the",
     privacyPolicy: "Privacy Policy",

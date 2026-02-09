@@ -356,7 +356,7 @@ function ProfessionalDetailContent() {
                   </div>
                 </div>
 
-                <Card className="bg-ice-blue border-ice-blue shadow-none h-[72px] p-0 min-w-0 overflow-hidden">
+                {/* <Card className="bg-ice-blue border-ice-blue shadow-none h-[72px] p-0 min-w-0 overflow-hidden">
                   <CardContent className="p-4 text-center min-w-0 overflow-hidden">
                     <p className="text-[13px] lg:text-[11px] xl:text-base text-gray-700 font-figtree font-normal lg:font-medium xl:font-normal break-words overflow-hidden">
                       {t("expertDetails.revenueDestination")} <br />
@@ -365,7 +365,7 @@ function ProfessionalDetailContent() {
                       </span>
                     </p>
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
             </div>
 

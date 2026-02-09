@@ -1,11 +1,16 @@
 "use client";
 import { useGetDomaines, useGetExpertises } from "@/api/domaine/useDomaine";
 import { useOnboardingExpertPro } from "@/api/onbaording/useOnboarding";
+import { useGetCustomer } from "@/api/customer/useCustomer";
+import {
+  useGetProExpert,
+  useUpdateProExpert,
+} from "@/api/proExpert/useProExpert";
 import { useCreateProSession } from "@/api/sessions/useSessions";
 import { useUserStore } from "@/store/useUser";
 import { OnboardingExpertData, mapDomainIdToNumeric } from "@/types/onboarding";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export interface VisioOption {
   duration: number;
@@ -17,9 +22,13 @@ export const useOnboardingExpert = () => {
   const router = useRouter();
   const { setUser } = useUserStore();
   const [step, setStep] = useState(1);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Hook pour l'appel API
   const onboardingMutation = useOnboardingExpertPro();
+  const updateProMutation = useUpdateProExpert();
+  const { data: existingPro } = useGetProExpert();
+  const { data: customer } = useGetCustomer();
   const [pendingAddSessions, setPendingAddSessions] = useState<boolean>(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -53,19 +62,88 @@ export const useOnboardingExpert = () => {
 
   const { mutateAsync: createProSession } = useCreateProSession();
 
+  // Initialisation: démarrer à l'étape 2 si demandé + pré-remplir prénom/nom/job (email optionnel)
+  useEffect(() => {
+    if (hasInitialized) return;
+
+    // 1) step depuis querystring (?step=2) OU sessionStorage (onboardingExpertStartStep)
+    let desiredStep: number | null = null;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const stepParam = params.get("step");
+      if (stepParam) desiredStep = Number(stepParam);
+    } catch {
+      // no-op
+    }
+
+    try {
+      const fromStorage = sessionStorage.getItem("onboardingExpertStartStep");
+      if (fromStorage) desiredStep = Number(fromStorage);
+    } catch {
+      // no-op
+    }
+
+    if (desiredStep && Number.isFinite(desiredStep) && desiredStep >= 1) {
+      setStep(desiredStep);
+    }
+
+    // 2) Préfill depuis sessionStorage, sinon customer/pro existant
+    let prefill: { first_name?: string; last_name?: string } = {};
+    try {
+      const raw = sessionStorage.getItem("onboardingExpertPrefill");
+      if (raw) prefill = JSON.parse(raw);
+    } catch {
+      // no-op
+    }
+
+    const fallbackFirstName = (
+      prefill.first_name ??
+      customer?.first_name ??
+      existingPro?.first_name ??
+      ""
+    )
+      .toString()
+      .trim();
+    const fallbackLastName = (
+      prefill.last_name ??
+      customer?.last_name ??
+      existingPro?.last_name ??
+      ""
+    )
+      .toString()
+      .trim();
+    if (!firstName && fallbackFirstName) setFirstName(fallbackFirstName);
+    if (!lastName && fallbackLastName) setLastName(fallbackLastName);
+
+    // Cleanup des flags one-shot
+    try {
+      sessionStorage.removeItem("onboardingExpertStartStep");
+      sessionStorage.removeItem("onboardingExpertPrefill");
+    } catch {
+      // no-op
+    }
+
+    setHasInitialized(true);
+  }, [hasInitialized, customer, existingPro, firstName, lastName]);
+
   // Validations
   const isFormValid =
     firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
     profession.trim().length > 0 &&
-    email.trim().length > 0 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    // email optionnel, mais s'il est rempli il doit être valide
+    (!email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()));
 
   const isDomainValid = !!selectedDomain;
   const isSpecialtyValid = selectedSpecialties.length > 0;
   // Validation des sessions : si une session est activée, elle doit avoir un prix >= 0 (0 est accepté pour les consultations gratuites)
   const isVisioValid = visioOptions.every(
-    (option) => !option.enabled || (option.price !== "" && option.price !== null && option.price !== undefined && Number(option.price) >= 0)
+    (option) =>
+      !option.enabled ||
+      (option.price !== "" &&
+        option.price !== null &&
+        option.price !== undefined &&
+        Number(option.price) >= 0)
   );
 
   // Actions
@@ -90,7 +168,11 @@ export const useOnboardingExpert = () => {
       const newOptions = [...prev];
       // Si on active l'option (enabled devient true) et que le prix est vide, mettre 0 par défaut
       if (field === "enabled" && value === true && !newOptions[index].price) {
-        newOptions[index] = { ...newOptions[index], [field]: value, price: "0" };
+        newOptions[index] = {
+          ...newOptions[index],
+          [field]: value,
+          price: "0",
+        };
       } else {
         newOptions[index] = { ...newOptions[index], [field]: value };
       }
@@ -101,6 +183,29 @@ export const useOnboardingExpert = () => {
   const handleAvatarChange = (file: File | null) => {
     setAvatar(file);
   };
+
+  const submitExpertProfile = useMemo(() => {
+    return async (data: OnboardingExpertData) => {
+      // Si un pro existe déjà (ex: créé minimalement via switch), on met à jour au lieu de re-créer
+      if (existingPro) {
+        return updateProMutation.mutateAsync({
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          domain_id: data.domain_id,
+          description: data.description,
+          job: data.job,
+          linkedin: data.linkedin,
+          website: data.website,
+          expertises: data.expertises,
+          schedules: data.schedules,
+          timezone: data.timezone,
+          avatar: data.avatar,
+        });
+      }
+      return onboardingMutation.mutateAsync(data);
+    };
+  }, [existingPro, onboardingMutation, updateProMutation]);
 
   // Fonction pour créer seulement l'expert (sans sessions) - utilisée pour "Plus tard"
   const completeOnboardingWithoutSessions = async () => {
@@ -127,7 +232,7 @@ export const useOnboardingExpert = () => {
         ...(avatar && { avatar }),
       };
 
-      await onboardingMutation.mutateAsync(onboardingData);
+      await submitExpertProfile(onboardingData);
 
       // Rediriger vers la page d'accueil après succès
       setUser({ type: "expert" });
@@ -164,14 +269,25 @@ export const useOnboardingExpert = () => {
       };
 
       // ÉTAPE 1: Soumettre toutes les données de l'expert à l'API
-      const expertResult = await onboardingMutation.mutateAsync(onboardingData);
+      const expertResult: any = await submitExpertProfile(onboardingData);
 
       // ÉTAPE 2: Créer TOUTES les sessions activées avec un prix >= 0 (0 est accepté pour les consultations gratuites)
       const enabledOptions = visioOptions.filter(
-        (option) => option.enabled && option.price !== "" && option.price !== null && option.price !== undefined && Number(option.price) >= 0
+        (option) =>
+          option.enabled &&
+          option.price !== "" &&
+          option.price !== null &&
+          option.price !== undefined &&
+          Number(option.price) >= 0
       );
 
-      if ((expertResult as any)?.id && enabledOptions.length > 0) {
+      const proId =
+        existingPro?.id ??
+        expertResult?.data?.id ??
+        expertResult?.expert_id ??
+        expertResult?.id;
+
+      if (proId && enabledOptions.length > 0) {
         setPendingAddSessions(true);
         // Créer toutes les sessions une par une en attendant chacune
         for (const option of enabledOptions) {
@@ -249,8 +365,11 @@ export const useOnboardingExpert = () => {
     isVisioValid,
 
     // Loading state
-    isSubmitting: onboardingMutation.isPending || pendingAddSessions,
-    error: onboardingMutation.error,
+    isSubmitting:
+      onboardingMutation.isPending ||
+      updateProMutation.isPending ||
+      pendingAddSessions,
+    error: onboardingMutation.error || updateProMutation.error,
 
     // Données des domaines et expertises
     domains,

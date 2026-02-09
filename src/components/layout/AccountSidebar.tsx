@@ -244,7 +244,7 @@ export function AccountSidebar({ isMobile = false }: AccountSidebarProps) {
             </Link>
             <Button
               label={t("account.becomeExpertButton")}
-              className="h-10 font-bold text-base font-figtree w-full max-w-[130px]"
+              className="h-10 font-bold text-base font-figtree w-full max-w-[130px] text-white"
               onClick={handleExpertModeSwitch}
             />
           </div>

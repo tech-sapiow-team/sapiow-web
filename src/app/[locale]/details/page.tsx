@@ -156,6 +156,28 @@ function ProfessionalDetailContent() {
     [locale]
   );
 
+  const bookedProfessionalName = useMemo(() => {
+    const first =
+      appointments?.[0]?.pro?.first_name ??
+      professional?.first_name ??
+      (expertData as any)?.first_name;
+    const last =
+      appointments?.[0]?.pro?.last_name ??
+      professional?.last_name ??
+      (expertData as any)?.last_name;
+    const fullName = [first, last]
+      .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+      .join(" ");
+    return fullName || t("sessionDetail.expert");
+  }, [appointments, professional, expertData, t]);
+
+  const bookedProfileImage =
+    appointments?.[0]?.pro?.avatar ||
+    professional?.image ||
+    professional?.avatar ||
+    (expertData as any)?.image ||
+    "/assets/icons/pro2.png";
+
   const startingFromPrice = useMemo(() => {
     const sessions = Array.isArray(expertData?.sessions)
       ? expertData.sessions
@@ -624,16 +646,9 @@ function ProfessionalDetailContent() {
                     }
                     duration={appointments?.[0]?.session?.name}
                     sessionType={t("sessionDetail.session")}
-                    professionalName={
-                      appointments?.[0]?.pro?.first_name +
-                        " " +
-                        appointments?.[0]?.pro?.last_name ||
-                      t("sessionDetail.expert")
-                    }
+                    professionalName={bookedProfessionalName}
                     professionalTitle={t("sessionDetail.expert")}
-                    profileImage={
-                      appointments?.[0]?.pro?.avatar || "/assets/icons/pro2.png"
-                    }
+                    profileImage={bookedProfileImage}
                   />
                 </div>
                 {/* <Button
@@ -716,14 +731,9 @@ function ProfessionalDetailContent() {
                   }
                   duration="60 minutes"
                   sessionType={t("sessionDetail.quickVideoSession")}
-                  professionalName={
-                    appointments?.[0]?.pro?.first_name +
-                      " " +
-                      appointments?.[0]?.pro?.last_name ||
-                    t("sessionDetail.expert")
-                  }
+                  professionalName={bookedProfessionalName}
                   professionalTitle={t("sessionDetail.expert")}
-                  profileImage={professional?.image || "/assets/icons/pro2.png"}
+                  profileImage={bookedProfileImage}
                 />
               </div>
               {/* <Button

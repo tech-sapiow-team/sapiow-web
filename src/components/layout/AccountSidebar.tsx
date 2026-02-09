@@ -90,7 +90,7 @@ export function AccountSidebar({ isMobile = false }: AccountSidebarProps) {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      
+
       // 0. Nettoyer TOUTES les connexions Stream avant la déconnexion
       await cleanupAllStreamConnections();
 
@@ -115,12 +115,11 @@ export function AccountSidebar({ isMobile = false }: AccountSidebarProps) {
 
       // 4. Invalider TOUT le cache React Query
       queryClient.clear();
-
-      // 5. Rediriger vers la page de connexion
-      router.push("/login");
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
     } finally {
+      // 5. Rediriger vers la page de connexion
+      router.replace("/login");
       setIsLoggingOut(false);
     }
   };

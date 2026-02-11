@@ -4,6 +4,10 @@ import {
   useGetProAppointments,
 } from "@/api/appointments/useAppointments";
 import { Button } from "@/components/common/Button";
+import {
+  PromoCodeInput,
+  type PromoCodeResult,
+} from "@/components/common/PromoCodeInput";
 import { useAppointmentStore } from "@/store/useAppointmentStore";
 import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
@@ -489,6 +493,32 @@ export default function VisioPlanningCalendar({
   );
   const [selectedTime, setSelectedTime] = useState("");
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [promoResult, setPromoResult] = useState<PromoCodeResult | null>(null);
+
+  const promoDiscountDisplay = useMemo(() => {
+    if (!promoResult?.valid) return null;
+
+    const coupon = (promoResult as any)?.promotion_code?.coupon;
+    const percentOff = coupon?.percent_off;
+    const amountOff = coupon?.amount_off;
+
+    if (typeof percentOff === "number" && Number.isFinite(percentOff)) {
+      // Ex: -10%
+      const percent = Number.isInteger(percentOff)
+        ? String(percentOff)
+        : String(percentOff);
+      return `-${percent}%`;
+    }
+
+    if (typeof amountOff === "number" && Number.isFinite(amountOff)) {
+      // Stripe: amount_off est en cents (pour eur/usd, etc.)
+      const amountEuros = amountOff / 100;
+      // Ex: - 1.00€
+      return `- ${feeFormatter.format(amountEuros)} €`;
+    }
+
+    return null;
+  }, [promoResult, feeFormatter]);
 
   // Prix de la session sélectionnée
   const selectedSession = availableDurations.find(
@@ -606,10 +636,12 @@ export default function VisioPlanningCalendar({
     selectedDateTime.setHours(hours, minutes, 0, 0);
 
     try {
+      const promo_code = promoResult?.valid ? promoResult.code : undefined;
       const appointmentData = {
         pro_id: expertData?.id, // ID de l'expert
         session_id: selectedSession.sessionId, // ID de la session
         appointment_at: selectedDateTime.toISOString(), // Date/heure ISO
+        ...(promo_code ? { promo_code } : {}),
       };
 
       const result = await createAppointmentMutation.mutateAsync(
@@ -624,7 +656,7 @@ export default function VisioPlanningCalendar({
               setIsRedirecting(false);
             } else if (data?.appointment && data?.payment) {
               // Session payante - rediriger vers la page de paiement
-              setAppointmentData(data.appointment, data.payment);
+              setAppointmentData(data.appointment, data.payment, promoResult);
               const returnUrl = `/details?id=${data.appointment.pro_id}`;
               router.push(
                 `/payment?returnUrl=${encodeURIComponent(returnUrl)}`
@@ -1025,6 +1057,17 @@ export default function VisioPlanningCalendar({
         {/* Résumé et bouton de réservation */}
         <div className="border-t pt-4">
           <div className="mb-4">
+            <PromoCodeInput
+              onPromoResult={setPromoResult}
+              placeholder={
+                currentLocale === "fr"
+                  ? "Entrer un code PROMO"
+                  : "Enter a promo code"
+              }
+            />
+          </div>
+
+          <div className="mb-4">
             <h4 className="text-sm font-semibold text-gray-900 mb-1">
               {currentLocale === "fr"
                 ? "Session rapide visio"
@@ -1063,6 +1106,13 @@ export default function VisioPlanningCalendar({
               <p className="mt-1 text-xs font-normal text-gray-500">
                 {t("offers.serviceFee")}: {feeFormatter.format(serviceFee)} €
               </p>
+              {promoResult?.valid && promoDiscountDisplay ? (
+                <p className="mt-1 text-xs font-medium text-cobalt-blue">
+                  {t("offers.discount")}{" "}
+                  <span className="font-semibold">({promoResult.code})</span>{" "}
+                  {promoDiscountDisplay}
+                </p>
+              ) : null}
             </div>
           </div>
 

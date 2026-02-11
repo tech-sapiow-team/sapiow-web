@@ -668,6 +668,7 @@ We encourage you to review it periodically.</p>
     whatIsIncluded: "Ce qui est inclus",
     perMonth: "/ Mois",
     serviceFee: "Frais de service",
+    discount: "Remise",
     // Actions
     delete: "Supprimer",
     deleting: "Suppression...",

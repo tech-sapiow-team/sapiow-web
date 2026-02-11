@@ -662,6 +662,7 @@ We encourage you to review it periodically.</p>
     whatIsIncluded: "What's included",
     perMonth: "/ Month",
     serviceFee: "Service fee",
+    discount: "Discount",
     // Actions
     delete: "Delete",
     deleting: "Deleting...",

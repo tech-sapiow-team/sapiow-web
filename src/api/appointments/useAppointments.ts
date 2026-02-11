@@ -112,6 +112,7 @@ export interface AppointmentCreate {
   pro_id: string;
   session_id: string;
   appointment_at?: string; // ISO date-time string
+  promo_code?: string;
 }
 
 export interface AppointmentCreateResponse {

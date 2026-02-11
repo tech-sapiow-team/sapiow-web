@@ -4,6 +4,10 @@ import {
   useGetProAppointments,
 } from "@/api/appointments/useAppointments";
 import { Button } from "@/components/common/Button";
+import {
+  PromoCodeInput,
+  type PromoCodeResult,
+} from "@/components/common/PromoCodeInput";
 import SessionFeaturesList from "@/components/common/SessionFeaturesList";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAppointmentStore } from "@/store/useAppointmentStore";
@@ -78,6 +82,8 @@ export default function OfferSelection({
     "session"
   );
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [subscriptionPromoResult, setSubscriptionPromoResult] =
+    useState<PromoCodeResult | null>(null);
 
   const { setIsPaid } = usePayStore();
   const { setIsPlaning } = usePlaningStore();
@@ -156,11 +162,15 @@ export default function OfferSelection({
     try {
       // Créer la date d'aujourd'hui pour l'abonnement
       const today = new Date();
+      const promo_code = subscriptionPromoResult?.valid
+        ? subscriptionPromoResult.code
+        : undefined;
 
       const appointmentData = {
         pro_id: expertData.id, // ID de l'expert
         session_id: selectedSession.id, // ID de la session d'abonnement
         appointment_at: today.toISOString(), // Date d'aujourd'hui ISO
+        ...(promo_code ? { promo_code } : {}),
       };
 
       const result: any = await createAppointmentMutation.mutateAsync(
@@ -183,7 +193,11 @@ export default function OfferSelection({
           updated_at: today.toISOString(),
         };
 
-        setAppointmentData(appointmentForStore as any, result.payment);
+        setAppointmentData(
+          appointmentForStore as any,
+          result.payment,
+          subscriptionPromoResult
+        );
 
         // Construire l'URL de retour avec l'ID de l'expert
         const returnUrl = `/details?id=${expertData.id}`;
@@ -306,14 +320,34 @@ export default function OfferSelection({
 
             <div className="space-y-4">
               {subscriptionSessions.map((session: any) => (
+                (() => {
+                  const coupon =
+                    (subscriptionPromoResult as any)?.promotion_code?.coupon;
+                  const percentOff = coupon?.percent_off;
+                  const amountOff = coupon?.amount_off;
+                  const promoDiscountDisplay =
+                    selectedOption === session.id && subscriptionPromoResult?.valid
+                      ? typeof percentOff === "number" && Number.isFinite(percentOff)
+                        ? `-${Number.isInteger(percentOff) ? String(percentOff) : String(percentOff)}%`
+                        : typeof amountOff === "number" && Number.isFinite(amountOff)
+                        ? `- ${feeFormatter.format(amountOff / 100)} €`
+                        : null
+                      : null;
+
+                  const isSelected = selectedOption === session.id;
+
+                  return (
                 <Card
                   key={session.id}
                   className={`relative transition-all cursor-pointer p-0 ${
-                    selectedOption === session.id
+                    isSelected
                       ? "ring-2 ring-pale-blue-gray border border-pale-blue-gray bg-snow-blue"
                       : "ring-2 ring-frost-gray border border-frost-gray"
                   }`}
-                  onClick={() => setSelectedOption(session.id)}
+                  onClick={() => {
+                    setSelectedOption(session.id);
+                    setSubscriptionPromoResult(null);
+                  }}
                 >
                   <CardContent className="p-3.5 m-0">
                     <div className="flex items-start justify-between mb-4">
@@ -332,6 +366,21 @@ export default function OfferSelection({
                           />
                         </div>
 
+                        {isSelected ? (
+                          <div className="mb-4">
+                            <PromoCodeInput
+                              key={session.id}
+                              onPromoResult={setSubscriptionPromoResult}
+                              placeholder={
+                                currentLocale === "fr"
+                                  ? "Entrer un code PROMO"
+                                  : "Enter a promo code"
+                              }
+                              disabled={isPaymentLoading}
+                            />
+                          </div>
+                        ) : null}
+
                         <p className="text-xl font-bold text-exford-blue font-figtree">
                           {session.price} €{" "}
                           <span className="text-sm font-normal text-slate-800 font-figtree">
@@ -347,19 +396,31 @@ export default function OfferSelection({
                           )}{" "}
                           €
                         </p>
+                        {promoDiscountDisplay ? (
+                          <p className="mt-1 text-xs font-medium text-cobalt-blue font-figtree">
+                            {t("offers.discount")}{" "}
+                            <span className="font-semibold">
+                              ({subscriptionPromoResult?.code})
+                            </span>{" "}
+                            {promoDiscountDisplay}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="ml-4">
                         <button
-                          onClick={() => setSelectedOption(session.id)}
+                          onClick={() => {
+                            setSelectedOption(session.id);
+                            setSubscriptionPromoResult(null);
+                          }}
                           className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors"
                         >
-                          {selectedOption === session.id && (
+                          {isSelected && (
                             <div className="w-3 h-3 rounded-full bg-gray-900"></div>
                           )}
                         </button>
                       </div>
                     </div>
-                    {selectedOption === session.id && (
+                    {isSelected && (
                       <Button
                         label={t("offers.chooseAndPay")}
                         className="w-full h-[56px] rounded-[8px] bg-cobalt-blue hover:bg-cobalt-blue/80 text-white disabled:opacity-50 disabled:cursor-not-allowed"
@@ -369,6 +430,8 @@ export default function OfferSelection({
                     )}
                   </CardContent>
                 </Card>
+                  );
+                })()
               ))}
             </div>
           </div>

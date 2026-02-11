@@ -20,7 +20,7 @@ import React, { useMemo, useState } from "react";
 function OrderSummary() {
   const t = useTranslations();
   const locale = useLocale();
-  const { appointment } = useAppointmentStore();
+  const { appointment, promo } = useAppointmentStore();
   const router = useRouter();
 
   // Récupérer les données de l'expert
@@ -38,7 +38,6 @@ function OrderSummary() {
   const serviceFeeRate = 0.15;
   const serviceFee = Math.round(sessionPrice * serviceFeeRate * 100) / 100;
   const tax = 0; // Pas de taxe pour le moment
-  const total = sessionPrice + serviceFee + tax;
 
   const moneyFormatter = useMemo(
     () =>
@@ -48,6 +47,28 @@ function OrderSummary() {
       }),
     [locale]
   );
+
+  const serviceFeeDiscount = useMemo(() => {
+    if (!promo?.valid) return 0;
+
+    const coupon = promo?.promotion_code?.coupon;
+    const percentOff = coupon?.percent_off;
+    const amountOff = coupon?.amount_off;
+
+    let discount = 0;
+    if (typeof percentOff === "number" && Number.isFinite(percentOff)) {
+      discount = (serviceFee * percentOff) / 100;
+    } else if (typeof amountOff === "number" && Number.isFinite(amountOff)) {
+      // Stripe: amount_off est en cents (pour eur/usd, etc.)
+      discount = amountOff / 100;
+    }
+
+    if (!Number.isFinite(discount) || discount <= 0) return 0;
+    return Math.min(serviceFee, discount);
+  }, [promo, serviceFee]);
+
+  const serviceFeeAfterDiscount = Math.max(0, serviceFee - serviceFeeDiscount);
+  const total = sessionPrice + serviceFeeAfterDiscount + tax;
 
   return (
     <div className="w-full lg:w-1/2 bg-gray-50 p-6 lg:p-8">
@@ -108,6 +129,18 @@ function OrderSummary() {
             €{moneyFormatter.format(serviceFee)}
           </span>
         </div>
+
+        {promo?.valid && serviceFeeDiscount > 0 ? (
+          <div className="flex justify-between text-sm">
+            <span className="text-cobalt-blue font-medium">
+              {t("offers.discount")}{" "}
+              <span className="font-semibold">({promo.code})</span>
+            </span>
+            <span className="text-cobalt-blue font-medium">
+              -€{moneyFormatter.format(serviceFeeDiscount)}
+            </span>
+          </div>
+        ) : null}
 
         <div className="h-px bg-gray-200"></div>
         <div className="flex justify-between">

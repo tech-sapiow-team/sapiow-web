@@ -18,16 +18,36 @@ type Payment = {
   publishableKey: string;
 };
 
+type Promo = {
+  code: string;
+  valid?: boolean;
+  promotion_code?: {
+    coupon?: {
+      percent_off?: number | null;
+      amount_off?: number | null;
+      currency?: string | null;
+    };
+  };
+  [key: string]: any;
+};
+
 type AppointmentState = {
   appointment: Appointment | null;
   payment: Payment | null;
-  setAppointmentData: (appointment: Appointment, payment: Payment) => void;
+  promo: Promo | null;
+  setAppointmentData: (
+    appointment: Appointment,
+    payment: Payment,
+    promo?: Promo | null
+  ) => void;
   clearAppointmentData: () => void;
 };
 
 export const useAppointmentStore = create<AppointmentState>((set) => ({
   appointment: null,
   payment: null,
-  setAppointmentData: (appointment, payment) => set({ appointment, payment }),
-  clearAppointmentData: () => set({ appointment: null, payment: null }),
+  promo: null,
+  setAppointmentData: (appointment, payment, promo) =>
+    set({ appointment, payment, promo: promo ?? null }),
+  clearAppointmentData: () => set({ appointment: null, payment: null, promo: null }),
 }));

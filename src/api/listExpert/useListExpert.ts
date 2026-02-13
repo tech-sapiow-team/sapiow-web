@@ -95,14 +95,14 @@ export const useSearchExperts = (params: SearchExpertsParams = {}) => {
 // Hook avec paramètres par défaut pour la liste des experts
 export const useListExperts = ({
   search = "",
-  orderBy = "created_at",
-  orderDirection = "desc",
   searchFields,
+  limit = 100,
+  offset = 0,
 }: Partial<SearchExpertsParams> = {}) => {
   return useSearchExperts({
     search,
     searchFields,
-    orderBy,
-    orderDirection,
+    limit,
+    offset,
   });
 };

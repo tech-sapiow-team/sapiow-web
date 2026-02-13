@@ -82,9 +82,8 @@ const mapExpertToProfessional = (expert: Expert): Professional => {
  * - Conversion des données API experts → format Professional
  * - Navigation entre pages
  * - Délégation de la logique favoris au hook useFavoritesLogic
- * - Exclusion de l'utilisateur connecté de la liste des experts
  */
-export const useClientHome = (currentUserExpertId?: string) => {
+export const useClientHome = () => {
   const router = useRouter();
   const { searchQuery } = useSearchStore();
 
@@ -97,14 +96,14 @@ export const useClientHome = (currentUserExpertId?: string) => {
   const isTopExpert = selectedCategory === "top";
   const isDomainId = !isNaN(Number(selectedCategory));
 
-  // Hook API pour récupérer la liste des experts avec recherche
+  // Hook API pour récupérer la liste des experts
+  // Si searchQuery existe, recherche par nom/prénom
+  // Sinon, même logique que le mobile : top experts (badge gold) ou filtre par domain_id
   const {
     data: expertList,
     isLoading: isLoadingExperts,
     error,
   } = useListExperts({
-    // Si searchQuery existe, faire une recherche générique sans filtre de catégorie
-    // Sinon, utiliser la logique de filtre par catégorie existante
     search: searchQuery
       ? searchQuery
       : isTopExpert
@@ -113,12 +112,12 @@ export const useClientHome = (currentUserExpertId?: string) => {
       ? selectedCategory
       : "",
     searchFields: searchQuery
-      ? "first_name,last_name" // Recherche uniquement sur le nom et prénom
+      ? "first_name,last_name"
       : isTopExpert
       ? "badge"
       : isDomainId
       ? "domain_id"
-      : "first_name,last_name,job,domains.name",
+      : "",
     limit: 100,
   });
 
@@ -131,12 +130,9 @@ export const useClientHome = (currentUserExpertId?: string) => {
   } = useFavoritesLogic();
 
   // Conversion des données API en format Professional pour l'UI
-  // Exclure l'utilisateur connecté s'il a un profil expert
+  console.log("useListExperts result:", expertList);
   const expertsArray = expertList || [];
-  const filteredExpertsArray = currentUserExpertId
-    ? expertsArray.filter((expert) => expert.id !== currentUserExpertId)
-    : expertsArray;
-  const allProfessionals = filteredExpertsArray.map(mapExpertToProfessional);
+  const allProfessionals = expertsArray.map(mapExpertToProfessional);
 
   // États de chargement combinés
   const isLoading = isLoadingExperts || isLoadingFavorites;
@@ -168,7 +164,6 @@ export const useClientHome = (currentUserExpertId?: string) => {
   /**
    * Grouper les professionnels par catégorie pour l'affichage "Top"
    * Chaque catégorie devient une section horizontale
-   * Note: allProfessionals est déjà filtré pour exclure l'utilisateur connecté
    * Seuls les professionnels avec badge "gold" (topExpertise === true) sont inclus
    */
   const groupedProfessionals = allProfessionals
@@ -204,7 +199,7 @@ export const useClientHome = (currentUserExpertId?: string) => {
       // Filtrer d'abord par domaine
       const professionalsInDomain = allProfessionals.filter(
         (prof: Professional) => {
-          const expertWithDomain = filteredExpertsArray.find(
+          const expertWithDomain = expertsArray.find(
             (expert: any) => expert.id === prof.id
           );
           return expertWithDomain?.domain_id.toString() === selectedCategory;
@@ -215,7 +210,7 @@ export const useClientHome = (currentUserExpertId?: string) => {
       if (selectedSubCategory && selectedSubCategory !== "") {
         const expertiseId = Number(selectedSubCategory);
         return professionalsInDomain.filter((prof: Professional) => {
-          const expert = filteredExpertsArray.find(
+          const expert = expertsArray.find(
             (expert: any) => expert.id === prof.id
           );
 
@@ -242,7 +237,7 @@ export const useClientHome = (currentUserExpertId?: string) => {
     });
   }, [
     allProfessionals,
-    filteredExpertsArray,
+    expertsArray,
     selectedCategory,
     selectedSubCategory,
   ]);

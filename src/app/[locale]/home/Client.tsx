@@ -1,5 +1,4 @@
 "use client";
-import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { UpcomingVideoCall } from "@/components/common/DarkSessionCard";
 import { useClientHome } from "@/hooks/useClientHome";
 import { usePatientAppointments } from "@/hooks/usePatientAppointments";
@@ -210,9 +209,6 @@ export default function Client() {
   const t = useTranslations();
   const { searchQuery } = useSearchStore();
 
-  const { data: proExpert } = useGetProExpert(true);
-
-  // Passer l'ID du profil expert au hook pour l'exclure de la liste
   const {
     selectedCategory,
     selectedSubCategory,
@@ -226,7 +222,7 @@ export default function Client() {
     handleProfessionalClick,
     isLoading,
     error,
-  } = useClientHome(proExpert?.id);
+  } = useClientHome();
 
   // Récupération des appointments du patient avec filtre de date et recherche
   const { confirmedAppointments: upcomingAppointments } =

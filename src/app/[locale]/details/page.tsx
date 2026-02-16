@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import ProfessionalDetail from "./DetailsClient";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.sapiow.com";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.app.sapiow.com";
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -57,7 +58,9 @@ export async function generateMetadata({
     : "Sapiow - Expert";
   const description = proData.description
     ? proData.description.slice(0, 150)
-    : `Réservez une consultation vidéo avec ${fullName || "cet expert"} sur Sapiow.`;
+    : `Réservez une consultation vidéo avec ${
+        fullName || "cet expert"
+      } sur Sapiow.`;
 
   const hasAvatar = proData.avatar && proData.avatar.startsWith("http");
   const ogImage = hasAvatar

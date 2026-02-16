@@ -24,6 +24,7 @@ const geistMono = Geist_Mono({
 const SITE_URL = "https://app.sapiow.com";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title:
     "Sapiow - Trouvez et réservez des consultations avec des experts en ligne",
   description:

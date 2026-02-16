@@ -24,34 +24,36 @@ const geistMono = Geist_Mono({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.sapiow.com";
 
 export const metadata: Metadata = {
-  title: "Sapiow - Réservez des sessions avec des experts en ligne",
+  title: "Sapiow - Trouvez et réservez des consultations avec des experts en ligne",
   description:
-    "Sapiow est la plateforme qui vous connecte avec des experts qualifiés pour des consultations vidéo personnalisées. Trouvez votre expert et réservez en ligne.",
+    "Connectez-vous avec des experts qualifiés pour des consultations vidéo personnalisées sur Sapiow.",
   openGraph: {
     siteName: "Sapiow",
     type: "website",
-    title: "Sapiow - Réservez des sessions avec des experts en ligne",
+    title:
+      "Sapiow - Trouvez et réservez des consultations avec des experts en ligne",
     description:
-      "Sapiow est la plateforme qui vous connecte avec des experts qualifiés pour des consultations vidéo personnalisées. Trouvez votre expert et réservez en ligne.",
+      "Connectez-vous avec des experts qualifiés pour des consultations vidéo personnalisées sur Sapiow.",
     images: [
       {
-        url: `${SITE_URL}/assets/icon.png`,
-        width: 1024,
-        height: 1024,
+        url: `${SITE_URL}/assets/og-image.png`,
+        width: 1200,
+        height: 630,
         alt: "Sapiow - Plateforme d'experts en ligne",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sapiow - Réservez des sessions avec des experts en ligne",
+    title:
+      "Sapiow - Trouvez et réservez des consultations avec des experts en ligne",
     description:
-      "Sapiow est la plateforme qui vous connecte avec des experts qualifiés pour des consultations vidéo personnalisées. Trouvez votre expert et réservez en ligne.",
+      "Connectez-vous avec des experts qualifiés pour des consultations vidéo personnalisées sur Sapiow.",
     images: [
       {
-        url: `${SITE_URL}/assets/icon.png`,
-        width: 1024,
-        height: 1024,
+        url: `${SITE_URL}/assets/og-image.png`,
+        width: 1200,
+        height: 630,
         alt: "Sapiow - Plateforme d'experts en ligne",
       },
     ],

@@ -56,15 +56,17 @@ export async function generateMetadata({
     ? `${fullName} - Expert sur Sapiow`
     : "Sapiow - Expert";
   const description = proData.description
-    ? proData.description.slice(0, 160)
-    : `Réservez une consultation vidéo avec ${
-        fullName || "cet expert"
-      } sur Sapiow.`;
+    ? proData.description.slice(0, 150)
+    : `Réservez une consultation vidéo avec ${fullName || "cet expert"} sur Sapiow.`;
 
-  const ogImage =
-    proData.avatar && proData.avatar.startsWith("http")
-      ? proData.avatar
-      : `${SITE_URL}/assets/icon.png`;
+  const hasAvatar = proData.avatar && proData.avatar.startsWith("http");
+  const ogImage = hasAvatar
+    ? proData.avatar
+    : `${SITE_URL}/assets/og-image.png`;
+
+  const imageEntry = hasAvatar
+    ? { url: ogImage, alt: title }
+    : { url: ogImage, width: 1200, height: 630, alt: title };
 
   return {
     title,
@@ -74,27 +76,13 @@ export async function generateMetadata({
       type: "profile",
       title,
       description,
-      images: [
-        {
-          url: ogImage,
-          width: 1024,
-          height: 1024,
-          alt: title,
-        },
-      ],
+      images: [imageEntry],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [
-        {
-          url: ogImage,
-          width: 1024,
-          height: 1024,
-          alt: title,
-        },
-      ],
+      images: [imageEntry],
     },
   };
 }

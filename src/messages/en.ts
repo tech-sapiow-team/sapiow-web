@@ -957,7 +957,7 @@ We encourage you to review it periodically.</p>
     errorLoadingExperts: "Error loading experts",
     unknownError: "Unknown error",
     yourNextVisio: "Your next video call",
-    accelerateProject: "Accelerate your project, Book a Video Call.",
+    accelerateProject: "Accelerate your project. Book a Video Call.",
     noTopExperts: "No top experts available at the moment.",
     // Search Mode
     searchResults: "Search results for",

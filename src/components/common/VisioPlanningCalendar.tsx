@@ -1002,15 +1002,6 @@ export default function VisioPlanningCalendar({
               : "Available slots"}
           </h3>
           {timeSlots.length > 0 ? (
-            <div
-              className="max-h-[110px] overflow-y-auto"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
-              <style jsx>{`
-                div::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
               <div className="grid grid-cols-3 justify-center gap-2 time-slots-grid">
                 {timeSlots.map((slot: any) => (
                   <button
@@ -1037,7 +1028,6 @@ export default function VisioPlanningCalendar({
                   </button>
                 ))}
               </div>
-            </div>
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500 text-sm">

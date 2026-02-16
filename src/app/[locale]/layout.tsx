@@ -28,14 +28,13 @@ export const metadata: Metadata = {
   title:
     "Sapiow - Trouvez et réservez des consultations avec des experts en ligne",
   description:
-    "Connectez-vous avec des experts qualifiés pour des consultations vidéo personnalisées sur Sapiow.",
+    "Connectez-vous avec des experts qualifiés pour des consultations vidéo sur Sapiow.",
   openGraph: {
     siteName: "Sapiow",
     type: "website",
-    title:
-      "Sapiow - Trouvez et réservez des consultations avec des experts en ligne",
+    title: "Sapiow - Trouvez et réservez des consultations avec des experts",
     description:
-      "Connectez-vous avec des experts qualifiés pour des consultations vidéo personnalisées sur Sapiow.",
+      "Connectez-vous avec des experts qualifiés pour des consultations vidéo sur Sapiow.",
     images: [
       {
         url: `${SITE_URL}/assets/og-image.png`,
@@ -47,10 +46,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title:
-      "Sapiow - Trouvez et réservez des consultations avec des experts en ligne",
+    title: "Sapiow - Trouvez et réservez des consultations avec des experts",
     description:
-      "Connectez-vous avec des experts qualifiés pour des consultations vidéo personnalisées sur Sapiow.",
+      "Connectez-vous avec des experts qualifiés pour des consultations vidéo sur Sapiow.",
     images: [
       {
         url: `${SITE_URL}/assets/og-image.png`,

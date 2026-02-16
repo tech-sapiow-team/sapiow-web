@@ -101,7 +101,10 @@ function ProfessionalDetailContent() {
 
   const { data: customer } = useGetCustomer(isAuthenticated);
   const { data: appointments, isLoading: isLoadingAppointments } =
-    useGetPatientAppointments(customer?.id) as {
+    useGetPatientAppointments(customer?.id, {
+      orderBy: "created_at",
+      orderDirection: "desc",
+    }) as {
       data: Appointment[];
       isLoading: boolean;
     };

@@ -220,6 +220,11 @@ export const useCreatePatientAppointment = () => {
         queryKey: ["appointments", variables.pro_id],
       });
 
+      // Invalider le cache des rendez-vous du patient pour que la page de succès affiche les bonnes données
+      queryClient.invalidateQueries({
+        queryKey: ["patient-appointments"],
+      });
+
       // Ajouter le nouvel appointment au cache si besoin
       queryClient.setQueryData(["appointment", data.id], data);
       // showToast.success("appointmentCreated");

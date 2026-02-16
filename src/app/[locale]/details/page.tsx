@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import ProfessionalDetail from "./DetailsClient";
 
-const SITE_URL = "https://www.app.sapiow.com";
+const SITE_URL = "https://app.sapiow.com";
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 

@@ -21,9 +21,41 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.sapiow.com";
+
 export const metadata: Metadata = {
-  title: "Sapiow",
-  description: "Sapiow",
+  title: "Sapiow - Réservez des sessions avec des experts en ligne",
+  description:
+    "Sapiow est la plateforme qui vous connecte avec des experts qualifiés pour des consultations vidéo personnalisées. Trouvez votre expert et réservez en ligne.",
+  openGraph: {
+    siteName: "Sapiow",
+    type: "website",
+    title: "Sapiow - Réservez des sessions avec des experts en ligne",
+    description:
+      "Sapiow est la plateforme qui vous connecte avec des experts qualifiés pour des consultations vidéo personnalisées. Trouvez votre expert et réservez en ligne.",
+    images: [
+      {
+        url: `${SITE_URL}/assets/icon.png`,
+        width: 1024,
+        height: 1024,
+        alt: "Sapiow - Plateforme d'experts en ligne",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Sapiow - Réservez des sessions avec des experts en ligne",
+    description:
+      "Sapiow est la plateforme qui vous connecte avec des experts qualifiés pour des consultations vidéo personnalisées. Trouvez votre expert et réservez en ligne.",
+    images: [
+      {
+        url: `${SITE_URL}/assets/icon.png`,
+        width: 1024,
+        height: 1024,
+        alt: "Sapiow - Plateforme d'experts en ligne",
+      },
+    ],
+  },
 };
 
 export const generateStaticParams = () => {
@@ -49,18 +81,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <head>
-        <meta property="og:site_name" content="Sapiow" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Sapiow" />
-        <meta property="og:description" content="Sapiow" />
-        <meta property="og:image" content="/assets/icon.png" />
-
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Sapiow" />
-        <meta name="twitter:description" content="Sapiow" />
-        <meta name="twitter:image" content="/assets/icon.png" />
-      </head>
+      <head />
       <body
         className={` ${figtree.variable} ${geistMono.variable} antialiased`}
       >

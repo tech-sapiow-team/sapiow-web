@@ -25,14 +25,13 @@ const SITE_URL = "https://app.sapiow.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title:
-    "Sapiow - Trouvez et réservez des consultations avec des experts en ligne",
+  title: "Sapiow - Réservez des consultations avec des experts en ligne",
   description:
     "Connectez-vous avec des experts qualifiés pour des consultations vidéo sur Sapiow.",
   openGraph: {
     siteName: "Sapiow",
     type: "website",
-    title: "Sapiow - Trouvez et réservez des consultations avec des experts",
+    title: "Sapiow - Réservez des consultations avec des experts",
     description:
       "Connectez-vous avec des experts qualifiés pour des consultations vidéo sur Sapiow.",
     images: [
@@ -46,7 +45,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sapiow - Trouvez et réservez des consultations avec des experts",
+    title: "Sapiow - Réservez des consultations avec des experts",
     description:
       "Connectez-vous avec des experts qualifiés pour des consultations vidéo sur Sapiow.",
     images: [

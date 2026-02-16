@@ -326,16 +326,16 @@ export default function OffresPage() {
                                       handleDeleteOffer(session.id)
                                     }
                                     disabled={updateSessionMutation.isPending}
-                                    className={`flex-1 bg-white text-base text-charcoal-blue font-bold h-[40px] border-none shadow-none ${
+                                    className={`flex-1 bg-white text-base text-charcoal-blue font-bold h-[40px] rounded-lg border border-light-blue-gray shadow-none hover:bg-red-50 hover:text-red-600 hover:border-red-300 ${
                                       updateSessionMutation.isPending
-                                        ? "opacity-50 cursor-not-allowed"
+                                        ? "opacity-50 cursor-not-allowed hover:bg-white hover:text-charcoal-blue hover:border-light-blue-gray"
                                         : ""
                                     }`}
                                   />
                                   <Button
                                     label={t("bankAccount.modify")}
                                     onClick={() => handleModifyOffer(session)}
-                                    className="flex-1 bg-white border border-light-blue-gray text-exford-blue font-bold  h-[40px]"
+                                    className="flex-1 bg-white border border-light-blue-gray text-exford-blue font-bold h-[40px] rounded-lg hover:bg-exford-blue hover:text-white hover:border-exford-blue"
                                   />
                                 </div>
                               </div>
@@ -476,16 +476,16 @@ export default function OffresPage() {
                                       handleDeleteOffer(session.id)
                                     }
                                     disabled={updateSessionMutation.isPending}
-                                    className={`flex-1 bg-white text-base text-charcoal-blue font-bold h-[40px] border-none shadow-none ${
+                                    className={`flex-1 bg-white text-base text-charcoal-blue font-bold h-[40px] rounded-lg border border-light-blue-gray shadow-none hover:bg-red-50 hover:text-red-600 hover:border-red-300 ${
                                       updateSessionMutation.isPending
-                                        ? "opacity-50 cursor-not-allowed"
+                                        ? "opacity-50 cursor-not-allowed hover:bg-white hover:text-charcoal-blue hover:border-light-blue-gray"
                                         : ""
                                     }`}
                                   />
                                   <Button
                                     label={t("bankAccount.modify")}
                                     onClick={() => handleModifyOffer(session)}
-                                    className="flex-1 bg-white border border-light-blue-gray text-exford-blue font-bold  h-[40px]"
+                                    className="flex-1 bg-white border border-light-blue-gray text-exford-blue font-bold h-[40px] rounded-lg hover:bg-exford-blue hover:text-white hover:border-exford-blue"
                                   />
                                 </div>
                               </div>

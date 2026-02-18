@@ -105,23 +105,31 @@ const generateTimeSlots = (
     return 15;
   };
 
-  const parseTimeLike = (
-    raw: unknown
-  ): { h: number; m: number; s: number } | null => {
-    if (typeof raw !== "string") return null;
-    // Accept formats like:
-    // - "10:30:00+01"
-    // - "10:30:00+01:00"
-    // - "10:30:00"
-    // - "10:30"
-    const match = raw.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
-    if (!match) return null;
-    const h = Number(match[1]);
-    const m = Number(match[2]);
-    const s = match[3] ? Number(match[3]) : 0;
-    if (![h, m, s].every(Number.isFinite)) return null;
-    if (h < 0 || h > 23 || m < 0 || m > 59 || s < 0 || s > 59) return null;
-    return { h, m, s };
+  /** Combine une date locale et un time PostgreSQL (ex. "08:30:00+00") en un Date JS. */
+  const parseScheduleTime = (
+    baseDate: Date,
+    timeStr: unknown
+  ): Date | null => {
+    if (typeof timeStr !== "string") return null;
+
+    const dateStr = [
+      baseDate.getFullYear(),
+      String(baseDate.getMonth() + 1).padStart(2, "0"),
+      String(baseDate.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    // PostgreSQL renvoie "+00" mais ISO 8601 attend "+00:00"
+    let normalized = timeStr.trim();
+    const signPos = Math.max(
+      normalized.lastIndexOf("+"),
+      normalized.lastIndexOf("-")
+    );
+    if (signPos > 0 && !normalized.slice(signPos).includes(":")) {
+      normalized += ":00";
+    }
+
+    const date = new Date(`${dateStr}T${normalized}`);
+    return isNaN(date.getTime()) ? null : date;
   };
 
   const buildSlotsForWindow = (start: Date, end: Date) => {
@@ -310,24 +318,17 @@ const generateTimeSlots = (
         return;
       }
 
-      const start = parseTimeLike(schedule.start_time);
-      const end = parseTimeLike(schedule.end_time);
+      const startTime = parseScheduleTime(selectedDate, schedule.start_time);
+      const endTime = parseScheduleTime(selectedDate, schedule.end_time);
 
-      if (!start || !end) {
+      if (!startTime || !endTime) {
         console.warn(
-          `Schedule invalide ignoré (parse): ${String(
+          `Schedule invalide ignoré: ${String(
             schedule.start_time
           )} - ${String(schedule.end_time)}`
         );
         return;
       }
-
-      // Construire une fenêtre ancrée sur la date sélectionnée
-      const startTime = new Date(selectedDate);
-      startTime.setHours(start.h, start.m, start.s, 0);
-
-      const endTime = new Date(selectedDate);
-      endTime.setHours(end.h, end.m, end.s, 0);
 
       // Gérer les créneaux qui traversent minuit (end_time <= start_time)
       if (endTime <= startTime) {
@@ -1002,13 +1003,13 @@ export default function VisioPlanningCalendar({
               : "Available slots"}
           </h3>
           {timeSlots.length > 0 ? (
-              <div className="grid grid-cols-3 justify-center gap-2 time-slots-grid">
-                {timeSlots.map((slot: any) => (
-                  <button
-                    key={slot.time}
-                    onClick={() => setSelectedTime(slot.time)}
-                    disabled={!slot.available}
-                    className={`
+            <div className="grid grid-cols-3 justify-center gap-2 time-slots-grid">
+              {timeSlots.map((slot: any) => (
+                <button
+                  key={slot.time}
+                  onClick={() => setSelectedTime(slot.time)}
+                  disabled={!slot.available}
+                  className={`
                   relative p-3 rounded-lg text-sm font-medium transition-all w-[110px] cursor-pointer
                   ${
                     selectedTime === slot.time
@@ -1018,16 +1019,16 @@ export default function VisioPlanningCalendar({
                       : "bg-gray-50 text-gray-400 cursor-not-allowed"
                   }
                 ${slot.status === "taken" ? "text-left" : ""}`}
-                  >
-                    {slot.time}
-                    {slot.status && (
-                      <span className="absolute top-3 left-[41%] w-[57px] h-[22px] bg-[#94A3B8] text-white text-[10px] font-bold rounded-[8px] flex justify-center items-center">
-                        {currentLocale === "fr" ? "Complet" : "Full"}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
+                >
+                  {slot.time}
+                  {slot.status && (
+                    <span className="absolute top-3 left-[41%] w-[57px] h-[22px] bg-[#94A3B8] text-white text-[10px] font-bold rounded-[8px] flex justify-center items-center">
+                      {currentLocale === "fr" ? "Complet" : "Full"}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500 text-sm">

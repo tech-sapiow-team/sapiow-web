@@ -2,7 +2,6 @@
 
 import { useGetStatistics } from "@/api/statistics/useStatistics";
 import { getProSubscription } from "@/api/pro-payouts/proSubscription";
-import AddBankAccountModal from "@/components/common/AddBankAccountModal";
 import BankAccountSection from "@/components/revenue/BankAccountSection";
 import PaymentHistory from "@/components/revenue/PaymentHistory";
 import RevenueDisplay from "@/components/revenue/RevenueDisplay";
@@ -23,30 +22,11 @@ export default function Revenus() {
   const t = useTranslations();
   const currentLocale = useLocale();
   const dateLocale = currentLocale === "fr" ? "fr-FR" : "en-US";
-  const [isAddBankModalOpen, setIsAddBankModalOpen] = useState(false);
-  const [hasBankAccount, setHasBankAccount] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Ce mois-ci");
   const [customDateRange, setCustomDateRange] = useState<
     DateRange | undefined
   >();
   const [subscriptions, setSubscriptions] = useState<ProSubscription[]>([]);
-
-  const handleAddBankAccount = () => {
-    setIsAddBankModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsAddBankModalOpen(false);
-  };
-
-  const handleBankAccountAdded = () => {
-    setHasBankAccount(true);
-    setIsAddBankModalOpen(false);
-  };
-
-  const handleModifyBankAccount = () => {
-    setIsAddBankModalOpen(true);
-  };
 
   const handleFilterChange = (filter: string) => {
     setActiveFilter(filter);
@@ -130,11 +110,7 @@ export default function Revenus() {
             </div>
 
             {/* Compte bancaire section */}
-            <BankAccountSection
-              hasBankAccount={hasBankAccount}
-              onAddBankAccount={handleAddBankAccount}
-              onModifyBankAccount={handleModifyBankAccount}
-            />
+            <BankAccountSection />
           </div>
         </div>
 
@@ -154,12 +130,6 @@ export default function Revenus() {
         <PaymentHistory />
       </div>
 
-      {/* Modal pour ajouter un compte bancaire */}
-      <AddBankAccountModal
-        isOpen={isAddBankModalOpen}
-        onClose={handleCloseModal}
-        onSuccess={handleBankAccountAdded}
-      />
     </AccountLayout>
   );
 }

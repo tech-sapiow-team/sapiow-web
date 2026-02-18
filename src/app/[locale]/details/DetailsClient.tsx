@@ -395,7 +395,7 @@ function ProfessionalDetailContent() {
             </div>
 
             {/* Questions and Expectations */}
-            <div className="grid md:grid-cols-2 gap-8 mt-7.5 mb-15 min-w-0">
+            {/* <div className="grid md:grid-cols-2 gap-8 mt-7.5 mb-15 min-w-0">
               <div className="bg-soft-ice-gray px-1 py-0.5 rounded-[8px] border border-soft-ice-gray min-w-0 overflow-hidden">
                 <h2 className="text-base font-bold mb-4 px-4 pt-3 font-figtree">
                   {t("expertDetails.questionsToAsk")}
@@ -469,7 +469,7 @@ function ProfessionalDetailContent() {
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
             {/* How it works */}
             <div className="mb-15">
               <h2 className="text-lg font-bold mb-2.5 text-charcoal-blue">

@@ -3,6 +3,7 @@ import {
   useGetProAppointments,
   useUpdateProAppointment,
 } from "@/api/appointments/useAppointments";
+import { useGetInfoStripeAccount } from "@/api/proBank/useBank";
 import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { useGetStatistics } from "@/api/statistics/useStatistics";
 import { LoadingScreen } from "@/components/common/LoadingScreen";
@@ -10,13 +11,15 @@ import { SessionCard } from "@/components/common/SessionCard";
 import { StatsCard } from "@/components/common/StatsCard";
 import { useTodayVisios } from "@/hooks/useTodayVisios";
 import { useCallStore } from "@/store/useCall";
-import { useTranslations } from "next-intl";
+import { AlertCircle, ChevronRight } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import VideoConsultation from "../VideoCall/video-consultation";
 
 export default function Expert() {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations();
 
   const { isVideoCallOpen, setIsVideoCallOpen, setAppointmentId } =
@@ -66,23 +69,56 @@ export default function Expert() {
 
   const { data: proExpert, isLoading: proExpertLoading } = useGetProExpert();
   const { data: statistics, isLoading: statisticsLoading } = useGetStatistics();
+  const {
+    data: stripeAccountData,
+    isLoading: stripeAccountLoading,
+    error: stripeAccountError,
+  } = useGetInfoStripeAccount();
+
+  const capabilities = stripeAccountData?.account?.capabilities;
+  const isStripeAccountMissing = !stripeAccountLoading && !stripeAccountData;
+  const isCardPaymentsInactive = capabilities?.card_payments !== "active";
+  const isTransfersInactive = capabilities?.transfers !== "active";
+  const hasStripeError = Boolean(stripeAccountError);
+
+  const stripeAlertTitle = hasStripeError
+    ? t("stripeCreateAccountRequired")
+    : isStripeAccountMissing
+      ? t("stripeCreateAccountRequired")
+      : isCardPaymentsInactive || isTransfersInactive
+        ? t("stripeActionRequiredTitle")
+        : null;
+
+  const stripeAlertBullets = !stripeAlertTitle
+    ? []
+    : hasStripeError || isStripeAccountMissing
+      ? []
+      : [
+          ...(isCardPaymentsInactive ? [t("stripeCardPayments")] : []),
+          ...(isTransfersInactive ? [t("stripeTransfers")] : []),
+        ];
+
+  const handleRevenueRedirect = () => {
+    router.push(`/${locale}/compte/revenus`);
+  };
 
   // Filtrer uniquement les rendez-vous futurs (>= aujourd'hui à 00:00:00)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayISO = today.toISOString();
 
-  const { data: appointments, isLoading: appointmentsLoading } = useGetProAppointments(proExpert?.id, {
-    gteField: "appointment_at",
-    gte: todayISO,
-    orderBy: "appointment_at",
-    orderDirection: "asc",
-  });
+  const { data: appointments, isLoading: appointmentsLoading } =
+    useGetProAppointments(proExpert?.id, {
+      gteField: "appointment_at",
+      gte: todayISO,
+      orderBy: "appointment_at",
+      orderDirection: "asc",
+    });
 
   // Calculer le nombre de demandes en attente
   const pendingAppointments = Array.isArray(appointments)
     ? appointments.filter(
-        (appointment: any) => appointment.status === "pending"
+        (appointment: any) => appointment.status === "pending",
       )
     : [];
   const pendingCount = pendingAppointments.length;
@@ -128,6 +164,28 @@ export default function Expert() {
               className="w-full"
             />
           </div>
+          {stripeAlertTitle && (
+            <button
+              type="button"
+              onClick={handleRevenueRedirect}
+              className="mt-3 flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-left transition-colors hover:bg-red-100"
+            >
+              <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="pt-1 text-sm font-semibold leading-5 text-red-700">
+                  {stripeAlertTitle}
+                </p>
+                {stripeAlertBullets.map((item) => (
+                  <p key={item} className="text-sm leading-5 text-red-700">
+                    {"\u2022"} {item}
+                  </p>
+                ))}
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-red-600" />
+            </button>
+          )}
           {/* <div className="lg:hidden w-[90%] mx-auto mt-5 bg-white rounded-[20px] border border-soft-ice-gray px-6">
             <div className="px-6 py-4 flex justify-center items-center gap-x-2">
               <button
@@ -188,10 +246,10 @@ export default function Expert() {
                     {
                       hour: "2-digit",
                       minute: "2-digit",
-                    }
+                    },
                   );
 
-                   return (
+                  return (
                     <SessionCard
                       key={appointment.id}
                       date={dateDisplay}
@@ -244,12 +302,12 @@ export default function Expert() {
                 appointments
                   .filter((appointment: any) => appointment.type !== "calendar") // Exclure les rendez-vous de type calendar
                   .filter(
-                    (appointment: any) => appointment.status === "confirmed"
+                    (appointment: any) => appointment.status === "confirmed",
                   )
                   .filter((appointment: any) => {
                     // Calculer l'heure de fin du rendez-vous (date + durée)
                     const appointmentDate = new Date(
-                      appointment.appointment_at
+                      appointment.appointment_at,
                     );
                     const sessionDuration =
                       appointment.session?.session_type || "30mn";
@@ -264,7 +322,7 @@ export default function Expert() {
 
                     // Calculer l'heure de fin
                     const endTime = new Date(
-                      appointmentDate.getTime() + durationMinutes * 60000
+                      appointmentDate.getTime() + durationMinutes * 60000,
                     );
                     const now = new Date();
 
@@ -273,7 +331,7 @@ export default function Expert() {
                   })
                   .map((appointment: any) => {
                     const appointmentDate = new Date(
-                      appointment.appointment_at
+                      appointment.appointment_at,
                     );
                     const today = new Date();
                     const isToday =
@@ -286,12 +344,12 @@ export default function Expert() {
                       {
                         hour: "2-digit",
                         minute: "2-digit",
-                      }
+                      },
                     );
                     const sessionDuration =
                       appointment.session?.session_type || "30mn";
 
-                     return (
+                    return (
                       <SessionCard
                         key={appointment.id}
                         date={dateDisplay}

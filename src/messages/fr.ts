@@ -10,6 +10,11 @@ export default {
   today: "Aujourd'hui",
   patient: "Patient",
   session: "Session",
+  stripeActionRequiredTitle: "Une action est requise sur votre compte Stripe :",
+  stripeCreateAccountRequired:
+    "Vous devez créer un compte Stripe pour recevoir des paiements.",
+  stripeCardPayments: "Paiements par carte",
+  stripeTransfers: "Transferts",
 
   // Login Page
   login: {

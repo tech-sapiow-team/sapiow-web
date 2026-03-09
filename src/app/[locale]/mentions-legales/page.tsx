@@ -112,14 +112,12 @@ export default function MentionsLegales() {
   // Sync état ↔ hash (deep link + back/forward)
   useEffect(() => {
     syncActiveTabFromHash();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, locale]);
 
   useEffect(() => {
     const onHashChange = () => syncActiveTabFromHash();
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile]);
 
   const handleTabClick = (idx: number) => {

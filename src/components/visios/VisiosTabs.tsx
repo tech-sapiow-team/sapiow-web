@@ -120,6 +120,11 @@ export const VisiosTabs = ({ onStartVideoCall }: VisiosTabsProps) => {
                         new Date(appointment.appointment_at) > new Date(),
                     }}
                     appointmentAt={appointment.appointment_at}
+                    conversationParticipantId={
+                      appointment.patient?.id ||
+                      appointment.patient_id ||
+                      appointment.patient?.user_id
+                    }
                   />
                 );
               })

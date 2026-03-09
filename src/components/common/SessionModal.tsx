@@ -9,9 +9,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useConversationStore } from "@/store/useConversationStore";
 import { X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { Button } from "./Button";
 import { LoadingSpinner } from "./LoadingSpinner";
@@ -37,6 +39,7 @@ interface SessionModalProps {
   questions?: AppointmentQuestion[];
   loadingState?: "confirming" | "cancelling" | null;
   appointmentAt?: string;
+  conversationParticipantId?: string;
 }
 
 export const SessionModal: React.FC<SessionModalProps> = ({
@@ -52,13 +55,51 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   questions = [],
   loadingState = null,
   appointmentAt,
+  conversationParticipantId,
 }) => {
   const t = useTranslations();
+  const locale = useLocale();
+  const router = useRouter();
+  const { setSelectedConversation, setSelectedProfessional } =
+    useConversationStore();
 
   // Détermine le titre du modal selon le contexte
   const modalTitle = isUpcoming
     ? t("visios.sessionDetail")
     : t("visios.pendingRequest");
+
+  const handleOpenChat = () => {
+    if (conversationParticipantId) {
+      setSelectedProfessional({
+        id: conversationParticipantId,
+        name,
+        title: sessionDescription,
+        avatar: profileImage,
+      });
+      setSelectedConversation(conversationParticipantId);
+
+      const params = new URLSearchParams({
+        receiverId: conversationParticipantId,
+        name,
+        title: sessionDescription,
+        avatar: profileImage,
+      });
+      sessionStorage.setItem(
+        "pendingConversation",
+        JSON.stringify({
+          receiverId: conversationParticipantId,
+          name,
+          title: sessionDescription,
+          avatar: profileImage,
+        })
+      );
+      onOpenChange(false);
+      router.push(`/${locale}/messages?${params.toString()}`);
+      return;
+    }
+    onOpenChange(false);
+    router.push(`/${locale}/messages`);
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -141,6 +182,19 @@ export const SessionModal: React.FC<SessionModalProps> = ({
             {isUpcoming ? (
               // Modal pour "A venir" - Bouton Commencer la visio + Annuler
               <>
+                <ButtonUI
+                  variant="outline"
+                  className="w-full h-14 text-exford-blue font-bold border-gray-300 hover:bg-gray-50 bg-transparent font-figtree cursor-pointer"
+                  onClick={handleOpenChat}
+                >
+                  <Image
+                    src="/assets/icons/chatDots.svg"
+                    alt={t("sessionDetail.sendMessage")}
+                    width={20}
+                    height={20}
+                  />
+                  {t("sessionDetail.sendMessage")}
+                </ButtonUI>
                 <ButtonUI
                   className="w-full bg-cobalt-blue hover:bg-cobalt-blue/80 h-14 text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => {

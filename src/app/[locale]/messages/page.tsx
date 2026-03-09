@@ -4,7 +4,7 @@ import { withAuth } from "@/components/common/withAuth";
 import { useConversationStore } from "@/store/useConversationStore";
 import { useUserStore } from "@/store/useUser";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { MessageClientPage } from "./MessageClientPage";
 import { MessageProPage } from "./MessageProPage";
 
@@ -13,21 +13,6 @@ function Messages() {
   const { setSelectedConversation, setSelectedProfessional } =
     useConversationStore();
   const searchParams = useSearchParams();
-
-  const prevTypeRef = useRef<string | undefined>(undefined);
-
-  useEffect(() => {
-    const prevType = prevTypeRef.current;
-    const currentType = user?.type;
-
-    // Réinitialiser seulement quand le type d'utilisateur change (client ↔ expert)
-    if (prevType && prevType !== currentType) {
-      setSelectedConversation(null);
-      setSelectedProfessional(null);
-    }
-
-    prevTypeRef.current = currentType;
-  }, [user?.type, setSelectedConversation, setSelectedProfessional]);
 
   useEffect(() => {
     const queryReceiverId = searchParams.get("receiverId");

@@ -11,6 +11,7 @@ import { useUserStore } from "@/store/useUser";
 import { Mic, Paperclip, Send, Square } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface MessageInputProps {
@@ -19,9 +20,11 @@ interface MessageInputProps {
 
 export function MessageInput({ receiverId }: MessageInputProps) {
   const t = useTranslations();
+  const searchParams = useSearchParams();
   const { currentUser } = useCurrentUserData();
   const currentProId = currentUser?.id;
   const currentPatientId = currentUser?.id;
+  const [fallbackReceiverId, setFallbackReceiverId] = useState<string>("");
   const [message, setMessage] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -42,6 +45,24 @@ export function MessageInput({ receiverId }: MessageInputProps) {
     user?.type === "expert"
       ? useProSendMessage(currentProId || "")
       : usePatientSendMessage(currentPatientId || "");
+  const effectiveReceiverId = receiverId || fallbackReceiverId;
+
+  useEffect(() => {
+    const queryReceiverId = searchParams.get("receiverId");
+    if (queryReceiverId) {
+      setFallbackReceiverId(queryReceiverId);
+      return;
+    }
+
+    const pendingRaw = sessionStorage.getItem("pendingConversation");
+    if (!pendingRaw) return;
+    try {
+      const pending = JSON.parse(pendingRaw) as { receiverId?: string };
+      if (pending.receiverId) setFallbackReceiverId(pending.receiverId);
+    } catch {
+      // Ignore parse error
+    }
+  }, [searchParams]);
 
   // Logique pour ajuster automatiquement la hauteur
   const adjustHeight = () => {
@@ -75,13 +96,13 @@ export function MessageInput({ receiverId }: MessageInputProps) {
   };
 
   const handleSendMessage = async () => {
-    if ((message.trim() || selectedFile || recordedAudio) && receiverId) {
+    if ((message.trim() || selectedFile || recordedAudio) && effectiveReceiverId) {
       try {
         console.log("Avant envoi:", {
           selectedFile,
           recordedAudio,
           message: message.trim(),
-          receiverId,
+          receiverId: effectiveReceiverId,
         });
 
         let content = selectedFile || message.trim();
@@ -100,7 +121,7 @@ export function MessageInput({ receiverId }: MessageInputProps) {
 
         console.log("Content à envoyer:", content);
 
-        const messageData = createSendMessageData(receiverId, content);
+        const messageData = createSendMessageData(effectiveReceiverId, content);
         console.log("MessageData créé:", messageData);
 
         await sendMessageMutation.mutateAsync(messageData);
@@ -262,7 +283,7 @@ export function MessageInput({ receiverId }: MessageInputProps) {
   }, []);
 
   // Ne rien afficher si aucune conversation n'est sélectionnée
-  if (!receiverId) {
+  if (!effectiveReceiverId) {
     return null;
   }
 
@@ -302,7 +323,7 @@ export function MessageInput({ receiverId }: MessageInputProps) {
             onClick={handleSendMessage}
             disabled={
               (!message.trim() && !selectedFile) ||
-              !receiverId ||
+              !effectiveReceiverId ||
               sendMessageMutation.isPending
             }
           >

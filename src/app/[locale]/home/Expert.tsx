@@ -272,6 +272,11 @@ export default function Expert() {
                       isFlex1={true}
                       questions={appointment.appointment_questions || []}
                       loadingState={loadingStates[appointment.id] || null}
+                      conversationParticipantId={
+                        appointment.patient?.id ||
+                        appointment.patient_id ||
+                        appointment.patient?.user_id
+                      }
                     />
                   );
                 })
@@ -382,6 +387,11 @@ export default function Expert() {
                             new Date(appointment.appointment_at) > new Date(),
                         }}
                         appointmentAt={appointment.appointment_at}
+                        conversationParticipantId={
+                          appointment.patient?.id ||
+                          appointment.patient_id ||
+                          appointment.patient?.user_id
+                        }
                       />
                     );
                   })

@@ -20,7 +20,7 @@ import { useAddToCalendar } from "@/hooks/useAddToCalendar";
 import { useCallStore } from "@/store/useCall";
 import { useConversationStore } from "@/store/useConversationStore";
 import { Check, ChevronRight, Pencil, Send, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -57,6 +57,7 @@ export function SessionDetailSheet({
 }: SessionDetailSheetProps) {
   console.log({ session });
   const t = useTranslations();
+  const locale = useLocale();
   const { setCallCreatorName } = useCallStore();
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const { setSelectedConversation, setSelectedProfessional } =
@@ -199,8 +200,22 @@ export function SessionDetailSheet({
       });
 
       setSelectedConversation(professionalId);
-      // onClose();
-      router.push("/messages");
+      const params = new URLSearchParams({
+        receiverId: professionalId,
+        name: session.professionalName,
+        title: session.professionalTitle,
+        avatar: session.profileImage,
+      });
+      sessionStorage.setItem(
+        "pendingConversation",
+        JSON.stringify({
+          receiverId: professionalId,
+          name: session.professionalName,
+          title: session.professionalTitle,
+          avatar: session.profileImage,
+        })
+      );
+      router.push(`/${locale}/messages?${params.toString()}`);
     }
   };
 

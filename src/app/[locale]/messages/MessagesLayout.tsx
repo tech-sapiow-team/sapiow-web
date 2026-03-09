@@ -45,9 +45,12 @@ export const MessagesLayout = ({
   activeConversation,
   currentUserId,
 }: MessagesLayoutProps) => {
+  const resolvedConversationId =
+    selectedConversation || activeConversation?.profile?.id || null;
+
   return (
     <div className="flex h-screen bg-white w-full">
-      <AppSidebar hideMobileNav={!!selectedConversation} />
+      <AppSidebar hideMobileNav={!!resolvedConversationId} />
 
       {/* Desktop (lg+) : sidebar + chat */}
       <div className="hidden lg:flex flex-1 flex-col">
@@ -59,7 +62,7 @@ export const MessagesLayout = ({
               conversationsData={conversationsData}
               conversationsLoading={conversationsLoading}
               conversationsError={conversationsError}
-              selectedConversation={selectedConversation}
+              selectedConversation={resolvedConversationId}
               onConversationSelect={setSelectedConversation}
             />
           </div>
@@ -75,13 +78,13 @@ export const MessagesLayout = ({
                 conversationError={conversationError}
                 currentUserId={currentUserId}
                 activeConversation={activeConversation}
-                selectedConversation={selectedConversation}
+                selectedConversation={resolvedConversationId}
               />
             </div>
 
             <MessageInput
               receiverId={
-                selectedConversation ||
+                resolvedConversationId ||
                 activeConversation?.profile?.id ||
                 undefined
               }
@@ -94,7 +97,7 @@ export const MessagesLayout = ({
       <div className="flex flex-1 flex-col lg:hidden">
         {/* Pas de header sur mobile */}
         {/* Liste des conversations (si aucune sélection) */}
-        {!selectedConversation && (
+        {!resolvedConversationId && (
           <div className="flex-1 flex flex-col w-[95%] mx-auto">
             <h2 className="text-lg text-center font-semibold text-exford-blue mt-5">
               Messages
@@ -103,14 +106,14 @@ export const MessagesLayout = ({
               conversationsData={conversationsData}
               conversationsLoading={conversationsLoading}
               conversationsError={conversationsError}
-              selectedConversation={selectedConversation}
+              selectedConversation={resolvedConversationId}
               onConversationSelect={setSelectedConversation}
               searchBarClassName="sticky top-0 z-10 bg-white pt-2 pb-2"
             />
           </div>
         )}
         {/* Chat mobile (si une conversation est sélectionnée) */}
-        {selectedConversation && (
+        {resolvedConversationId && (
           <div className="flex-1 flex flex-col border border-[#F4F6F9] rounded-3xl bg-white">
             <ChatHeader
               activeConversation={activeConversation}
@@ -126,13 +129,13 @@ export const MessagesLayout = ({
                 conversationError={conversationError}
                 currentUserId={currentUserId}
                 activeConversation={activeConversation}
-                selectedConversation={selectedConversation}
+                selectedConversation={resolvedConversationId}
               />
             </div>
 
             <MessageInput
               receiverId={
-                selectedConversation ||
+                resolvedConversationId ||
                 activeConversation?.profile?.id ||
                 undefined
               }

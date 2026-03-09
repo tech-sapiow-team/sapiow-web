@@ -46,6 +46,7 @@ interface SessionCardProps {
   loadingState?: "confirming" | "cancelling" | null;
   appointmentAt?: string;
   isLoading?: boolean;
+  conversationParticipantId?: string;
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
@@ -70,6 +71,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   loadingState = null,
   appointmentAt,
   isLoading = false,
+  conversationParticipantId,
 }) => {
   const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
@@ -225,6 +227,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               questions={questions}
               loadingState={loadingState}
               appointmentAt={appointmentAt}
+              conversationParticipantId={conversationParticipantId}
               trigger={
                 <Button
                   onClick={handleViewRequest}

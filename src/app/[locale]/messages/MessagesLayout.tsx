@@ -13,7 +13,8 @@ import { ChatHeader } from "@/components/messages/ChatHeader";
 import { ConversationsList } from "@/components/messages/ConversationsList";
 import { MessageInput } from "@/components/messages/MessageInput";
 import { MessagesList } from "@/components/messages/MessagesList";
-import { ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
 
 type ConversationType = PatientConversation | ProConversation;
 type MessageType = PatientMessage | ProMessage;
@@ -45,8 +46,42 @@ export const MessagesLayout = ({
   activeConversation,
   currentUserId,
 }: MessagesLayoutProps) => {
+  const searchParams = useSearchParams();
+  const [fallbackReceiverId, setFallbackReceiverId] = useState<string | null>(
+    null
+  );
+
+  useEffect(() => {
+    const queryReceiverId = searchParams.get("receiverId");
+    if (queryReceiverId) {
+      setFallbackReceiverId(queryReceiverId);
+      if (!selectedConversation) {
+        setSelectedConversation(queryReceiverId);
+      }
+      return;
+    }
+
+    const pendingRaw = sessionStorage.getItem("pendingConversation");
+    if (!pendingRaw) return;
+
+    try {
+      const pending = JSON.parse(pendingRaw) as { receiverId?: string };
+      if (pending.receiverId) {
+        setFallbackReceiverId(pending.receiverId);
+        if (!selectedConversation) {
+          setSelectedConversation(pending.receiverId);
+        }
+      }
+    } catch {
+      // Ignore parse error
+    }
+  }, [searchParams, selectedConversation, setSelectedConversation]);
+
   const resolvedConversationId =
-    selectedConversation || activeConversation?.profile?.id || null;
+    selectedConversation ||
+    fallbackReceiverId ||
+    activeConversation?.profile?.id ||
+    null;
 
   return (
     <div className="flex h-screen bg-white w-full">

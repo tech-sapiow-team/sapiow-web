@@ -156,7 +156,7 @@ function ProfessionalDetailContent() {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
       }),
-    [locale]
+    [locale],
   );
 
   const bookedProfessionalName = useMemo(() => {
@@ -186,10 +186,10 @@ function ProfessionalDetailContent() {
       ? expertData.sessions
       : [];
     const oneTimeActive = sessions.filter(
-      (s: any) => s?.is_active === true && s?.session_nature === "one_time"
+      (s: any) => s?.is_active === true && s?.session_nature === "one_time",
     );
     const oneTimeActiveVideo = oneTimeActive.filter(
-      (s: any) => s?.video_call === true
+      (s: any) => s?.video_call === true,
     );
     const candidates =
       oneTimeActiveVideo.length > 0 ? oneTimeActiveVideo : oneTimeActive;
@@ -214,7 +214,7 @@ function ProfessionalDetailContent() {
     const checkTruncation = () => {
       if (descriptionRef.current) {
         const lineHeight = parseInt(
-          window.getComputedStyle(descriptionRef.current).lineHeight
+          window.getComputedStyle(descriptionRef.current).lineHeight,
         );
         const maxHeight = lineHeight * 7; // 7 lignes
         const actualHeight = descriptionRef.current.scrollHeight;
@@ -341,7 +341,7 @@ function ProfessionalDetailContent() {
                   </h2>
                   <p
                     ref={descriptionRef}
-                    className={`text-gray-700 leading-relaxed font-figtree xl:text-base text-sm overflow-hidden break-words ${
+                    className={`text-gray-700 leading-relaxed font-figtree xl:text-base text-sm overflow-hidden break-words whitespace-pre-line ${
                       isDescriptionExpanded ? "" : "line-clamp-[7]"
                     }`}
                   >
@@ -376,7 +376,7 @@ function ProfessionalDetailContent() {
                         >
                           {expertiseName}
                         </Badge>
-                      )
+                      ),
                     )}
                   </div>
                 </div>
@@ -530,13 +530,14 @@ function ProfessionalDetailContent() {
                   ) : expertsimilar &&
                     expertsimilar.filter(
                       (expert: Expert) =>
-                        expert.id !== expertId && expert.id !== myProProfile?.id
+                        expert.id !== expertId &&
+                        expert.id !== myProProfile?.id,
                     ).length > 0 ? (
                     expertsimilar
                       ?.filter(
                         (expert: Expert) =>
                           expert.id !== expertId &&
-                          expert.id !== myProProfile?.id
+                          expert.id !== myProProfile?.id,
                       )
                       ?.map((professional: Expert) => (
                         <ProfessionalCard
@@ -628,7 +629,7 @@ function ProfessionalDetailContent() {
                     date={
                       appointments?.[0]?.appointment_at
                         ? new Date(
-                            appointments[0].appointment_at
+                            appointments[0].appointment_at,
                           ).toLocaleDateString(locale, {
                             weekday: "long",
                             year: "numeric",
@@ -640,7 +641,7 @@ function ProfessionalDetailContent() {
                     time={
                       appointments?.[0]?.appointment_at
                         ? new Date(
-                            appointments[0].appointment_at
+                            appointments[0].appointment_at,
                           ).toLocaleTimeString(locale, {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -713,7 +714,7 @@ function ProfessionalDetailContent() {
                   date={
                     appointments?.[0]?.appointment_at
                       ? new Date(
-                          appointments[0].appointment_at
+                          appointments[0].appointment_at,
                         ).toLocaleDateString(locale, {
                           weekday: "long",
                           year: "numeric",
@@ -725,7 +726,7 @@ function ProfessionalDetailContent() {
                   time={
                     appointments?.[0]?.appointment_at
                       ? new Date(
-                          appointments[0].appointment_at
+                          appointments[0].appointment_at,
                         ).toLocaleTimeString(locale, {
                           hour: "2-digit",
                           minute: "2-digit",

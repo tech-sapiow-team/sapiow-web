@@ -32,11 +32,13 @@ export default function Login() {
           {/* Section image - cachée sur mobile et tablette, visible sur desktop */}
           <div className="hidden lg:block relative my-8 min-h-[600px] xl:min-h-[700px] w-full">
             <Image
-              src="/assets/on_boarding.png"
+              src="/assets/bg_onboarding.png"
               alt="Onboarding"
               fill
               className="object-contain"
               priority
+              unoptimized
+              sizes="(min-width: 1280px) 700px, 630px"
             />
           </div>
           <div className="flex flex-col ">

@@ -1,4 +1,3 @@
-import { useGetExpertises } from "@/api/domaine/useDomaine";
 import { Professional } from "@/types/professional";
 import { useMemo, useState } from "react";
 import { useFavoritesLogic } from "./useFavoritesLogic";
@@ -14,7 +13,7 @@ import { useFavoritesLogic } from "./useFavoritesLogic";
  */
 export const useDetailsLogic = (
   expertData: any,
-  options?: { favoritesEnabled?: boolean }
+  options?: { favoritesEnabled?: boolean },
 ) => {
   // États UI locaux
   const [isOfferSheetOpen, setIsOfferSheetOpen] = useState(false);
@@ -24,24 +23,18 @@ export const useDetailsLogic = (
   const { likedProfs, handleToggleLike, isLoadingFavorites } =
     useFavoritesLogic({ enabled: options?.favoritesEnabled });
 
-  // Récupérer les expertises pour le mapping
-  const { data: expertises } = useGetExpertises(
-    Number(expertData?.domain_id) || 0
-  );
-
-  // Mapper les expertise_id vers les noms des expertises
+  // Utiliser directement les noms présents dans pro_expertises
   const expertiseNames = useMemo(() => {
-    if (!expertData?.pro_expertises || !expertises) return [];
+    if (!expertData?.pro_expertises) return [];
 
-    return expertData.pro_expertises.map((proExpertise: any) => {
-      const expertise = expertises.find(
-        (exp: any) => exp.id === proExpertise.expertise_id
-      );
-      return expertise
-        ? expertise.name
-        : `Expertise ${proExpertise.expertise_id}`;
-    });
-  }, [expertData?.pro_expertises, expertises]);
+    return expertData.pro_expertises
+      .map((proExpertise: any) =>
+        typeof proExpertise?.expertise?.name === "string"
+          ? proExpertise.expertise.name.trim()
+          : "",
+      )
+      .filter((name: string) => name.length > 0);
+  }, [expertData?.pro_expertises]);
 
   // Transformer les données de l'expert en Professional
   const professional: Professional | null = useMemo(() => {

@@ -9,8 +9,10 @@ import {
   type PromoCodeResult,
 } from "@/components/common/PromoCodeInput";
 import { useAppointmentStore } from "@/store/useAppointmentStore";
+import { usePendingBookingStore } from "@/store/usePendingBookingStore";
 import { usePayStore } from "@/store/usePay";
 import { usePlaningStore } from "@/store/usePlaning";
+import { authUtils } from "@/utils/auth";
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -458,6 +460,7 @@ export default function VisioPlanningCalendar({
 
   const { setIsPlaning } = usePlaningStore();
   const { setIsPaid } = usePayStore();
+  const { setPendingBooking } = usePendingBookingStore();
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
@@ -494,7 +497,12 @@ export default function VisioPlanningCalendar({
   );
   const [selectedTime, setSelectedTime] = useState("");
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [promoResult, setPromoResult] = useState<PromoCodeResult | null>(null);
+
+  useEffect(() => {
+    authUtils.isAuthenticated().then(setIsAuthenticated);
+  }, []);
 
   const promoDiscountDisplay = useMemo(() => {
     if (!promoResult?.valid) return null;
@@ -644,6 +652,26 @@ export default function VisioPlanningCalendar({
         appointment_at: selectedDateTime.toISOString(), // Date/heure ISO
         ...(promo_code ? { promo_code } : {}),
       };
+
+      const isAuthenticated = await authUtils.isAuthenticated();
+      if (!isAuthenticated) {
+        const proId = expertData?.id;
+        if (!proId) {
+          setIsRedirecting(false);
+          return;
+        }
+
+        setPendingBooking({
+          pro_id: String(proId),
+          session_id: String(selectedSession.sessionId),
+          appointment_at: selectedDateTime.toISOString(),
+          ...(promo_code ? { promo_code } : {}),
+          returnUrl: `/details?id=${proId}`,
+        });
+
+        router.push(`/login?next=${encodeURIComponent("/booking/resume")}`);
+        return;
+      }
 
       const result = await createAppointmentMutation.mutateAsync(
         appointmentData,
@@ -1142,6 +1170,11 @@ export default function VisioPlanningCalendar({
                 : "bg-cobalt-blue hover:bg-cobalt-blue/90 text-white"
             }`}
           />
+          {!isAuthenticated && (
+            <p className="mt-2 text-xs text-gray-500 text-center">
+              {t("calendar.guestLoginHint")}
+            </p>
+          )}
         </div>
       </div>
     </div>

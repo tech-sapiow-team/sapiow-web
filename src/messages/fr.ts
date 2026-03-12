@@ -943,6 +943,16 @@ We encourage you to review it periodically.</p>
     reserving: "Réservation...",
     reserve: "Réserver",
     reservationError: "Erreur lors de la réservation. Veuillez réessayer.",
+    guestLoginHint:
+      "Vous pourrez confirmer avec votre numéro de téléphone juste après.",
+  },
+
+  booking: {
+    resume: {
+      processing: "Finalisation de votre réservation...",
+      slotUnavailable:
+        "Ce créneau n'est plus disponible. Merci d'en choisir un autre.",
+    },
   },
 
   // Payment

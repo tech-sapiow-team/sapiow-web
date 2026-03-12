@@ -1,7 +1,13 @@
 import { useGetCustomer } from "@/api/customer/useCustomer";
 import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { useUserStore } from "@/store/useUser";
-import { useRouter } from "next/navigation";
+import {
+  clearAuthNextPath,
+  getAuthNextPath,
+  sanitizeInternalNextPath,
+  setAuthNextPath,
+} from "@/utils/authFlow";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface UseOnboardingLogicReturn {
@@ -22,6 +28,7 @@ export function useOnboardingLogic(): UseOnboardingLogicReturn {
   const { data: proExpert } = useGetProExpert();
   const { data: customer } = useGetCustomer();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setUser } = useUserStore();
 
   // Fonction pour vérifier si les données sont vides
@@ -37,6 +44,12 @@ export function useOnboardingLogic(): UseOnboardingLogicReturn {
   };
 
   useEffect(() => {
+    const nextFromQuery = sanitizeInternalNextPath(searchParams.get("next"));
+    if (nextFromQuery) {
+      setAuthNextPath(nextFromQuery);
+    }
+    const authNextPath = nextFromQuery || getAuthNextPath();
+
     // Vérifier si l'utilisateur vient du switch mode
     const isFromModeSwitch =
       sessionStorage.getItem("fromModeSwitch") === "true";
@@ -78,7 +91,12 @@ export function useOnboardingLogic(): UseOnboardingLogicReturn {
         } else {
           setUser({ type: "expert" }); // Privilégier expert si les deux existent
         }
-        router.push("/");
+        if (authNextPath) {
+          clearAuthNextPath();
+          router.push(authNextPath);
+        } else {
+          router.push("/");
+        }
         return;
       }
 
@@ -88,7 +106,7 @@ export function useOnboardingLogic(): UseOnboardingLogicReturn {
     }, 1500); // Attendre 1.5s pour laisser le temps aux requêtes
 
     return () => clearTimeout(timer);
-  }, [proExpert, customer, router, setUser]);
+  }, [proExpert, customer, router, searchParams, setUser]);
 
   return {
     isCheckingProfiles,

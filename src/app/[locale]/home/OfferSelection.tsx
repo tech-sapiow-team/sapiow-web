@@ -298,10 +298,6 @@ export default function OfferSelection({
                   }`}
                   onClick={() => {
                     if (!hasSlotsAvailable) return;
-                    if (!isAuthenticated) {
-                      router.push("/login");
-                      return;
-                    }
                     setIsPlaning(true);
                   }}
                   disabled={!hasSlotsAvailable}

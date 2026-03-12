@@ -1,6 +1,7 @@
 import { Country, detectCountryFromPhone } from "@/constants/countries";
 import { supabase } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { setAuthNextPath } from "@/utils/authFlow";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface UseLoginReturn {
@@ -27,6 +28,7 @@ export function useLogin(): UseLoginReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Récupérer les données sauvegardées au chargement de la page
   useEffect(() => {
@@ -87,8 +89,14 @@ export function useLogin(): UseLoginReturn {
       localStorage.setItem("phoneNumber", fullPhoneNumber);
       localStorage.setItem("formattedPhone", formattedValue);
 
+      const nextPath = searchParams.get("next");
+      setAuthNextPath(nextPath);
+
       // Rediriger vers la page de vérification
-      router.push("/login/verify");
+      const verifyUrl = nextPath
+        ? `/login/verify?next=${encodeURIComponent(nextPath)}`
+        : "/login/verify";
+      router.push(verifyUrl);
     } catch (err) {
       console.error("Erreur inattendue:", err);
       setError("Une erreur inattendue s'est produite. Veuillez réessayer.");

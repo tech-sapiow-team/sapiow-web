@@ -9,7 +9,12 @@ import {
 import { useCreateProSession } from "@/api/sessions/useSessions";
 import { useUserStore } from "@/store/useUser";
 import { OnboardingExpertData, mapDomainIdToNumeric } from "@/types/onboarding";
-import { useRouter } from "next/navigation";
+import {
+  clearAuthNextPath,
+  getAuthNextPath,
+  sanitizeInternalNextPath,
+} from "@/utils/authFlow";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 export interface VisioOption {
@@ -20,6 +25,7 @@ export interface VisioOption {
 
 export const useOnboardingExpert = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setUser } = useUserStore();
   const [step, setStep] = useState(1);
   const [hasInitialized, setHasInitialized] = useState(false);
@@ -41,6 +47,8 @@ export const useOnboardingExpert = () => {
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
+  const getPostOnboardingPath = () =>
+    sanitizeInternalNextPath(searchParams.get("next")) || getAuthNextPath();
   const [visioOptions, setVisioOptions] = useState<VisioOption[]>([
     { duration: 15, enabled: false, price: "" },
     { duration: 30, enabled: false, price: "" },
@@ -236,7 +244,13 @@ export const useOnboardingExpert = () => {
 
       // Rediriger vers la page d'accueil après succès
       setUser({ type: "expert" });
-      router.push("/");
+      const nextPath = getPostOnboardingPath();
+      if (nextPath) {
+        clearAuthNextPath();
+        router.push(nextPath);
+      } else {
+        router.push("/");
+      }
     } catch (error) {
       console.error("❌ Erreur lors de l'onboarding expert:", error);
     }
@@ -320,7 +334,13 @@ export const useOnboardingExpert = () => {
 
       // Rediriger vers la page d'accueil après succès complet
       setUser({ type: "expert" });
-      router.push("/");
+      const nextPath = getPostOnboardingPath();
+      if (nextPath) {
+        clearAuthNextPath();
+        router.push(nextPath);
+      } else {
+        router.push("/");
+      }
     } catch (error) {
       console.error("❌ Erreur lors de l'onboarding expert:", error);
     }
@@ -332,7 +352,13 @@ export const useOnboardingExpert = () => {
     if (isFormValid && isDomainValid) {
       // Si les données de base sont valides, rediriger vers la racine
       setUser({ type: "expert" });
-      router.push("/");
+      const nextPath = getPostOnboardingPath();
+      if (nextPath) {
+        clearAuthNextPath();
+        router.push(nextPath);
+      } else {
+        router.push("/");
+      }
     } else {
       // Sinon, afficher un message d'erreur
       console.error("Données incomplètes pour continuer plus tard");

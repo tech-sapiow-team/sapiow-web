@@ -755,20 +755,12 @@ function ProfessionalDetailContent() {
       {!isPaid && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 xl:hidden">
           <Sheet open={isOfferSheetOpen} onOpenChange={setIsOfferSheetOpen}>
-            {isAuthenticated ? (
-              <SheetTrigger asChild>
-                <Button
-                  label={t("sessionDetail.bookSession")}
-                  className="w-full h-[48px] bg-exford-blue text-white font-bold font-figtree"
-                />
-              </SheetTrigger>
-            ) : (
+            <SheetTrigger asChild>
               <Button
                 label={t("sessionDetail.bookSession")}
                 className="w-full h-[48px] bg-exford-blue text-white font-bold font-figtree"
-                onClick={() => router.push("/login")}
               />
-            )}
+            </SheetTrigger>
             <SheetContent
               side="bottom"
               className="h-[90vh] overflow-y-auto bg-white"

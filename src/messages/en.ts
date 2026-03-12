@@ -931,6 +931,14 @@ We encourage you to review it periodically.</p>
     reserving: "Booking...",
     reserve: "Book",
     reservationError: "Booking error. Please try again.",
+    guestLoginHint: "You will confirm with your phone number right after.",
+  },
+
+  booking: {
+    resume: {
+      processing: "Finalizing your booking...",
+      slotUnavailable: "This time slot is no longer available. Please pick another one.",
+    },
   },
 
   // Payment

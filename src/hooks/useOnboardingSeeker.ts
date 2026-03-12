@@ -2,12 +2,18 @@
 import { useGetDomaines } from "@/api/domaine/useDomaine";
 import { useOnboardingSeeker as useOnboardingSeekerAPI } from "@/api/onbaording/useOnboarding";
 import { useUserStore } from "@/store/useUser";
-import { useRouter } from "next/navigation";
+import {
+  clearAuthNextPath,
+  getAuthNextPath,
+  sanitizeInternalNextPath,
+} from "@/utils/authFlow";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export const useOnboardingSeeker = () => {
   const { setUser } = useUserStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
   // États pour les étapes
   const [step, setStep] = useState(1);
 
@@ -84,7 +90,15 @@ export const useOnboardingSeeker = () => {
       submitOnboarding(onboardingData, {
         onSuccess: () => {
           // Redirection sera gérée par le composant parent
-          router.push("/");
+          const nextPath =
+            sanitizeInternalNextPath(searchParams.get("next")) ||
+            getAuthNextPath();
+          if (nextPath) {
+            clearAuthNextPath();
+            router.push(nextPath);
+          } else {
+            router.push("/");
+          }
           setUser({
             type: "client",
           });

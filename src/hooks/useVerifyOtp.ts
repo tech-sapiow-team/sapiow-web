@@ -1,6 +1,11 @@
 import { supabase } from "@/lib/supabase/client";
+import {
+  getAuthNextPath,
+  sanitizeInternalNextPath,
+  setAuthNextPath,
+} from "@/utils/authFlow";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface UseVerifyOtpReturn {
@@ -21,14 +26,24 @@ export function useVerifyOtp(): UseVerifyOtpReturn {
   const [isCodeComplete, setIsCodeComplete] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [formattedPhone, setFormattedPhone] = useState("");
+  const [authNextPath, setAuthNextPathState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
 
   // Récupérer le numéro de téléphone depuis localStorage
   useEffect(() => {
+    const nextFromQuery = sanitizeInternalNextPath(searchParams.get("next"));
+    if (nextFromQuery) {
+      setAuthNextPath(nextFromQuery);
+      setAuthNextPathState(nextFromQuery);
+    } else {
+      setAuthNextPathState(getAuthNextPath());
+    }
+
     const savedPhone = localStorage.getItem("phoneNumber");
     const savedFormatted = localStorage.getItem("formattedPhone");
 
@@ -37,9 +52,12 @@ export function useVerifyOtp(): UseVerifyOtpReturn {
       setFormattedPhone(savedFormatted || savedPhone);
     } else {
       // Rediriger vers la page de login si pas de numéro sauvegardé
-      router.push("/login");
+      const loginUrl = nextFromQuery
+        ? `/login?next=${encodeURIComponent(nextFromQuery)}`
+        : "/login";
+      router.push(loginUrl);
     }
-  }, [router]);
+  }, [router, searchParams]);
 
   // Vérifier si le code est complet
   useEffect(() => {
@@ -78,7 +96,10 @@ export function useVerifyOtp(): UseVerifyOtpReturn {
   };
 
   const handleChangeNumber = () => {
-    router.push("/login");
+    const loginUrl = authNextPath
+      ? `/login?next=${encodeURIComponent(authNextPath)}`
+      : "/login";
+    router.push(loginUrl);
   };
 
   const handleContinue = async () => {
@@ -110,7 +131,10 @@ export function useVerifyOtp(): UseVerifyOtpReturn {
         queryClient.invalidateQueries({ queryKey: ["proExpert"] });
 
         // Rediriger vers onboarding - la logique de vérification des profils se fera là-bas
-        router.push("/onboarding");
+        const onboardingUrl = authNextPath
+          ? `/onboarding?next=${encodeURIComponent(authNextPath)}`
+          : "/onboarding";
+        router.push(onboardingUrl);
       }
     } catch (err) {
       console.error("Erreur inattendue lors de la vérification:", err);

@@ -1,4 +1,5 @@
 import {
+  consumePendingBookingFromStorage,
   PendingBooking,
   clearPendingBookingStorage,
   getPendingBookingFromStorage,
@@ -12,6 +13,7 @@ interface PendingBookingStore {
   pendingBooking: PendingBooking | null;
   setPendingBooking: (booking: PendingBookingInput) => void;
   hydratePendingBooking: () => PendingBooking | null;
+  consumePendingBooking: () => PendingBooking | null;
   clearPendingBooking: () => void;
 }
 
@@ -23,6 +25,11 @@ export const usePendingBookingStore = create<PendingBookingStore>((set) => ({
   },
   hydratePendingBooking: () => {
     const booking = getPendingBookingFromStorage();
+    set({ pendingBooking: booking });
+    return booking;
+  },
+  consumePendingBooking: () => {
+    const booking = consumePendingBookingFromStorage();
     set({ pendingBooking: booking });
     return booking;
   },

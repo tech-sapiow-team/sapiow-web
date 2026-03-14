@@ -16,7 +16,7 @@ import { authUtils } from "@/utils/auth";
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface VisioPlanningCalendarProps {
   onDateTimeSelect?: (date: Date, time: string, duration: number) => void;
@@ -497,6 +497,7 @@ export default function VisioPlanningCalendar({
   );
   const [selectedTime, setSelectedTime] = useState("");
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const reserveInFlightRef = useRef(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [promoResult, setPromoResult] = useState<PromoCodeResult | null>(null);
 
@@ -629,6 +630,10 @@ export default function VisioPlanningCalendar({
     if (!selectedDate || !selectedTime || !selectedSession?.sessionId) {
       return;
     }
+    if (reserveInFlightRef.current || isRedirecting) {
+      return;
+    }
+    reserveInFlightRef.current = true;
 
     // Activer l'état de redirection pour maintenir le loader visible
     setIsRedirecting(true);
@@ -658,6 +663,7 @@ export default function VisioPlanningCalendar({
         const proId = expertData?.id;
         if (!proId) {
           setIsRedirecting(false);
+          reserveInFlightRef.current = false;
           return;
         }
 
@@ -683,6 +689,7 @@ export default function VisioPlanningCalendar({
               setIsPaid(true);
               setIsPlaning(false);
               setIsRedirecting(false);
+              reserveInFlightRef.current = false;
             } else if (data?.appointment && data?.payment) {
               // Session payante - rediriger vers la page de paiement
               setAppointmentData(data.appointment, data.payment, promoResult);
@@ -699,6 +706,7 @@ export default function VisioPlanningCalendar({
             );
             // En cas d'erreur, désactiver le loader
             setIsRedirecting(false);
+            reserveInFlightRef.current = false;
           },
         }
       );
@@ -716,6 +724,7 @@ export default function VisioPlanningCalendar({
       console.error("Erreur lors de la création de l'appointment:", error);
       // En cas d'erreur, désactiver le loader
       setIsRedirecting(false);
+      reserveInFlightRef.current = false;
     }
   };
 

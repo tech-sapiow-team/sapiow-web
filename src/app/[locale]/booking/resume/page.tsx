@@ -12,6 +12,28 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
+const RESUME_LOCK_KEY = "bookingResumeInFlight";
+const RESUME_LOCK_MAX_AGE_MS = 90 * 1000;
+
+const acquireResumeLock = () => {
+  if (typeof window === "undefined") return false;
+
+  const raw = sessionStorage.getItem(RESUME_LOCK_KEY);
+  if (raw) {
+    const lockAt = Number(raw);
+    const isFresh = Number.isFinite(lockAt) && Date.now() - lockAt < RESUME_LOCK_MAX_AGE_MS;
+    if (isFresh) return false;
+  }
+
+  sessionStorage.setItem(RESUME_LOCK_KEY, String(Date.now()));
+  return true;
+};
+
+const releaseResumeLock = () => {
+  if (typeof window === "undefined") return;
+  sessionStorage.removeItem(RESUME_LOCK_KEY);
+};
+
 function BookingResumePage() {
   const t = useTranslations();
   const router = useRouter();
@@ -19,15 +41,19 @@ function BookingResumePage() {
   const { setAppointmentData } = useAppointmentStore();
   const { setIsPaid } = usePayStore();
   const { setIsPlaning } = usePlaningStore();
-  const { hydratePendingBooking, clearPendingBooking } = usePendingBookingStore();
+  const { consumePendingBooking } = usePendingBookingStore();
   const createAppointmentMutation = useCreatePatientAppointment();
 
   useEffect(() => {
     if (hasStartedRef.current) return;
     hasStartedRef.current = true;
 
-    const pendingBooking = hydratePendingBooking();
+    const hasLock = acquireResumeLock();
+    if (!hasLock) return;
+
+    const pendingBooking = consumePendingBooking();
     if (!pendingBooking) {
+      releaseResumeLock();
       router.replace("/");
       return;
     }
@@ -42,8 +68,6 @@ function BookingResumePage() {
             ? { promo_code: pendingBooking.promo_code }
             : {}),
         });
-
-        clearPendingBooking();
 
         if (result?.appointment && result?.payment) {
           const promoForStore = pendingBooking.promo_code
@@ -65,18 +89,18 @@ function BookingResumePage() {
         router.replace(pendingBooking.returnUrl);
       } catch (error) {
         console.error("Error while resuming booking flow:", error);
-        clearPendingBooking();
         setIsPlaning(true);
         showToast.errorDirect(t("booking.resume.slotUnavailable"));
         router.replace(pendingBooking.returnUrl);
+      } finally {
+        releaseResumeLock();
       }
     };
 
     void resumeBooking();
   }, [
-    clearPendingBooking,
     createAppointmentMutation,
-    hydratePendingBooking,
+    consumePendingBooking,
     router,
     setAppointmentData,
     setIsPaid,

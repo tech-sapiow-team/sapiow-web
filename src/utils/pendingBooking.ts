@@ -75,3 +75,29 @@ export const getPendingBookingFromStorage = (): PendingBooking | null => {
   }
 };
 
+export const consumePendingBookingFromStorage = (): PendingBooking | null => {
+  if (!isBrowser()) return null;
+
+  const raw = localStorage.getItem(PENDING_BOOKING_STORAGE_KEY);
+  if (!raw) return null;
+
+  // Consommation atomique côté front: la clé est supprimée immédiatement
+  // pour empêcher toute double lecture/reprise concurrente.
+  localStorage.removeItem(PENDING_BOOKING_STORAGE_KEY);
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!isValidPendingBooking(parsed)) {
+      return null;
+    }
+
+    if (Date.now() > parsed.expiresAt) {
+      return null;
+    }
+
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+

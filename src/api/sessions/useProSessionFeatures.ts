@@ -168,13 +168,14 @@ export const useUpdateProSessionFeatures = () => {
   return useMutation<
     SessionFeaturesUpdateResponse,
     SessionFeaturesUpdateError,
-    { id: string; data: SessionFeaturesUpdate }
+    { id: string; sessionId: string; data: SessionFeaturesUpdate }
   >({
     mutationFn: async ({
       id,
       data,
     }: {
       id: string;
+      sessionId: string;
       data: SessionFeaturesUpdate;
     }) => {
       try {
@@ -205,9 +206,9 @@ export const useUpdateProSessionFeatures = () => {
       }
     },
     onSuccess: (data, variables) => {
-      // Invalider les queries pour rafraîchir les données
+      // Invalider la liste indexée par sessionId (pas l'id de la feature)
       queryClient.invalidateQueries({
-        queryKey: ["pro-session-features", variables.id],
+        queryKey: ["pro-session-features", variables.sessionId],
       });
       queryClient.invalidateQueries({
         queryKey: ["pro-session"],
@@ -228,9 +229,9 @@ export const useDeleteProSessionFeatures = () => {
   return useMutation<
     SessionFeaturesDeleteResponse,
     SessionFeaturesDeleteError,
-    string
+    { id: string; sessionId: string }
   >({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id }: { id: string; sessionId: string }) => {
       try {
         // Appel API via apiClient
         await apiClient.delete(`pro-session-features/${id}`);
@@ -252,10 +253,10 @@ export const useDeleteProSessionFeatures = () => {
         );
       }
     },
-    onSuccess: (data, id) => {
-      // Invalider les queries pour rafraîchir les données
+    onSuccess: (data, variables) => {
+      // Invalider la liste indexée par sessionId (pas l'id de la feature)
       queryClient.invalidateQueries({
-        queryKey: ["pro-session-features", id],
+        queryKey: ["pro-session-features", variables.sessionId],
       });
       queryClient.invalidateQueries({
         queryKey: ["pro-session"],

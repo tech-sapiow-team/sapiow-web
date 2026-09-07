@@ -67,19 +67,52 @@ export default function AddAccompanimentModal({
     onSessionCreated,
   });
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open && isPending) return;
+    if (!open) onClose();
+  };
+
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[540px] p-0 bg-white border-l border-light-blue-gray"
+        className="w-full sm:max-w-[540px] p-0 bg-white border-l border-light-blue-gray [&>button]:hidden"
+        onEscapeKeyDown={(event) => {
+          if (isPending) event.preventDefault();
+        }}
+        onPointerDownOutside={(event) => {
+          if (isPending) event.preventDefault();
+        }}
+        onInteractOutside={(event) => {
+          if (isPending) event.preventDefault();
+        }}
       >
-        <div className="flex flex-col h-full">
+        <div className="relative flex flex-col h-full">
+          {/* Loader bloquant non annulable pendant la sauvegarde */}
+          {isPending && (
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-white/80 backdrop-blur-[1px]">
+              <Loader2 className="h-10 w-10 animate-spin text-cobalt-blue" />
+              <p className="text-base font-medium text-exford-blue font-figtree">
+                {isEditMode ? t("offers.saving") : t("offers.creating")}
+              </p>
+            </div>
+          )}
+
           {/* Header */}
           <SheetHeader className="p-6 pb-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <SheetTitle className="text-xl font-semibold text-gray-900 font-figtree">
                 {isEditMode ? t("offers.editSession") : t("offers.addSession")}
               </SheetTitle>
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={isPending}
+                className="rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none disabled:opacity-40 cursor-pointer"
+                aria-label={t("cancel")}
+              >
+                <X className="size-4" />
+              </button>
             </div>
           </SheetHeader>
 
@@ -94,6 +127,7 @@ export default function AddAccompanimentModal({
                 onChange={(e) => handleInputChange("name", e.target.value)}
                 placeholder={t("offers.sessionNamePlaceholder")}
                 className="w-full h-[56px] p-5 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                disabled={isPending}
               />
             </div>
 
@@ -115,6 +149,7 @@ export default function AddAccompanimentModal({
                   />
                 }
                 className="w-full h-[56px] p-5 pr-11 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                disabled={isPending}
               />
             </div>
 
@@ -150,11 +185,12 @@ export default function AddAccompanimentModal({
                     }
                   }}
                   placeholder={t("offers.addFeaturePlaceholder")}
-                  className="flex-1 h-[44px] px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-figtree text-sm"
+                  className="flex-1 h-[44px] px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-figtree text-sm disabled:opacity-50"
+                  disabled={isPending}
                 />
                 <Button
                   onClick={handleAddFeature}
-                  disabled={!newFeatureName.trim()}
+                  disabled={!newFeatureName.trim() || isPending}
                   label={t("offers.add")}
                   icon={<Plus />}
                 />
@@ -191,19 +227,22 @@ export default function AddAccompanimentModal({
                             }}
                             className="flex-1 px-2 py-1 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             autoFocus
+                            disabled={isPending}
                           />
                           <div className="flex gap-2 ml-2">
                             <button
                               onClick={() => handleSaveEditFeature(index)}
-                              className="text-green-600 hover:text-green-700 transition-colors p-1 cursor-pointer"
-                              title="Sauvegarder"
+                              className="text-green-600 hover:text-green-700 transition-colors p-1 cursor-pointer disabled:opacity-40"
+                              title={t("offers.save")}
+                              disabled={isPending}
                             >
                               <Check className="w-4 h-4" />
                             </button>
                             <button
                               onClick={handleCancelEditFeature}
-                              className="text-gray-500 hover:text-gray-700 transition-colors p-1 cursor-pointer"
-                              title="Annuler"
+                              className="text-gray-500 hover:text-gray-700 transition-colors p-1 cursor-pointer disabled:opacity-40"
+                              title={t("cancel")}
+                              disabled={isPending}
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -220,15 +259,17 @@ export default function AddAccompanimentModal({
                               onClick={() =>
                                 handleStartEditFeature(index, feature.name)
                               }
-                              className="text-blue-600 hover:text-blue-700 transition-colors p-1 cursor-pointer"
-                              title="Modifier"
+                              className="text-blue-600 hover:text-blue-700 transition-colors p-1 cursor-pointer disabled:opacity-40"
+                              title={t("bankAccount.modify")}
+                              disabled={isPending}
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteFeature(index)}
-                              className="text-red-600 hover:text-red-700 transition-colors p-1 cursor-pointer"
-                              title="Supprimer"
+                              className="text-red-600 hover:text-red-700 transition-colors p-1 cursor-pointer disabled:opacity-40"
+                              title={t("offers.deleteFeature")}
+                              disabled={isPending}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -254,18 +295,19 @@ export default function AddAccompanimentModal({
               <Button
                 label={t("cancel")}
                 onClick={handleCancel}
-                className="flex-1 py-3 bg-white text-base font-bold text-gray-700 border-gray-300 hover:bg-gray-50 h-[56px] border-none shadow-none"
+                disabled={isPending}
+                className="flex-1 py-3 bg-white text-base font-bold text-gray-700 border-gray-300 hover:bg-gray-50 h-[56px] border-none shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
               />
 
               <Button
                 label={
                   isPending
                     ? isEditMode
-                      ? t("offers.editing")
+                      ? t("offers.saving")
                       : t("offers.creating")
                     : isEditMode
-                    ? t("bankAccount.modify")
-                    : t("bankAccount.add")
+                      ? t("offers.save")
+                      : t("bankAccount.add")
                 }
                 onClick={handleSubmit}
                 disabled={!isFormValid || isPending}

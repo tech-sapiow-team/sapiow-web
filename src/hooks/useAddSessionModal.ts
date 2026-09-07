@@ -14,6 +14,7 @@ import {
 } from "@/api/sessions/useSessions";
 import { apiClient } from "@/lib/api-client";
 import { showToast } from "@/utils/toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 interface UseAddSessionModalProps {
@@ -48,6 +49,8 @@ export const useAddSessionModal = ({
   const [editingFeatureName, setEditingFeatureName] = useState(""); // Nom temporaire pendant l'édition
 
   const [isLoadingSessionData, setIsLoadingSessionData] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const queryClient = useQueryClient();
 
   // Hooks API pour les features (utilisés seulement lors de la sauvegarde finale)
   const createFeatureMutation = useCreateProSessionFeatures();
@@ -182,6 +185,8 @@ export const useAddSessionModal = ({
   };
 
   const handleSubmit = async () => {
+    if (isSaving) return;
+
     // Réinitialiser les erreurs
     setErrors([]);
 
@@ -206,6 +211,8 @@ export const useAddSessionModal = ({
       setErrors(validationErrors);
       return;
     }
+
+    setIsSaving(true);
 
     try {
       let sessionId: string;
@@ -247,7 +254,10 @@ export const useAddSessionModal = ({
 
         for (const existingId of existingIds) {
           if (!localIds.includes(existingId)) {
-            await deleteFeatureMutation.mutateAsync(existingId);
+            await deleteFeatureMutation.mutateAsync({
+              id: existingId,
+              sessionId,
+            });
             console.log("✅ Feature supprimée:", existingId);
           }
         }
@@ -262,6 +272,7 @@ export const useAddSessionModal = ({
             if (existingFeature) {
               await updateFeatureMutation.mutateAsync({
                 id: feature.id,
+                sessionId,
                 data: { name: feature.name },
               });
               console.log("✅ Feature mise à jour:", feature.name);
@@ -301,11 +312,31 @@ export const useAddSessionModal = ({
         }
       }
 
+      // Rafraîchir immédiatement la liste des features et l'expert
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["pro-session-features", sessionId],
+        }),
+        queryClient.invalidateQueries({ queryKey: ["proExpert"] }),
+      ]);
+
       if (onSuccess) {
         onSuccess(sessionData);
       }
 
-      handleCancel();
+      // Réinitialiser et fermer sans passer par handleCancel
+      // (qui refuse la fermeture pendant isSaving)
+      setFormData({
+        name: "",
+        price: "",
+        session_nature: "subscription" as const,
+      });
+      setLocalFeatures([]);
+      setNewFeatureName("");
+      setErrors([]);
+      setEditingFeatureIndex(null);
+      setEditingFeatureName("");
+      onClose();
     } catch (error: any) {
       showToast.error(error.message);
       setErrors([
@@ -314,10 +345,14 @@ export const useAddSessionModal = ({
             ? "Erreur lors de la modification de la session"
             : "Erreur lors de la création de la session"),
       ]);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleCancel = () => {
+    if (isSaving) return;
+
     // Réinitialiser le formulaire
     setFormData({
       name: "",
@@ -384,13 +419,21 @@ export const useAddSessionModal = ({
     }
   };
 
+  const isPending =
+    isSaving ||
+    createSessionMutation.isPending ||
+    updateSessionMutation.isPending ||
+    createFeatureMutation.isPending ||
+    updateFeatureMutation.isPending ||
+    deleteFeatureMutation.isPending ||
+    isLoadingSessionData;
+
   const isFormValid =
     formData.name.trim() !== "" &&
     formData.price.trim() !== "" &&
     !isNaN(parseFloat(formData.price)) &&
     parseFloat(formData.price) > 0 &&
-    !createSessionMutation.isPending &&
-    !updateSessionMutation.isPending;
+    !isPending;
 
   return {
     // États
@@ -403,10 +446,7 @@ export const useAddSessionModal = ({
     editingFeatureName,
 
     // États de chargement
-    isPending:
-      createSessionMutation.isPending ||
-      updateSessionMutation.isPending ||
-      isLoadingSessionData,
+    isPending,
     isLoadingFeatures,
 
     // Handlers

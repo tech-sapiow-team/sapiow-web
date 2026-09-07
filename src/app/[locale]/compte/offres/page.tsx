@@ -121,6 +121,20 @@ export default function OffresPage() {
       return;
     }
 
+    // Mise à jour optimiste : retirer immédiatement l'offre de l'UI
+    const previousExpertData = queryClient.getQueryData(["proExpert"]);
+    queryClient.setQueryData(["proExpert"], (old: any) => {
+      if (!old?.sessions) return old;
+      return {
+        ...old,
+        sessions: old.sessions.map((session: any) =>
+          session.id === sessionId
+            ? { ...session, is_active: false }
+            : session
+        ),
+      };
+    });
+
     try {
       // "Supprimer" en mettant is_active à false avec toutes les données requises
       await updateSessionMutation.mutateAsync({
@@ -145,8 +159,15 @@ export default function OffresPage() {
       console.log("Session désactivée avec succès");
 
       // Invalider le cache pour forcer le rechargement des données
-      queryClient.invalidateQueries({ queryKey: ["proExpert"] });
+      await queryClient.invalidateQueries({ queryKey: ["proExpert"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["pro-session-features", sessionId],
+      });
     } catch (error: any) {
+      // Rollback en cas d'erreur
+      if (previousExpertData !== undefined) {
+        queryClient.setQueryData(["proExpert"], previousExpertData);
+      }
       console.error("Erreur lors de la suppression:", error);
     }
   };

@@ -799,6 +799,8 @@ export default {
       "✅ Session created! You can now add features below.",
     creating: "Creating...",
     editing: "Editing...",
+    save: "Save",
+    saving: "Saving...",
     // Offer Selection
     chooseOffer: "Choose an offer",
     singleSessions: "Single sessions",

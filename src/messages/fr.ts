@@ -811,6 +811,8 @@ export default {
       "✅ Session créée ! Vous pouvez maintenant ajouter des fonctionnalités ci-dessous.",
     creating: "Création...",
     editing: "Modification...",
+    save: "Sauvegarder",
+    saving: "Sauvegarde...",
     // Offer Selection
     chooseOffer: "Choisissez une offre",
     singleSessions: "Sessions uniques",

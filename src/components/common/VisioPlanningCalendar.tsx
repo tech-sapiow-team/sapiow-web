@@ -490,7 +490,9 @@ export default function VisioPlanningCalendar({
         value: parseInt(session.session_type.replace("m", "")),
         price: session.price,
         sessionId: session.id,
-      })) || [];
+      }))
+      .sort((a: { value: number }, b: { value: number }) => a.value - b.value) ||
+    [];
 
   const [selectedDuration, setSelectedDuration] = useState(
     availableDurations[0]?.value || 15

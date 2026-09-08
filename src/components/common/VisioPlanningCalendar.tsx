@@ -37,6 +37,9 @@ const dayOfWeekMapping = {
   6: "saturday",
 };
 
+// Durées standard proposées, même si l'expert ne les a pas configurées
+const ALL_DURATIONS = [15, 30, 45, 60];
+
 // Fonction utilitaire pour obtenir une clé de date locale (YYYY-MM-DD)
 const getLocalDateKey = (date: Date) => {
   const year = date.getFullYear();
@@ -443,27 +446,50 @@ export default function VisioPlanningCalendar({
   const createAppointmentMutation = useCreatePatientAppointment();
 
   // Créer les durées dynamiques basées sur les sessions de l'expert
+  const availableDurations = useMemo(
+    () =>
+      expertData?.sessions
+        ?.filter((session: any) => session.session_type && session.is_active)
+        .map((session: any) => ({
+          label:
+            session.session_type === "15m"
+              ? "15 min"
+              : session.session_type === "30m"
+              ? "30 min"
+              : session.session_type === "45m"
+              ? "45 min"
+              : session.session_type === "60m"
+              ? "60 min"
+              : `${session.session_type}`,
+          value: parseInt(session.session_type.replace("m", "")),
+          price: session.price,
+          sessionId: session.id,
+        }))
+        .sort(
+          (a: { value: number }, b: { value: number }) => a.value - b.value
+        ) || [],
+    [expertData?.sessions]
+  );
 
-  const availableDurations =
-    expertData?.sessions
-      ?.filter((session: any) => session.session_type && session.is_active)
-      .map((session: any) => ({
-        label:
-          session.session_type === "15m"
-            ? "15 min"
-            : session.session_type === "30m"
-            ? "30 min"
-            : session.session_type === "45m"
-            ? "45 min"
-            : session.session_type === "60m"
-            ? "60 min"
-            : `${session.session_type}`,
-        value: parseInt(session.session_type.replace("m", "")),
-        price: session.price,
-        sessionId: session.id,
-      }))
-      .sort((a: { value: number }, b: { value: number }) => a.value - b.value) ||
-    [];
+  const durationOptions = useMemo(() => {
+    const configured = new Map<number, any>(
+      availableDurations.map((d: any) => [d.value, d])
+    );
+    const values = Array.from(
+      new Set([...ALL_DURATIONS, ...configured.keys()])
+    ).sort((a, b) => a - b);
+
+    return values.map((value) => {
+      const match = configured.get(value);
+      return {
+        value,
+        label: `${value} min`,
+        isAvailable: Boolean(match),
+        sessionId: match?.sessionId,
+        price: match?.price,
+      };
+    });
+  }, [availableDurations]);
 
   const [selectedDuration, setSelectedDuration] = useState(
     availableDurations[0]?.value || 15
@@ -973,40 +999,37 @@ export default function VisioPlanningCalendar({
               : "Video call duration"}
           </h3>
           <div className="flex gap-2">
-            {availableDurations.map((duration: any) => (
-              <button
-                key={duration.value}
-                onClick={() => {
-                  if (duration.value === selectedDuration) return;
-                  autoSelectedForRef.current = null;
-                  setIsInitializing(true);
-                  setSelectedDuration(duration.value);
-                  setSelectedTime("");
-                }}
-                disabled={
-                  createAppointmentMutation.isPending ||
-                  isRedirecting ||
-                  isInitializing
-                }
-                className={`
-                rounded-lg text-base font-bold transition-colors w-[80px] h-[40px] cursor-pointer
-                ${
-                  selectedDuration === duration.value
-                    ? "bg-cobalt-blue text-white"
-                    : "bg-[#F0F6FF] text-[#003B87] hover:bg-[#F0F6FF]"
-                }
-                ${
-                  createAppointmentMutation.isPending ||
-                  isRedirecting ||
-                  isInitializing
-                    ? "cursor-not-allowed"
-                    : ""
-                }
-              `}
-              >
-                {duration.label}
-              </button>
-            ))}
+            {durationOptions.map((duration) => {
+              const isDisabled =
+                !duration.isAvailable ||
+                createAppointmentMutation.isPending ||
+                isRedirecting ||
+                isInitializing;
+
+              return (
+                <button
+                  key={duration.value}
+                  onClick={() => {
+                    if (!duration.isAvailable) return;
+                    if (duration.value === selectedDuration) return;
+                    autoSelectedForRef.current = null;
+                    setIsInitializing(true);
+                    setSelectedDuration(duration.value);
+                    setSelectedTime("");
+                  }}
+                  disabled={isDisabled}
+                  className={`rounded-lg text-base font-bold transition-colors w-[80px] h-[40px] ${
+                    !duration.isAvailable
+                      ? "bg-[#F5F5F5] text-gray-400 opacity-60 cursor-not-allowed"
+                      : selectedDuration === duration.value
+                      ? "bg-cobalt-blue text-white cursor-pointer"
+                      : "bg-[#F0F6FF] text-[#003B87] hover:bg-[#F0F6FF] cursor-pointer"
+                  } ${isDisabled ? "cursor-not-allowed" : ""}`}
+                >
+                  {duration.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

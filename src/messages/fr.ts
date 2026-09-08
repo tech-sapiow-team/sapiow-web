@@ -820,7 +820,6 @@ export default {
     perfectForSpecificQuestions: "Parfait pour des questions spécifiques",
     startingFrom: "À partir de",
     viewTimeSlots: "Voir les créneaux",
-    noSlotsAvailable: "Aucun créneau disponible",
     monthlySubscriptions: "Abonnements mensuels",
     chooseAndPay: "Choisir et payer",
     creatingAppointment: "En cours...",

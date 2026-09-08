@@ -808,7 +808,6 @@ export default {
     perfectForSpecificQuestions: "Perfect for specific questions",
     startingFrom: "Starting from",
     viewTimeSlots: "View time slots",
-    noSlotsAvailable: "No slots available",
     monthlySubscriptions: "Monthly subscriptions",
     chooseAndPay: "Choose and pay",
     creatingAppointment: "In progress...",

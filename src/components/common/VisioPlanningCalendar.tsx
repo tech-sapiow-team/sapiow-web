@@ -152,48 +152,7 @@ const generateTimeSlots = (
         // Créer une date complète pour ce créneau en combinant la date sélectionnée avec l'heure du créneau
         const slotDateTime = new Date(selectedDate);
         const [hours, minutes] = timeString.split(":");
-        const slotHour = parseInt(hours);
-        const slotMinute = parseInt(minutes);
-        slotDateTime.setHours(slotHour, slotMinute, 0, 0);
-
-        // Bloquer les créneaux nocturnes problématiques tout en gardant les créneaux matinaux normaux
-
-        // Cas 1: Créneaux qui commencent entre 00h31 et 00h59 (après minuit mais avant 01h00)
-        if (slotHour === 0 && slotMinute > 30) {
-          currentTime = nextTime;
-          continue;
-        }
-
-        // Cas 2: Créneaux nocturnes problématiques (01h00 à 05h59)
-        // Permettre les créneaux matinaux normaux à partir de 06h00
-        if (slotHour >= 1 && slotHour < 6) {
-          currentTime = nextTime;
-          continue;
-        }
-
-        // Cas 3: Créneaux qui commencent entre 00h00 et 00h30 mais se terminent après 00h30
-        if (slotHour === 0 && slotMinute <= 30) {
-          const slotEndMinutes = slotMinute + duration;
-          if (slotEndMinutes > 30) {
-            currentTime = nextTime;
-            continue;
-          }
-        }
-
-        // Cas 4: Créneaux qui commencent avant minuit mais se terminent après 00h30
-        if (slotHour >= 12) {
-          const slotEndTime = new Date(
-            slotDateTime.getTime() + duration * 60 * 1000
-          );
-          const maxTime = new Date(selectedDate);
-          maxTime.setHours(0, 30, 0, 0); // 00h30
-          maxTime.setDate(maxTime.getDate() + 1); // Le lendemain à 00h30
-
-          if (slotEndTime > maxTime) {
-            currentTime = nextTime;
-            continue;
-          }
-        }
+        slotDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
         // Obtenir l'heure actuelle pour filtrer les créneaux passés
         const now = new Date();
@@ -452,11 +411,23 @@ export default function VisioPlanningCalendar({
 
   const searchParams = useSearchParams();
   const expertId = searchParams.get("id");
-  const { data: appointments } = useGetProAppointments(expertId?.toString());
+  const proId = expertData?.id?.toString() ?? expertId ?? undefined;
+  const { data: appointments, isLoading: isLoadingAppointments } =
+    useGetProAppointments(proId);
 
   // Nouvelles données pour la gestion des jours autorisés / bloqués
-  const appointmentAllowDays = expertData?.appointment_allow_day || [];
-  const appointmentBlocks = expertData?.appointment_blocks || [];
+  const appointmentAllowDays = useMemo(
+    () => expertData?.appointment_allow_day ?? [],
+    [expertData?.appointment_allow_day]
+  );
+  const appointmentBlocks = useMemo(
+    () => expertData?.appointment_blocks ?? [],
+    [expertData?.appointment_blocks]
+  );
+  const appointmentList = useMemo(
+    () => (Array.isArray(appointments) ? appointments : []),
+    [appointments]
+  );
 
   const { setIsPlaning } = usePlaningStore();
   const { setIsPaid } = usePayStore();
@@ -499,7 +470,10 @@ export default function VisioPlanningCalendar({
   );
   const [selectedTime, setSelectedTime] = useState("");
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const reserveInFlightRef = useRef(false);
+  const autoSelectedForRef = useRef<number | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [promoResult, setPromoResult] = useState<PromoCodeResult | null>(null);
 
@@ -583,7 +557,7 @@ export default function VisioPlanningCalendar({
       expertData?.schedules || [],
       selectedDateTime,
       selectedDuration,
-      Array.isArray(appointments) ? appointments : [],
+      appointmentList,
       allowedWindowsForDate,
       expertData?.sessions || []
     );
@@ -591,10 +565,11 @@ export default function VisioPlanningCalendar({
     return slots;
   }, [
     expertData?.schedules,
+    expertData?.sessions,
     currentDate,
     selectedDate,
     selectedDuration,
-    appointments,
+    appointmentList,
     appointmentAllowDays,
     appointmentBlocks,
   ]);
@@ -608,6 +583,8 @@ export default function VisioPlanningCalendar({
   };
 
   const navigateMonth = (direction: "prev" | "next") => {
+    setIsLoadingSlots(true);
+    setSelectedTime("");
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
       if (direction === "prev") {
@@ -623,10 +600,26 @@ export default function VisioPlanningCalendar({
   };
 
   const handleDateClick = (day: number) => {
+    if (day === selectedDate) return;
+    setIsLoadingSlots(true);
     setSelectedDate(day);
     // Réinitialiser le temps sélectionné quand on change de date
     setSelectedTime("");
   };
+
+  // Afficher brièvement le loader des créneaux après un changement de date / mois
+  useEffect(() => {
+    if (isInitializing || !isLoadingSlots) return;
+    const timer = window.setTimeout(() => setIsLoadingSlots(false), 200);
+    return () => window.clearTimeout(timer);
+  }, [
+    selectedDate,
+    currentDate,
+    selectedDuration,
+    timeSlots,
+    isInitializing,
+    isLoadingSlots,
+  ]);
 
   const handleReserve = async () => {
     if (!selectedDate || !selectedTime || !selectedSession?.sessionId) {
@@ -759,13 +752,10 @@ export default function VisioPlanningCalendar({
       expertData?.schedules || [],
       date,
       selectedDuration,
-      Array.isArray(appointments) ? appointments : [],
+      appointmentList,
       allowedWindowsForDate,
       expertData?.sessions || []
     );
-
-    // Filtrer les créneaux disponibles (non pris)
-    const availableSlots = slots.filter((slot: any) => slot.available);
 
     // Retourner true s'il y a au moins un créneau disponible
     return slots.some((slot: any) => slot.available);
@@ -775,10 +765,14 @@ export default function VisioPlanningCalendar({
   // Ce hook recherche automatiquement la première date avec des créneaux disponibles,
   // même si elle se trouve dans plusieurs mois dans le futur
   useEffect(() => {
-    // Ne s'exécuter que si les données nécessaires sont chargées
-    if (!expertData?.schedules && !appointmentAllowDays?.length) {
-      return;
-    }
+    // Attendre le chargement des rendez-vous existants pour éviter un flash de disponibilités incorrectes
+    if (isLoadingAppointments) return;
+    if (!expertData) return;
+
+    // Ne relancer la recherche complète qu'une fois par durée sélectionnée
+    // (évite de ramener l'utilisateur en arrière après navigation manuelle / refetch)
+    if (autoSelectedForRef.current === selectedDuration) return;
+    autoSelectedForRef.current = selectedDuration;
 
     // Date de référence : aujourd'hui à minuit (pour comparer les dates sans tenir compte de l'heure)
     const todayAtMidnight = new Date(
@@ -820,35 +814,36 @@ export default function VisioPlanningCalendar({
       return { day: 1, found: false };
     };
 
-    // Étape 1 : Chercher dans le mois actuellement affiché
-    const resultCurrentMonth = findFirstAvailableDateInMonth(currentDate);
+    const searchFrom = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    // Étape 1 : Chercher dans le mois courant
+    const resultCurrentMonth = findFirstAvailableDateInMonth(searchFrom);
 
     if (resultCurrentMonth.found) {
-      // Date trouvée dans le mois actuel
+      setCurrentDate(searchFrom);
       setSelectedDate(resultCurrentMonth.day);
       setSelectedTime("");
+      setIsInitializing(false);
       return;
     }
 
     // Étape 2 : Si aucune date trouvée, chercher dans les mois suivants
     // On cherche jusqu'à 24 mois dans le futur
-    let searchDate = new Date(currentDate);
     const maxMonthsToSearch = 24;
 
     for (let monthOffset = 1; monthOffset <= maxMonthsToSearch; monthOffset++) {
-      searchDate = new Date(currentDate);
-      searchDate.setMonth(currentDate.getMonth() + monthOffset);
+      const searchDate = new Date(searchFrom);
+      searchDate.setMonth(searchFrom.getMonth() + monthOffset);
 
       const result = findFirstAvailableDateInMonth(searchDate);
 
       if (result.found) {
-        // Date trouvée dans un mois futur !
-        // Naviguer automatiquement vers ce mois
         setCurrentDate(
           new Date(searchDate.getFullYear(), searchDate.getMonth(), 1)
         );
         setSelectedDate(result.day);
         setSelectedTime("");
+        setIsInitializing(false);
         return;
       }
     }
@@ -858,11 +853,13 @@ export default function VisioPlanningCalendar({
     if (selectedDate === null) {
       setSelectedDate(1);
     }
+    setIsInitializing(false);
   }, [
-    expertData?.schedules,
+    isLoadingAppointments,
+    expertData,
     appointmentAllowDays,
     appointmentBlocks,
-    appointments,
+    appointmentList,
     selectedDuration,
   ]);
 
@@ -979,8 +976,18 @@ export default function VisioPlanningCalendar({
             {availableDurations.map((duration: any) => (
               <button
                 key={duration.value}
-                onClick={() => setSelectedDuration(duration.value)}
-                disabled={createAppointmentMutation.isPending || isRedirecting}
+                onClick={() => {
+                  if (duration.value === selectedDuration) return;
+                  autoSelectedForRef.current = null;
+                  setIsInitializing(true);
+                  setSelectedDuration(duration.value);
+                  setSelectedTime("");
+                }}
+                disabled={
+                  createAppointmentMutation.isPending ||
+                  isRedirecting ||
+                  isInitializing
+                }
                 className={`
                 rounded-lg text-base font-bold transition-colors w-[80px] h-[40px] cursor-pointer
                 ${
@@ -989,7 +996,9 @@ export default function VisioPlanningCalendar({
                     : "bg-[#F0F6FF] text-[#003B87] hover:bg-[#F0F6FF]"
                 }
                 ${
-                  createAppointmentMutation.isPending || isRedirecting
+                  createAppointmentMutation.isPending ||
+                  isRedirecting ||
+                  isInitializing
                     ? "cursor-not-allowed"
                     : ""
                 }
@@ -1001,54 +1010,71 @@ export default function VisioPlanningCalendar({
           </div>
         </div>
 
-        {/* Navigation du calendrier */}
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => navigateMonth("prev")}
-            className="p-1 hover:bg-gray-100 rounded"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600 cursor-pointer" />
-          </button>
-          <h3 className="text-lg font-semibold text-gray-900">
-            {months[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </h3>
-          <button
-            onClick={() => navigateMonth("next")}
-            className="p-1 hover:bg-gray-100 rounded"
-          >
-            <ChevronRight className="w-5 h-5 text-gray-600 cursor-pointer" />
-          </button>
-        </div>
-
-        {/* Jours de la semaine */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {daysOfWeek.map((day) => (
-            <div key={day} className="p-2 text-center">
-              <span className="text-xs font-medium text-gray-500">{day}</span>
+        {isInitializing ? (
+          <div className="mb-6 flex flex-col items-center justify-center gap-3 py-16">
+            <Loader2 className="h-10 w-10 animate-spin text-cobalt-blue" />
+            <p className="text-sm text-gray-500">
+              {currentLocale === "fr"
+                ? "Chargement des disponibilités..."
+                : "Loading availability..."}
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Navigation du calendrier */}
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => navigateMonth("prev")}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronLeft className="w-5 h-5 text-gray-600 cursor-pointer" />
+              </button>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {months[currentDate.getMonth()]} {currentDate.getFullYear()}
+              </h3>
+              <button
+                onClick={() => navigateMonth("next")}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronRight className="w-5 h-5 text-gray-600 cursor-pointer" />
+              </button>
             </div>
-          ))}
-        </div>
 
-        {/* Grille du calendrier */}
-        <div className="grid grid-cols-7 gap-1 mb-6">
-          {renderCalendarDays()}
-        </div>
+            {/* Jours de la semaine */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {daysOfWeek.map((day) => (
+                <div key={day} className="p-2 text-center">
+                  <span className="text-xs font-medium text-gray-500">
+                    {day}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-        {/* Créneaux horaires */}
-        <div className="mb-6">
-          <h3 className="text-sm font-bold text-[#1F2937] mb-3">
-            {currentLocale === "fr"
-              ? "Créneaux disponibles"
-              : "Available slots"}
-          </h3>
-          {timeSlots.length > 0 ? (
-            <div className="grid grid-cols-3 justify-center gap-2 time-slots-grid">
-              {timeSlots.map((slot: any) => (
-                <button
-                  key={slot.time}
-                  onClick={() => setSelectedTime(slot.time)}
-                  disabled={!slot.available}
-                  className={`
+            {/* Grille du calendrier */}
+            <div className="grid grid-cols-7 gap-1 mb-6">
+              {renderCalendarDays()}
+            </div>
+
+            {/* Créneaux horaires */}
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-[#1F2937] mb-3">
+                {currentLocale === "fr"
+                  ? "Créneaux disponibles"
+                  : "Available slots"}
+              </h3>
+              {isLoadingSlots ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-cobalt-blue" />
+                </div>
+              ) : timeSlots.length > 0 ? (
+                <div className="grid grid-cols-3 justify-center gap-2 time-slots-grid">
+                  {timeSlots.map((slot: any) => (
+                    <button
+                      key={slot.time}
+                      onClick={() => setSelectedTime(slot.time)}
+                      disabled={!slot.available}
+                      className={`
                   relative p-3 rounded-lg text-sm font-medium transition-all w-[110px] cursor-pointer
                   ${
                     selectedTime === slot.time
@@ -1058,31 +1084,33 @@ export default function VisioPlanningCalendar({
                       : "bg-gray-50 text-gray-400 cursor-not-allowed"
                   }
                 ${slot.status === "taken" ? "text-left" : ""}`}
-                >
-                  {slot.time}
-                  {slot.status && (
-                    <span className="absolute top-3 left-[41%] w-[57px] h-[22px] bg-[#94A3B8] text-white text-[10px] font-bold rounded-[8px] flex justify-center items-center">
-                      {currentLocale === "fr" ? "Complet" : "Full"}
-                    </span>
-                  )}
-                </button>
-              ))}
+                    >
+                      {slot.time}
+                      {slot.status && (
+                        <span className="absolute top-3 left-[41%] w-[57px] h-[22px] bg-[#94A3B8] text-white text-[10px] font-bold rounded-[8px] flex justify-center items-center">
+                          {currentLocale === "fr" ? "Complet" : "Full"}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 text-sm">
+                    {currentLocale === "fr"
+                      ? "Aucun créneau disponible pour ce jour."
+                      : "No slots available for this day."}
+                  </p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    {currentLocale === "fr"
+                      ? "Veuillez sélectionner une autre date."
+                      : "Please select another date."}
+                  </p>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500 text-sm">
-                {currentLocale === "fr"
-                  ? "Aucun créneau disponible pour ce jour."
-                  : "No slots available for this day."}
-              </p>
-              <p className="text-gray-400 text-xs mt-1">
-                {currentLocale === "fr"
-                  ? "Veuillez sélectionner une autre date."
-                  : "Please select another date."}
-              </p>
-            </div>
-          )}
-        </div>
+          </>
+        )}
 
         {/* Résumé et bouton de réservation */}
         <div className="border-t pt-4">
@@ -1165,6 +1193,7 @@ export default function VisioPlanningCalendar({
             }
             onClick={handleReserve}
             disabled={
+              isInitializing ||
               timeSlots.length === 0 ||
               !selectedTime ||
               !selectedSession?.sessionId ||
@@ -1172,6 +1201,7 @@ export default function VisioPlanningCalendar({
               isRedirecting
             }
             className={`w-full h-12 font-medium rounded-lg transition-all ${
+              isInitializing ||
               timeSlots.length === 0 ||
               !selectedTime ||
               !selectedSession?.sessionId ||

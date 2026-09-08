@@ -1,8 +1,5 @@
 "use client";
-import {
-  useCreatePatientAppointment,
-  useGetProAppointments,
-} from "@/api/appointments/useAppointments";
+import { useCreatePatientAppointment } from "@/api/appointments/useAppointments";
 import { Button } from "@/components/common/Button";
 import {
   PromoCodeInput,
@@ -23,53 +20,6 @@ interface OfferSelectionProps {
   price: string;
   expertData?: any; // Données de l'expert avec ses sessions
 }
-
-// Mapping des jours de la semaine
-const dayOfWeekMapping = {
-  0: "sunday",
-  1: "monday",
-  2: "tuesday",
-  3: "wednesday",
-  4: "thursday",
-  5: "friday",
-  6: "saturday",
-};
-
-// Fonction pour vérifier s'il y a des créneaux disponibles
-const hasAnyAvailableSlots = (
-  schedules: any[],
-  existingAppointments: any[] = []
-) => {
-  if (!schedules || schedules.length === 0) return false;
-
-  const today = new Date();
-  const todayAtMidnight = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
-  );
-
-  // Vérifier les 30 prochains jours
-  for (let i = 0; i < 30; i++) {
-    const checkDate = new Date(todayAtMidnight);
-    checkDate.setDate(checkDate.getDate() + i);
-
-    const dayOfWeek =
-      dayOfWeekMapping[checkDate.getDay() as keyof typeof dayOfWeekMapping];
-
-    // Trouver les schedules pour ce jour
-    const daySchedules = schedules.filter(
-      (schedule) => schedule.day_of_week === dayOfWeek
-    );
-
-    if (daySchedules.length > 0) {
-      // Si on trouve au moins un jour avec des schedules, il y a des créneaux
-      return true;
-    }
-  }
-
-  return false;
-};
 
 export default function OfferSelection({
   price,
@@ -111,19 +61,6 @@ export default function OfferSelection({
     const num = Number(normalized);
     return Number.isFinite(num) ? num : 0;
   };
-
-  // Récupérer les rendez-vous existants pour vérifier les créneaux
-  const { data: appointments } = useGetProAppointments(
-    expertData?.id?.toString()
-  );
-
-  // Vérifier s'il y a des créneaux disponibles
-  const hasSlotsAvailable = useMemo(() => {
-    return hasAnyAvailableSlots(
-      expertData?.schedules || [],
-      Array.isArray(appointments) ? appointments : []
-    );
-  }, [expertData?.schedules, appointments]);
 
   // Vérifier l'authentification au chargement du composant
   useEffect(() => {
@@ -286,21 +223,9 @@ export default function OfferSelection({
 
               {selectedOption === "session" && (
                 <Button
-                  label={
-                    hasSlotsAvailable
-                      ? t("offers.viewTimeSlots")
-                      : t("offers.noSlotsAvailable")
-                  }
-                  className={`w-full h-[56px] rounded-[8px] ${
-                    hasSlotsAvailable
-                      ? "bg-cobalt-blue hover:bg-cobalt-blue/80 text-white"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-                  onClick={() => {
-                    if (!hasSlotsAvailable) return;
-                    setIsPlaning(true);
-                  }}
-                  disabled={!hasSlotsAvailable}
+                  label={t("offers.viewTimeSlots")}
+                  className="w-full h-[56px] rounded-[8px] bg-cobalt-blue hover:bg-cobalt-blue/80 text-white"
+                  onClick={() => setIsPlaning(true)}
                 />
               )}
             </CardContent>

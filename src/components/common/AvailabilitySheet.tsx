@@ -19,6 +19,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useTimeSlotsManager } from "@/hooks/useTimeSlotsManager";
 import { useProExpertStore } from "@/store/useProExpert";
+import { formatDateToLocalISO } from "@/utils/dateUtils";
 import { Check, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -321,12 +322,12 @@ export default function AvailabilitySheet({
       // 1. Sauvegarder la période de disponibilité (seulement si les dates sont remplies)
       if (availabilityPeriod.startDate && availabilityPeriod.endDate) {
         await updateProExpertMutation.mutateAsync({
-          availability_start_date: availabilityPeriod.startDate
-            .toISOString()
-            .split("T")[0],
-          availability_end_date: availabilityPeriod.endDate
-            .toISOString()
-            .split("T")[0],
+          availability_start_date: formatDateToLocalISO(
+            availabilityPeriod.startDate
+          ),
+          availability_end_date: formatDateToLocalISO(
+            availabilityPeriod.endDate
+          ),
         });
 
         setAvailabilityPeriod({

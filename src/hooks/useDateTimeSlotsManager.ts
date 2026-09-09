@@ -7,6 +7,11 @@ import {
 import { useUpdateProExpert } from "@/api/proExpert/useProExpert";
 import { useProExpertStore } from "@/store/useProExpert";
 import { useTimeSlotsStore } from "@/store/useTimeSlotsStore";
+import { convertApiTimeToUITime } from "@/types/schedule";
+import {
+  formatDateToLocalISO,
+  localDateTimeToUtcISO,
+} from "@/utils/dateUtils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -88,21 +93,16 @@ export const useDateTimeSlotsManager = ({
     );
   };
 
-  // Convertir une date en format ISO (YYYY-MM-DD)
-  const formatDateToISO = (date: Date): string => {
-    return date.toISOString().split("T")[0];
-  };
-
-  // Convertir heure format "9h30" vers "09:30:00"
-  const formatTimeToAPI = (time: string): string => {
-    const [hour, minutes] = time.replace("h", ":").split(":");
-    return `${hour.padStart(2, "0")}:${minutes || "00"}:00`;
-  };
-
-  // Convertir heure format "09:30:00" vers "9h30"
-  const formatTimeFromAPI = (time: string): string => {
-    const [hour, minutes] = time.split(":");
-    return `${parseInt(hour)}h${minutes}`;
+  // Convertir un instant UTC renvoyé par la base en heure murale locale ("9h30")
+  const formatTimeFromAPI = (isoTimestamp: string): string => {
+    const instant = new Date(isoTimestamp);
+    if (isNaN(instant.getTime())) {
+      return "";
+    }
+    return `${instant.getHours()}h${String(instant.getMinutes()).padStart(
+      2,
+      "0"
+    )}`;
   };
 
   // Charger les créneaux pour la date sélectionnée
@@ -112,19 +112,22 @@ export const useDateTimeSlotsManager = ({
       return;
     }
 
-    const dateStr = formatDateToISO(selectedDate);
+    const dateStr = formatDateToLocalISO(selectedDate);
 
     // 1. Chercher les créneaux spécifiques pour cette date
+    // La base renvoie des instants UTC: on les interprète en heure locale
+    // avant de comparer le jour et d'afficher l'heure.
     const specificSlots = allowDays
       ? allowDays
           .filter((allowDay) => {
-            const startDate = allowDay.start_date.split("T")[0];
-            return startDate === dateStr;
+            const startDate = new Date(allowDay.start_date);
+            if (isNaN(startDate.getTime())) return false;
+            return formatDateToLocalISO(startDate) === dateStr;
           })
           .map((allowDay) => ({
             id: String(allowDay.id), // Convertir en string pour cohérence
-            startTime: formatTimeFromAPI(allowDay.start_date.split("T")[1]),
-            endTime: formatTimeFromAPI(allowDay.end_date.split("T")[1]),
+            startTime: formatTimeFromAPI(allowDay.start_date),
+            endTime: formatTimeFromAPI(allowDay.end_date),
             isNew: false,
           }))
       : [];
@@ -200,11 +203,10 @@ export const useDateTimeSlotsManager = ({
     const slotsToPersist = timeSlots.filter((slot) => slot.isRecurring);
     if (slotsToPersist.length === 0) return;
 
-    const dateStr = formatDateToISO(selectedDate);
-
     for (const slot of slotsToPersist) {
-      const startDateTime = `${dateStr}T${formatTimeToAPI(slot.startTime)}`;
-      const endDateTime = `${dateStr}T${formatTimeToAPI(slot.endTime)}`;
+      const startDateTime = localDateTimeToUtcISO(selectedDate, slot.startTime);
+      const endDateTime = localDateTimeToUtcISO(selectedDate, slot.endTime);
+      if (!startDateTime || !endDateTime) continue;
 
       await createSilentMutation.mutateAsync({
         start_date: startDateTime,
@@ -254,10 +256,13 @@ export const useDateTimeSlotsManager = ({
     // Ajouter localement immédiatement
     setTimeSlots((prev) => [...prev, newSlot]);
 
-    // Préparer les dates au format ISO
-    const dateStr = formatDateToISO(selectedDate);
-    const startDateTime = `${dateStr}T${formatTimeToAPI(startTime)}`;
-    const endDateTime = `${dateStr}T${formatTimeToAPI(endTime)}`;
+    // Préparer les instants UTC à envoyer à la base
+    const startDateTime = localDateTimeToUtcISO(selectedDate, startTime);
+    const endDateTime = localDateTimeToUtcISO(selectedDate, endTime);
+    if (!startDateTime || !endDateTime) {
+      setTimeSlots((prev) => prev.filter((s) => s.id !== tempId));
+      return;
+    }
 
     // Sauvegarder automatiquement
     try {
@@ -321,14 +326,16 @@ export const useDateTimeSlotsManager = ({
       return;
     }
 
-    // Préparer les dates au format ISO
-    const dateStr = formatDateToISO(selectedDate);
-    const startDateTime = `${dateStr}T${formatTimeToAPI(
+    // Préparer les instants UTC à envoyer à la base
+    const startDateTime = localDateTimeToUtcISO(
+      selectedDate,
       slotWithNewValue.startTime
-    )}`;
-    const endDateTime = `${dateStr}T${formatTimeToAPI(
+    );
+    const endDateTime = localDateTimeToUtcISO(
+      selectedDate,
       slotWithNewValue.endTime
-    )}`;
+    );
+    if (!startDateTime || !endDateTime) return;
 
     try {
       // Si c'est un créneau récurrent, on crée un nouveau créneau spécifique pour cette date
@@ -405,11 +412,10 @@ export const useDateTimeSlotsManager = ({
       const scheduleToRemove = proExpertData.schedules.find((schedule: any) => {
         if (schedule.day_of_week !== dayOfWeek) return false;
 
-        // Comparer les heures pour trouver le bon créneau
-        const scheduleStart = schedule.start_time
-          .substring(0, 5)
-          .replace(":", "h");
-        const scheduleEnd = schedule.end_time.substring(0, 5).replace(":", "h");
+        // Comparer via le même convertisseur que l'affichage: la base est en
+        // UTC alors que slot.startTime est déjà en heure locale.
+        const scheduleStart = convertApiTimeToUITime(schedule.start_time);
+        const scheduleEnd = convertApiTimeToUITime(schedule.end_time);
 
         return scheduleStart === slot.startTime && scheduleEnd === slot.endTime;
       });

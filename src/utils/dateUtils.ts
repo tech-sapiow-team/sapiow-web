@@ -100,3 +100,144 @@ export const isSameDay = (date1: Date, date2: Date): boolean => {
     date1.getDate() === date2.getDate()
   );
 };
+
+/**
+ * Parse une heure murale ("9h00", "09:30", "09:30:00") en composantes numériques
+ *
+ * @param value - L'heure murale
+ * @returns Les heures et minutes, ou null si la valeur est vide ou non parsable
+ */
+const parseWallClockTime = (
+  value: string
+): { hours: number; minutes: number } | null => {
+  if (!value || value.trim() === "" || value.includes("NaN")) {
+    return null;
+  }
+
+  const match = value.trim().match(/^(\d{1,2})[h:](\d{1,2})?/);
+  if (!match) {
+    return null;
+  }
+
+  const hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2] ?? "0", 10);
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+
+  return { hours, minutes };
+};
+
+/**
+ * Convertit une heure murale locale en valeur `timetz` UTC pour la base
+ *
+ * L'ancre détermine l'offset appliqué (celui en vigueur ce jour-là). Elle doit
+ * être la même à l'écriture et à la lecture, sinon le pro ne revoit pas l'heure
+ * qu'il a saisie de part et d'autre d'un changement d'heure.
+ *
+ * Exemple: "9h00" à Paris en été -> "07:00:00+00"
+ *
+ * @param uiTime - L'heure murale locale au format UI
+ * @param anchor - Le jour servant de référence pour l'offset
+ * @returns La valeur `timetz` en UTC, ou "" si l'heure est invalide
+ */
+export const localTimeToUtcTimetz = (
+  uiTime: string,
+  anchor: Date = new Date()
+): string => {
+  const parsed = parseWallClockTime(uiTime);
+  if (!parsed) {
+    return "";
+  }
+
+  const local = new Date(
+    anchor.getFullYear(),
+    anchor.getMonth(),
+    anchor.getDate(),
+    parsed.hours,
+    parsed.minutes,
+    0,
+    0
+  );
+
+  const hours = String(local.getUTCHours()).padStart(2, "0");
+  const minutes = String(local.getUTCMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}:00+00`;
+};
+
+/**
+ * Convertit une valeur `timetz` de la base en heure murale locale au format UI
+ *
+ * Exemple: "07:00:00+00" à Paris en été -> "9h00"
+ *
+ * @param timetz - La valeur `timetz` renvoyée par la base
+ * @param anchor - Le jour servant de référence pour l'offset
+ * @returns L'heure murale locale, ou "" si la valeur est invalide
+ */
+export const utcTimetzToLocalTime = (
+  timetz: string,
+  anchor: Date = new Date()
+): string => {
+  if (!timetz || timetz.trim() === "" || timetz.includes("NaN")) {
+    return "";
+  }
+
+  // PostgreSQL renvoie "+00" mais ISO 8601 attend "+00:00"
+  let normalized = timetz.trim();
+  const signPos = Math.max(
+    normalized.lastIndexOf("+"),
+    normalized.lastIndexOf("-")
+  );
+  if (signPos > 0) {
+    if (!normalized.slice(signPos).includes(":")) {
+      normalized += ":00";
+    }
+  } else {
+    // Valeur sans offset: on la considère déjà en UTC
+    normalized += "+00:00";
+  }
+
+  const instant = new Date(`${formatDateToLocalISO(anchor)}T${normalized}`);
+  if (isNaN(instant.getTime())) {
+    return "";
+  }
+
+  return `${instant.getHours()}h${String(instant.getMinutes()).padStart(
+    2,
+    "0"
+  )}`;
+};
+
+/**
+ * Combine une date locale et une heure murale locale en instant ISO UTC
+ *
+ * L'offset appliqué est celui de la date cible, donc correct même à cheval sur
+ * un changement d'heure.
+ *
+ * Exemple: le 9 septembre à 9h00 à Paris -> "2026-09-09T07:00:00.000Z"
+ *
+ * @param date - Le jour visé (seules les composantes locales Y/M/D sont lues)
+ * @param uiTime - L'heure murale locale au format UI
+ * @returns L'instant au format ISO 8601 UTC, ou null si l'heure est invalide
+ */
+export const localDateTimeToUtcISO = (
+  date: Date,
+  uiTime: string
+): string | null => {
+  const parsed = parseWallClockTime(uiTime);
+  if (!parsed) {
+    return null;
+  }
+
+  const local = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    parsed.hours,
+    parsed.minutes,
+    0,
+    0
+  );
+
+  return local.toISOString();
+};
